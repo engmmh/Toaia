@@ -59,11 +59,12 @@
   body.on-login .app-main{padding:0;max-width:none;height:100vh;display:flex;flex-direction:column;}
   body.on-login #login-section{flex:1;display:flex;flex-direction:column;min-height:0;}
   body.on-login .login-split{min-height:0;flex:1;}
-  body.on-login .footer{flex-shrink:0;margin-top:0;}
+  body.on-login .footer{display:none;}
+  .login-footer-note{margin-top:28px;text-align:center;color:var(--muted);font-size:10.5px;line-height:1.8;}
   body.on-admin .app-main{max-width:1520px;}
   .login-hero{flex:1.1;background:linear-gradient(160deg,#0f2e22,#0a1f18 60%,#08170f);position:relative;overflow:hidden;padding:44px 40px;display:flex;align-items:center;}
   .login-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 80% 20%,rgba(110,231,183,.12),transparent 55%);}
-  .login-form-side{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;}
+  .login-form-side{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;background:linear-gradient(180deg,#f8faf9,#eef3f0);}
   .login-feature-row{display:flex;gap:10px;margin-bottom:24px;}
   .login-feature-card{flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:12px 8px;text-align:center;}
   .login-trust-box{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:10px 14px;max-width:420px;}
@@ -215,6 +216,7 @@ body{background:linear-gradient(180deg,#f4f7f9 0%,#eef3f6 100%);font-family:'Cai
             <button class="btn-secondary" style="padding:14px;font-size:14px;" onclick="chooseLoginRole('worker')">👷 موظف <span style="opacity:.85">/ Trainee</span></button>
           </div>
         </div>
+        <div class="login-footer-note">© 2026 شركة آفق الحروف التجارية UFUQ | جميع الحقوق محفوظة<br/><strong>Prepared by: Eng. Mahmoud Hegazi</strong></div>
       </div>
     </div>
   </section>
@@ -250,6 +252,7 @@ body{background:linear-gradient(180deg,#f4f7f9 0%,#eef3f6 100%);font-family:'Cai
       <div style="display:flex;align-items:center;gap:8px;">
         <div id="lang-buttons"></div>
         <button class="icon-btn" title="تغيير كلمة السر" onclick="openPasswordChangeModal()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1.5"/></svg></button>
+        <button class="icon-btn" title="تحديث" onclick="refreshCurrentView()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></button>
         <button class="btn-danger btn-sm" id="worker-logout-btn" onclick="logout()">خروج</button>
       </div>
     </div>
@@ -361,6 +364,7 @@ body{background:linear-gradient(180deg,#f4f7f9 0%,#eef3f6 100%);font-family:'Cai
       <div style="display:flex;align-items:center;gap:8px;">
         <button class="icon-btn" id="admin-sidebar-toggle" title="القائمة" onclick="toggleAdminSidebar()" style="display:none;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
         <button class="icon-btn" title="تغيير كلمة السر" onclick="openPasswordChangeModal()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1.5"/></svg></button>
+        <button class="icon-btn" title="تحديث" onclick="refreshCurrentView()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></button>
         <button class="btn-danger btn-sm" onclick="logout()">خروج</button>
       </div>
     </div>
@@ -697,7 +701,8 @@ body{background:linear-gradient(180deg,#f4f7f9 0%,#eef3f6 100%);font-family:'Cai
             <div><label class="field-label">مدة التدريب (دقيقة)</label><input id="os-duration" type="number" class="input-field" value="30"/></div>
             <div><label class="field-label">الغرض من التدريب</label><input id="os-purpose" type="text" class="input-field" placeholder="مثال: أهمية نظافة السكن والغرفة وتأثيرها على بيئة المصنع"/></div>
             <div><label class="field-label">جهة التدريب</label><input id="os-provider" type="text" class="input-field" placeholder="مثال: محمود حجازي"/></div>
-            <div style="grid-column:1/-1;"><label class="field-label">القسم/المصنع</label><select id="os-section" class="input-field"></select></div>
+            <div style="grid-column:1/-1;"><label class="field-label">القسم/المصنع</label><select id="os-section" class="input-field" onchange="loadOsSectionWorkers()"></select></div>
+            <div id="os-section-workers" style="grid-column:1/-1;"></div>
           </div>
 
           <div class="divider"></div>
@@ -928,6 +933,19 @@ function applySavedSidebarCollapse(){
   }catch(e){}
 }
 function togglePanel(id){ $(id).classList.toggle('open'); }
+async function refreshCurrentView(){
+  showToast('🔄 جاري التحديث...');
+  try{
+    if(currentUser){
+      await loadWorkerData();
+    } else if(adminUser){
+      const activeTab = document.querySelector('.admin-tab.active');
+      const tabName = activeTab ? activeTab.id.replace('tab-','') : 'dashboard';
+      adminTab(tabName);
+    }
+    showToast('تم التحديث ✅');
+  }catch(e){ showToast('تعذر التحديث'); }
+}
 function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function tr(obj, base){
   const order=LANG_FALLBACK_ORDER[currentLang]||['ar','en','bn','ne','hi'];
@@ -3981,6 +3999,7 @@ try{(function(){
     $('os-date').value = new Date().toISOString().slice(0,10);
     if($('os-section')) $('os-section').innerHTML = sectionOpts(null);
     $('os-same-title-results').innerHTML='';
+    $('os-section-workers').innerHTML='';
     $('os-worker-search').value=''; $('os-worker-search-results').innerHTML='';
     renderOsParticipants();
   };
@@ -4028,6 +4047,19 @@ try{(function(){
         '</div>'
       ).join('') : '<div class="muted" style="font-size:11px;">لا يوجد نتائج</div>';
     }, 300);
+  };
+  window.loadOsSectionWorkers = async function(){
+    const secId = $('os-section').value, box=$('os-section-workers');
+    if(!secId){ box.innerHTML=''; return; }
+    box.innerHTML='<div class="muted" style="font-size:11px;">جاري تحميل موظفي القسم...</div>';
+    const {data} = await sb.from('workers_evaluations').select('id,worker_name').eq('section_id',secId).order('worker_name');
+    if(!data || !data.length){ box.innerHTML='<div class="muted" style="font-size:11px;">لا يوجد موظفين مسجلين في القسم ده</div>'; return; }
+    box.innerHTML = '<div class="muted" style="font-size:11px;font-weight:700;margin:8px 0 5px;">👥 موظفو القسم (دوس لإضافة أي حد):</div>'+
+      '<div style="display:flex;flex-wrap:wrap;gap:6px;">'+data.map(w=>
+        osParticipants[w.id]
+          ? '<span class="badge badge-green" style="font-size:10px;">✓ '+esc(w.worker_name)+'</span>'
+          : '<button class="btn-secondary btn-sm" style="font-size:10px;" onclick="addOnsiteParticipant('+w.id+',\''+esc(w.worker_name).replace(/'/g,"\\'")+'\');loadOsSectionWorkers();">+ '+esc(w.worker_name)+'</button>'
+      ).join('')+'</div>';
   };
   window.addOnsiteParticipant = function(id,name){
     osParticipants[id] = { name, internal:true, certifiedBy:'', evaluation:'good' };
@@ -4107,16 +4139,20 @@ try{(function(){
       '<div class="card" style="padding:16px;">'+
         '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;">'+
           '<button class="btn-secondary btn-sm" onclick="closeOnsiteSessionForm()">→ رجوع</button>'+
-          '<button class="btn-primary btn-sm" onclick="printOnsiteSession()">🖨️ طباعة / تحميل PDF</button>'+
+          '<div style="display:flex;gap:6px;flex-wrap:wrap;">'+
+            '<button class="btn-secondary btn-sm" onclick="duplicateOnsiteSession('+sessionId+')">📋 مجموعة جديدة (نفس العنوان)</button>'+
+            '<button class="btn-primary btn-sm" onclick="printOnsiteSession()">🖨️ طباعة / تحميل PDF</button>'+
+          '</div>'+
         '</div>'+
         '<div id="onsite-print-area"></div>'+
       '</div>';
     renderOnsitePrintArea();
   };
-  function renderOnsitePrintArea(){
+  async function renderOnsitePrintArea(){
     const {s, parts, wMap, secName} = window._currentOnsiteSession;
+    let logo='', appName='منصة تدريبات سلامة الغذاء';
+    try{ const {data}=await sb.from('app_settings').select('key,value').in('key',['app_logo','app_name']); (data||[]).forEach(r=>{ if(r.key==='app_logo') logo=r.value; if(r.key==='app_name'&&r.value) appName=r.value; }); }catch(e){}
     const rows = (parts||[]).map((p,i)=>{
-      const wEval = p.worker_evaluation ? '<span style="color:'+EVAL_COLORS[p.worker_evaluation]+';font-weight:700;">'+EVAL_LABELS[p.worker_evaluation]+'</span>' : '<span class="muted">لسه ما قيّمش</span>';
       return '<tr>'+
         '<td style="text-align:center;">'+(i+1)+'</td>'+
         '<td style="text-align:center;">'+p.worker_id+'</td>'+
@@ -4124,16 +4160,19 @@ try{(function(){
         '<td style="text-align:center;">'+(p.is_internal?'داخلي':'خارجي')+'</td>'+
         '<td style="text-align:center;">'+esc(p.certified_by||'—')+'</td>'+
         '<td style="text-align:center;color:'+EVAL_COLORS[p.admin_evaluation]+';font-weight:700;">'+(EVAL_LABELS[p.admin_evaluation]||'—')+'</td>'+
-        '<td style="text-align:center;">'+wEval+'</td>'+
       '</tr>';
     }).join('');
     $('onsite-print-area').innerHTML =
+      '<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">'+
+        (logo?'<img src="'+esc(logo)+'" style="width:52px;height:52px;object-fit:cover;border-radius:10px;border:1px solid #ccc;"/>':'')+
+        '<div style="font-weight:900;font-size:16px;">'+esc(appName)+'</div>'+
+      '</div>'+
       '<table style="width:100%;border-collapse:collapse;border:2px solid #000;font-size:12px;" dir="rtl">'+
-        '<tr><td colspan="7" style="border:1px solid #000;padding:10px;text-align:center;font-weight:900;font-size:15px;">EMPLOYEE TRAINING RECORD / سجل تدريب الموظفين</td></tr>'+
-        '<tr><td colspan="7" style="border:1px solid #000;padding:8px;font-weight:700;">DETAILS OF TRAINING / تفاصيل التدريب: '+esc(s.title)+'</td></tr>'+
+        '<tr><td colspan="6" style="border:1px solid #000;padding:10px;text-align:center;font-weight:900;font-size:15px;">EMPLOYEE TRAINING RECORD / سجل تدريب الموظفين</td></tr>'+
+        '<tr><td colspan="6" style="border:1px solid #000;padding:8px;font-weight:700;">DETAILS OF TRAINING / تفاصيل التدريب: '+esc(s.title)+'</td></tr>'+
         '<tr>'+
           '<td colspan="2" style="border:1px solid #000;padding:8px;">DATE OF TRAINING/تاريخ التدريب: <b>'+fmtDate(s.training_date)+'</b></td>'+
-          '<td colspan="5" rowspan="2" style="border:1px solid #000;padding:8px;">PURPOSE OF TRAINING/الهدف من التدريب: <b>'+esc(s.purpose||'—')+'</b><br/>Training Provider / جهة التدريب: <b>'+esc(s.provider||'—')+'</b></td>'+
+          '<td colspan="4" rowspan="2" style="border:1px solid #000;padding:8px;">PURPOSE OF TRAINING/الهدف من التدريب: <b>'+esc(s.purpose||'—')+'</b><br/>Training Provider / جهة التدريب: <b>'+esc(s.provider||'—')+'</b></td>'+
         '</tr>'+
         '<tr><td colspan="2" style="border:1px solid #000;padding:8px;">DURATION/مدة التدريب: <b>'+(s.duration_minutes||'—')+' min</b></td></tr>'+
         '<tr style="background:#f1f5f9;font-weight:700;">'+
@@ -4143,10 +4182,9 @@ try{(function(){
           '<td style="border:1px solid #000;padding:6px;">Internal/Externalداخلي/خارجي</td>'+
           '<td style="border:1px solid #000;padding:6px;">Training Certificate/التدريب اعتمادية</td>'+
           '<td style="border:1px solid #000;padding:6px;">Training Evaluation/تقييم التدريب</td>'+
-          '<td style="border:1px solid #000;padding:6px;">تقييم الموظف للتدريب</td>'+
         '</tr>'+
         rows+
-        '<tr><td colspan="7" style="border:1px solid #000;padding:10px;height:40px;">القسم/المصنع: '+esc(secName)+' &nbsp;&nbsp;&nbsp; التوقيع: ______________</td></tr>'+
+        '<tr><td colspan="6" style="border:1px solid #000;padding:10px;height:40px;">القسم/المصنع: '+esc(secName)+' &nbsp;&nbsp;&nbsp; التوقيع: ______________</td></tr>'+
       '</table>';
   }
   window.printOnsiteSession = function(){
