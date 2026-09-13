@@ -38,7 +38,8 @@
   .wm-filter-chip.active{background:var(--text);color:#fff;border-color:var(--text);}
   .badge.has-more::after{content:'‹ ‹';display:inline-block;margin-right:5px;font-size:9px;opacity:.75;animation:swipeHint 1.6s ease-in-out infinite;}
   @keyframes swipeHint{0%,100%{transform:translateX(0);opacity:.4;}50%{transform:translateX(-3px);opacity:.9;}}
-  .wicon-row{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:14px;}
+  .wicon-row{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;margin-bottom:14px;}
+  @media(max-width:420px){.wicon-row{grid-template-columns:repeat(3,1fr);}}
   .wicon-btn{position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px 6px;cursor:pointer;font-family:inherit;transition:.15s;box-shadow:0 1px 3px rgba(0,0,0,.04);}
   .wicon-btn:hover{border-color:var(--primary-light);transform:translateY(-1px);}
   .wicon-btn.active{background:linear-gradient(160deg,var(--primary),var(--primary-light));border-color:var(--primary);}
@@ -55,9 +56,10 @@
   .icon-btn:hover{background:var(--primary);color:#fff;border-color:var(--primary);}
   .login-split{display:flex;min-height:90vh;width:100vw;margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);}
   body.on-login{overflow:hidden;height:100vh;}
-  body.on-login .app-main{padding:0;max-width:none;min-height:100vh;}
-  body.on-login .login-split{min-height:100vh;}
-  body.on-login .footer{display:none;}
+  body.on-login .app-main{padding:0;max-width:none;height:100vh;display:flex;flex-direction:column;}
+  body.on-login #login-section{flex:1;display:flex;flex-direction:column;min-height:0;}
+  body.on-login .login-split{min-height:0;flex:1;}
+  body.on-login .footer{flex-shrink:0;margin-top:0;}
   body.on-admin .app-main{max-width:1520px;}
   .login-hero{flex:1.1;background:linear-gradient(160deg,#0f2e22,#0a1f18 60%,#08170f);position:relative;overflow:hidden;padding:44px 40px;display:flex;align-items:center;}
   .login-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 80% 20%,rgba(110,231,183,.12),transparent 55%);}
@@ -289,6 +291,11 @@ body{background:linear-gradient(180deg,#f4f7f9 0%,#eef3f6 100%);font-family:'Cai
         <span class="wicon-emoji">⚠️</span>
         <span class="wicon-label" id="wicon-label-violations">مخالفاتي</span>
       </button>
+      <button class="wicon-btn" id="wicon-btn-onsite" onclick="toggleWorkerSection('onsite')">
+        <span class="wicon-badge hidden" id="wicon-badge-onsite">0</span>
+        <span class="wicon-emoji">🎓</span>
+        <span class="wicon-label" id="wicon-label-onsite">تدريبات ميدانية</span>
+      </button>
     </div>
 
     <!-- الفيديوهات -->
@@ -325,6 +332,12 @@ body{background:linear-gradient(180deg,#f4f7f9 0%,#eef3f6 100%);font-family:'Cai
         <button class="btn-secondary btn-sm" id="wt-violations-viewall" style="font-size:11px;" onclick="toggleWorkerViolationsView()">عرض الكل</button>
       </div>
       <div id="worker-violations-box"></div>
+    </div>
+
+    <!-- التدريبات الميدانية -->
+    <div class="card wsec-panel hidden" id="wsec-panel-onsite" style="padding:16px;margin-bottom:14px;">
+      <div class="section-title" id="wt-onsite-title" style="margin-bottom:12px;">🎓 التدريبات الميدانية</div>
+      <div id="worker-onsite-box"></div>
     </div>
 
     <!-- أسئلتي وتعليقاتي (ملخص) -->
@@ -367,6 +380,7 @@ body{background:linear-gradient(180deg,#f4f7f9 0%,#eef3f6 100%);font-family:'Cai
       <button class="tab-btn" onclick="adminTab('comments')" id="tabbtn-comments" data-label="التعليقات"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M20 11.5a7.5 7.5 0 0 1-8 7.5 8 8 0 0 1-4-.99L4 20l1.5-3.5A7.5 7.5 0 1 1 20 11.5z"/></svg></span><span class="nav-label">التعليقات<span class="nav-en">Comments</span></span></button>
       <button class="tab-btn" onclick="adminTab('branding')" id="tabbtn-branding" data-label="الهوية"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-1.41 1.41-.06-.06A1.7 1.7 0 0 0 16.45 18a1.7 1.7 0 0 0-1.03 1.55V20h-2v-.45A1.7 1.7 0 0 0 12.39 18a1.7 1.7 0 0 0-1.88.34l-.06.06-1.41-1.41.06-.06A1.7 1.7 0 0 0 9.45 15a1.7 1.7 0 0 0-1.55-1.03H7v-2h.45A1.7 1.7 0 0 0 9 10.94a1.7 1.7 0 0 0-.34-1.88L8.6 9l1.41-1.41.06.06A1.7 1.7 0 0 0 11.55 8 1.7 1.7 0 0 0 12.58 6.45V6h2v.45A1.7 1.7 0 0 0 15.61 8a1.7 1.7 0 0 0 1.88-.34l.06-.06L19 9l-.06.06A1.7 1.7 0 0 0 18.6 10.94 1.7 1.7 0 0 0 20.15 12H20v2h-.45A1.7 1.7 0 0 0 19.4 15z"/></svg></span><span class="nav-label">الهوية<span class="nav-en">Branding</span></span></button>
       <button class="tab-btn" onclick="adminTab('vio-lib')" id="tabbtn-vio-lib" data-label="المخالفات"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 3 3.5 19h17z"/><path d="M12 9v4M12 16h.01"/></svg></span><span class="nav-label">المخالفات<span class="nav-en">Violations</span></span></button>
+      <button class="tab-btn" onclick="adminTab('onsite')" id="tabbtn-onsite" data-label="التدريبات الميدانية"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c0 1.5 2.5 3 6 3s6-1.5 6-3v-5"/></svg></span><span class="nav-label">التدريبات الميدانية<span class="nav-en">On-site Training</span></span></button>
       <button class="tab-btn" onclick="adminTab('admins')" id="tabbtn-admins" data-label="الأدمن"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 5 3 8 7 10 4-2 7-5 7-10V6z"/><path d="M9 12h6M12 9v6"/></svg></span><span class="nav-label">الأدمن<span class="nav-en">Admins</span></span></button>
       <button class="tab-btn" onclick="adminTab('activity')" id="tabbtn-activity" data-label="نشاط الإدارة"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h17"/><path d="m7 15 4-4 3 2 5-6"/></svg></span><span class="nav-label">نشاط الإدارة<span class="nav-en">Activity</span></span></button>
       <button class="tab-btn" onclick="openAdminPreview()" id="tabbtn-preview" data-label="معاينة الموظف"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z"/><circle cx="12" cy="12" r="2.5"/></svg></span><span class="nav-label">معاينة الموظف<span class="nav-en">Worker Preview</span></span></button>
@@ -382,10 +396,11 @@ body{background:linear-gradient(180deg,#f4f7f9 0%,#eef3f6 100%);font-family:'Cai
         </div>
         <div id="compliance-settings-box" class="hidden" style="background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px;">
           <div style="font-weight:700;font-size:13px;margin-bottom:8px;">أوزان معادلة "نسبة الالتزام" (لازم مجموعهم ١٠٠)</div>
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
-            <div><label class="field-label">🎬 إكمال التدريبات</label><input id="cw-training" type="number" class="input-field" value="50"/></div>
-            <div><label class="field-label">📝 متوسط الاختبارات</label><input id="cw-quiz" type="number" class="input-field" value="30"/></div>
-            <div><label class="field-label">⚠️ الخلو من المخالفات</label><input id="cw-violations" type="number" class="input-field" value="20"/></div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+            <div><label class="field-label">🎬 إكمال التدريبات</label><input id="cw-training" type="number" class="input-field" value="40"/></div>
+            <div><label class="field-label">📝 متوسط الاختبارات</label><input id="cw-quiz" type="number" class="input-field" value="25"/></div>
+            <div><label class="field-label">⚠️ الخلو من المخالفات</label><input id="cw-violations" type="number" class="input-field" value="15"/></div>
+            <div><label class="field-label">🎓 التدريبات الميدانية</label><input id="cw-onsite" type="number" class="input-field" value="20"/></div>
           </div>
           <button class="btn-primary btn-sm" style="margin-top:10px;" onclick="saveComplianceWeights()">حفظ وإعادة الحساب</button>
           <div id="cw-msg" style="font-size:12px;margin-top:6px;"></div>
@@ -652,6 +667,53 @@ body{background:linear-gradient(180deg,#f4f7f9 0%,#eef3f6 100%);font-family:'Cai
         <div class="section-title" style="margin-bottom:12px;">مكتبة المخالفات</div>
         <div id="vio-lib-list" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
       </div>
+    </div>
+
+    <!-- ===== التدريبات الميدانية ===== -->
+    <div class="admin-tab" id="tab-onsite">
+      <div id="onsite-list-view">
+        <div class="card" style="padding:16px;margin-bottom:14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;flex-wrap:wrap;gap:8px;">
+            <div class="section-title">🎓 جلسات التدريب الميداني</div>
+            <button class="btn-primary btn-sm" onclick="openNewOnsiteSessionForm()">+ جلسة جديدة</button>
+          </div>
+          <div id="onsite-sessions-list" style="display:flex;flex-direction:column;gap:8px;margin-top:10px;"></div>
+        </div>
+      </div>
+
+      <div id="onsite-form-view" class="hidden">
+        <div class="card" style="padding:16px;margin-bottom:14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+            <div class="section-title">➕ جلسة تدريب ميداني جديدة</div>
+            <button class="btn-secondary btn-sm" onclick="closeOnsiteSessionForm()">→ رجوع للقايمة</button>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div style="grid-column:1/-1;">
+              <label class="field-label">عنوان/موضوع التدريب</label>
+              <input id="os-title" type="text" class="input-field" placeholder="مثال: أهمية نظافة السكن والغرفة" oninput="searchOnsiteSameTitle()"/>
+              <div id="os-same-title-results" style="margin-top:6px;"></div>
+            </div>
+            <div><label class="field-label">تاريخ التدريب</label><input id="os-date" type="date" class="input-field"/></div>
+            <div><label class="field-label">مدة التدريب (دقيقة)</label><input id="os-duration" type="number" class="input-field" value="30"/></div>
+            <div><label class="field-label">الغرض من التدريب</label><input id="os-purpose" type="text" class="input-field" placeholder="مثال: أهمية نظافة السكن والغرفة وتأثيرها على بيئة المصنع"/></div>
+            <div><label class="field-label">جهة التدريب</label><input id="os-provider" type="text" class="input-field" placeholder="مثال: محمود حجازي"/></div>
+            <div style="grid-column:1/-1;"><label class="field-label">القسم/المصنع</label><select id="os-section" class="input-field"></select></div>
+          </div>
+
+          <div class="divider"></div>
+          <div style="font-weight:700;font-size:13px;margin-bottom:8px;">👥 إضافة موظفين للجلسة</div>
+          <div style="display:flex;gap:8px;margin-bottom:10px;">
+            <input id="os-worker-search" type="text" class="input-field" placeholder="دوّر برقم الهوية أو الاسم..." oninput="searchOnsiteWorkers()"/>
+          </div>
+          <div id="os-worker-search-results" style="margin-bottom:12px;"></div>
+          <div id="os-participants-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+
+          <div style="margin-top:16px;"><button class="btn-primary" style="padding:11px 24px;font-size:13px;" onclick="saveOnsiteSession()">💾 حفظ الجلسة</button></div>
+          <div id="os-save-msg" style="font-size:12px;margin-top:8px;"></div>
+        </div>
+      </div>
+
+      <div id="onsite-detail-view" class="hidden"></div>
     </div>
 
     <!-- ===== إدارة الأدمن ===== -->
@@ -1817,7 +1879,7 @@ function renderWorkerStaticLabels(){
 }
 
 /* ---------- تنقّل الأيقونات الأربعة في صفحة الموظف ---------- */
-const WORKER_SECTIONS = ['videos','cards','quizzes','violations'];
+const WORKER_SECTIONS = ['videos','cards','quizzes','violations','onsite'];
 let workerActiveSection = 'videos';
 function toggleWorkerSection(name){
   workerActiveSection = name;
@@ -2000,7 +2062,7 @@ function setLang(lang){
       try{ Object.keys(topicTimersV22||{}).forEach(id=>{ try{ clearInterval(topicTimersV22[id]); delete topicTimersV22[id]; }catch(e){} }); }catch(e){}
       activeTopicVideo={};
     }
-    renderWorkerVideos(); renderWorkerCards(); loadWorkerQuizzes(); loadWorkerViolationsView(); loadWorkerCommentsSummary(); updateWorkerHeader(); if(typeof window.refreshWorkerCarouselCounters==='function') window.refreshWorkerCarouselCounters();
+    renderWorkerVideos(); renderWorkerCards(); loadWorkerQuizzes(); loadWorkerViolationsView(); loadWorkerCommentsSummary(); if(typeof loadWorkerOnsiteTrainings==='function') loadWorkerOnsiteTrainings(); updateWorkerHeader(); if(typeof window.refreshWorkerCarouselCounters==='function') window.refreshWorkerCarouselCounters();
   }
   if(adminUser){ loadSections(); }
 }
@@ -2044,7 +2106,7 @@ function loadAdminData(){ adminTab('dashboard'); }
 
 // ==================== WORKER DATA ====================
 async function loadWorkerData(){
-  await Promise.all([loadWorkerVideos(),loadWorkerCards(),loadWorkerQuizzes(),loadWorkerViolationsView(),loadWorkerCommentsSummary()]);
+  await Promise.all([loadWorkerVideos(),loadWorkerCards(),loadWorkerQuizzes(),loadWorkerViolationsView(),loadWorkerCommentsSummary(),(typeof loadWorkerOnsiteTrainings==='function'?loadWorkerOnsiteTrainings():Promise.resolve())]);
 }
 
 // ==================== INIT ====================
@@ -3538,25 +3600,37 @@ try{(function(){
 
 /* ==================== طبقة 7: لوحة التحكم ونسبة الالتزام والشهادات ==================== */
 try{(function(){
-  window.toggleComplianceSettings = function(){ $('compliance-settings-box')?.classList.toggle('hidden'); };
+  window.toggleComplianceSettings = async function(){
+    const box=$('compliance-settings-box'); if(!box) return;
+    const willOpen = box.classList.contains('hidden');
+    box.classList.toggle('hidden');
+    if(willOpen){
+      const w = await getComplianceWeights();
+      if($('cw-training')) $('cw-training').value=w.training;
+      if($('cw-quiz')) $('cw-quiz').value=w.quiz;
+      if($('cw-violations')) $('cw-violations').value=w.violations;
+      if($('cw-onsite')) $('cw-onsite').value=w.onsite;
+    }
+  };
 
   async function getComplianceWeights(){
     try{
-      const {data}=await sb.from('app_settings').select('key,value').in('key',['compliance_weight_training','compliance_weight_quiz','compliance_weight_violations']);
+      const {data}=await sb.from('app_settings').select('key,value').in('key',['compliance_weight_training','compliance_weight_quiz','compliance_weight_violations','compliance_weight_onsite']);
       const m={}; (data||[]).forEach(r=>m[r.key]=Number(r.value));
-      return { training: m.compliance_weight_training ?? 50, quiz: m.compliance_weight_quiz ?? 30, violations: m.compliance_weight_violations ?? 20 };
-    }catch(e){ return { training:50, quiz:30, violations:20 }; }
+      return { training: m.compliance_weight_training ?? 40, quiz: m.compliance_weight_quiz ?? 25, violations: m.compliance_weight_violations ?? 15, onsite: m.compliance_weight_onsite ?? 20 };
+    }catch(e){ return { training:40, quiz:25, violations:15, onsite:20 }; }
   }
 
   window.saveComplianceWeights = async function(){
-    const t=Number($('cw-training').value)||0, q=Number($('cw-quiz').value)||0, v=Number($('cw-violations').value)||0;
+    const t=Number($('cw-training').value)||0, q=Number($('cw-quiz').value)||0, v=Number($('cw-violations').value)||0, o=Number($('cw-onsite')?.value)||0;
     const msg=$('cw-msg');
-    if(Math.round(t+q+v)!==100){ msg.innerHTML='<span style="color:#991b1b;">مجموع الأوزان لازم يساوي ١٠٠ (دلوقتي: '+(t+q+v)+')</span>'; return; }
+    if(Math.round(t+q+v+o)!==100){ msg.innerHTML='<span style="color:#991b1b;">مجموع الأوزان لازم يساوي ١٠٠ (دلوقتي: '+(t+q+v+o)+')</span>'; return; }
     try{
       await sb.from('app_settings').upsert([
         {key:'compliance_weight_training', value:String(t)},
         {key:'compliance_weight_quiz', value:String(q)},
-        {key:'compliance_weight_violations', value:String(v)}
+        {key:'compliance_weight_violations', value:String(v)},
+        {key:'compliance_weight_onsite', value:String(o)}
       ]);
       msg.innerHTML='<span style="color:#166534;">تم الحفظ ✅</span>';
       setTimeout(()=>msg.innerHTML='',2500);
@@ -3566,15 +3640,16 @@ try{(function(){
 
   async function computeComplianceData(){
     const weights=await getComplianceWeights();
-    const totalW=(weights.training+weights.quiz+weights.violations)||1;
+    const totalW=(weights.training+weights.quiz+weights.violations+weights.onsite)||1;
     const ids=getAdminScopeIds();
     let wq=sb.from('workers_evaluations').select('id,worker_name,section_id,job_role_id,kpi_score');
     if(!adminUser?.isSuper && ids.length) wq=wq.in('section_id',ids);
-    const [{data:workers},{data:topics},{data:progress},{data:attempts}]=await Promise.all([
+    const [{data:workers},{data:topics},{data:progress},{data:attempts},{data:onsiteParts}]=await Promise.all([
       wq,
       sb.from('training_topics').select('id,section_id,target_department_id,is_visible'),
       sb.from('training_progress').select('worker_id,topic_id,completed'),
-      sb.from('quiz_attempts').select('worker_id,score,is_current')
+      sb.from('quiz_attempts').select('worker_id,score,is_current'),
+      sb.from('onsite_training_participants').select('worker_id,admin_evaluation').then(r=>r).catch(()=>({data:[]}))
     ]);
     const list=workers||[];
     const roleIds=[...new Set(list.map(w=>w.job_role_id).filter(Boolean))];
@@ -3585,6 +3660,9 @@ try{(function(){
     (progress||[]).forEach(p=>{ if(!p.completed) return; (progressByWorker[p.worker_id] ||= new Set()).add(p.topic_id); });
     const scoresByWorker={};
     (attempts||[]).forEach(a=>{ if(a.is_current===false) return; (scoresByWorker[a.worker_id] ||= []).push(Number(a.score)||0); });
+    const ONSITE_SCORES={excellent:100,good:75,acceptable:50,weak:25};
+    const onsiteByWorker={};
+    (onsiteParts||[]).forEach(p=>{ const sc=ONSITE_SCORES[p.admin_evaluation]; if(sc==null) return; (onsiteByWorker[p.worker_id] ||= []).push(sc); });
     const visibleTopics=(topics||[]).filter(t=>t.is_visible);
 
     const perWorker=list.map(w=>{
@@ -3595,8 +3673,10 @@ try{(function(){
       const scores=scoresByWorker[w.id]||[];
       const quizPct=scores.length ? (scores.reduce((a,b)=>a+b,0)/scores.length) : 100;
       const violPct=Number(w.kpi_score ?? 100);
-      const compliance=((trainingPct*weights.training)+(quizPct*weights.quiz)+(violPct*weights.violations))/totalW;
-      return {worker:w, trainingPct, quizPct, violPct, compliance};
+      const onScores=onsiteByWorker[w.id]||[];
+      const onsitePct=onScores.length ? (onScores.reduce((a,b)=>a+b,0)/onScores.length) : 100;
+      const compliance=((trainingPct*weights.training)+(quizPct*weights.quiz)+(violPct*weights.violations)+(onsitePct*weights.onsite))/totalW;
+      return {worker:w, trainingPct, quizPct, violPct, onsitePct, compliance};
     });
 
     const bySection={};
@@ -3880,6 +3960,253 @@ try{(function(){
   };
   console.log('V2.9 layer loaded — department-based auto-admin active.');
 })();}catch(e){console.error('طبقة 9 فشلت:',e);}
+
+/* ==================== طبقة 10: التدريبات الميدانية (سجل ورقي رقمي) ==================== */
+try{(function(){
+  const EVAL_LABELS = {excellent:'ممتاز',good:'جيد',acceptable:'مقبول',weak:'ضعيف'};
+  const EVAL_SCORES = {excellent:100,good:75,acceptable:50,weak:25};
+  const EVAL_COLORS = {excellent:'#16a34a',good:'#0ea5e9',acceptable:'#d97706',weak:'#dc2626'};
+  function evalOptionsHtml(selected){
+    return Object.keys(EVAL_LABELS).map(k=>'<option value="'+k+'" '+(k===selected?'selected':'')+'>'+EVAL_LABELS[k]+'</option>').join('');
+  }
+  let osParticipants = {}; // {workerId: {name, internal:true, certifiedBy:'', evaluation:'good'}}
+
+  /* ---------- فورم إنشاء جلسة جديدة ---------- */
+  window.openNewOnsiteSessionForm = function(){
+    osParticipants = {};
+    $('onsite-list-view')?.classList.add('hidden');
+    $('onsite-detail-view')?.classList.add('hidden');
+    $('onsite-form-view')?.classList.remove('hidden');
+    $('os-title').value=''; $('os-purpose').value=''; $('os-provider').value=''; $('os-duration').value=30;
+    $('os-date').value = new Date().toISOString().slice(0,10);
+    if($('os-section')) $('os-section').innerHTML = sectionOpts(null);
+    $('os-same-title-results').innerHTML='';
+    $('os-worker-search').value=''; $('os-worker-search-results').innerHTML='';
+    renderOsParticipants();
+  };
+  window.closeOnsiteSessionForm = function(){
+    $('onsite-form-view')?.classList.add('hidden');
+    $('onsite-detail-view')?.classList.add('hidden');
+    $('onsite-list-view')?.classList.remove('hidden');
+    loadOnsiteSessionsList();
+  };
+
+  /* ---------- بحث "نفس العنوان" — مين اتدرب قبل كده على نفس الموضوع ---------- */
+  window.searchOnsiteSameTitle = function(){
+    clearTimeout(window._osTitleT);
+    window._osTitleT = setTimeout(async ()=>{
+      const q=$('os-title').value.trim(); const box=$('os-same-title-results');
+      if(!q || q.length<2){ box.innerHTML=''; return; }
+      const {data:sessions} = await sb.from('onsite_trainings').select('id,title,training_date').ilike('title','%'+q+'%').order('training_date',{ascending:false}).limit(8);
+      if(!sessions || !sessions.length){ box.innerHTML='<div class="muted" style="font-size:11px;">مفيش جلسات سابقة بنفس العنوان ده</div>'; return; }
+      const ids=sessions.map(s=>s.id);
+      const {data:parts} = await sb.from('onsite_training_participants').select('onsite_training_id,worker_id').in('onsite_training_id',ids);
+      const {data:workers} = await sb.from('workers_evaluations').select('id,worker_name').in('id',[...new Set((parts||[]).map(p=>p.worker_id))]);
+      const wMap={}; (workers||[]).forEach(w=>wMap[w.id]=w.worker_name);
+      const byS={}; (parts||[]).forEach(p=>{(byS[p.onsite_training_id] ||= []).push(wMap[p.worker_id]||('#'+p.worker_id));});
+      box.innerHTML = '<div style="background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:8px 10px;">'+
+        '<div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:5px;">📋 جلسات سابقة بنفس العنوان — مين اتدرب فعلاً:</div>'+
+        sessions.map(s=>'<div style="font-size:11px;margin-bottom:4px;"><b>'+fmtDate(s.training_date)+'</b>: '+esc((byS[s.id]||[]).join('، ')||'لا يوجد مشاركين')+'</div>').join('')+
+      '</div>';
+    }, 350);
+  };
+
+  /* ---------- البحث عن موظفين لإضافتهم ---------- */
+  window.searchOnsiteWorkers = function(){
+    clearTimeout(window._osWorkerT);
+    window._osWorkerT = setTimeout(async ()=>{
+      const q=$('os-worker-search').value.trim(); const box=$('os-worker-search-results');
+      if(!q){ box.innerHTML=''; return; }
+      let query=sb.from('workers_evaluations').select('id,worker_name,section_id').limit(8);
+      if(/^\d+$/.test(q)) query=query.eq('id',parseInt(q)); else query=query.ilike('worker_name','%'+q+'%');
+      const {data} = await query;
+      const list=(data||[]).filter(w=>!osParticipants[w.id]);
+      box.innerHTML = list.length ? list.map(w=>
+        '<div style="display:flex;justify-content:space-between;align-items:center;background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:7px 10px;margin-bottom:5px;">'+
+          '<span style="font-size:12px;"><b>#'+w.id+'</b> '+esc(w.worker_name)+'</span>'+
+          '<button class="btn-primary btn-sm" onclick="addOnsiteParticipant('+w.id+',\''+esc(w.worker_name).replace(/'/g,"\\'")+'\')">+ إضافة</button>'+
+        '</div>'
+      ).join('') : '<div class="muted" style="font-size:11px;">لا يوجد نتائج</div>';
+    }, 300);
+  };
+  window.addOnsiteParticipant = function(id,name){
+    osParticipants[id] = { name, internal:true, certifiedBy:'', evaluation:'good' };
+    $('os-worker-search').value=''; $('os-worker-search-results').innerHTML='';
+    renderOsParticipants();
+  };
+  window.removeOnsiteParticipant = function(id){ delete osParticipants[id]; renderOsParticipants(); };
+  window.updateOsParticipantField = function(id, field, val){ if(osParticipants[id]) osParticipants[id][field]=val; };
+  function renderOsParticipants(){
+    const box=$('os-participants-list'); if(!box) return;
+    const ids=Object.keys(osParticipants);
+    box.innerHTML = ids.length ? ('<div style="font-weight:700;font-size:12px;margin-bottom:6px;">المشاركين ('+ids.length+')</div>' + ids.map(id=>{
+      const p=osParticipants[id];
+      return '<div style="background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:9px 11px;">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;"><b style="font-size:12.5px;">#'+id+' '+esc(p.name)+'</b><button class="btn-danger btn-sm" onclick="removeOnsiteParticipant('+id+')">حذف</button></div>'+
+        '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">'+
+          '<select class="input-field" style="font-size:11px;padding:6px;" onchange="updateOsParticipantField('+id+',\'internal\',this.value===\'true\')"><option value="true" '+(p.internal?'selected':'')+'>داخلي</option><option value="false" '+(!p.internal?'selected':'')+'>خارجي</option></select>'+
+          '<input class="input-field" style="font-size:11px;padding:6px;" placeholder="جهة الاعتماد" value="'+esc(p.certifiedBy)+'" oninput="updateOsParticipantField('+id+',\'certifiedBy\',this.value)"/>'+
+          '<select class="input-field" style="font-size:11px;padding:6px;" onchange="updateOsParticipantField('+id+',\'evaluation\',this.value)">'+evalOptionsHtml(p.evaluation)+'</select>'+
+        '</div></div>';
+    }).join('')) : '<div class="muted" style="font-size:12px;">لسه مفيش موظفين مضافين</div>';
+  }
+
+  /* ---------- حفظ الجلسة ---------- */
+  window.saveOnsiteSession = async function(){
+    const title=$('os-title').value.trim(), msg=$('os-save-msg');
+    if(!title) return msg.innerHTML='<span style="color:#991b1b;">اكتب عنوان التدريب</span>';
+    const ids=Object.keys(osParticipants);
+    if(!ids.length) return msg.innerHTML='<span style="color:#991b1b;">ضيف موظف واحد على الأقل</span>';
+    const payload = { title, training_date:$('os-date').value||new Date().toISOString().slice(0,10), duration_minutes:Number($('os-duration').value)||null, purpose:$('os-purpose').value.trim(), provider:$('os-provider').value.trim(), section_id: num($('os-section').value), created_by: adminUser?.name||'' };
+    const {data:session, error} = await sb.from('onsite_trainings').insert(payload).select().single();
+    if(error) return msg.innerHTML='<span style="color:#991b1b;">'+esc(error.message)+'</span>';
+    const rows = ids.map(id=>({ onsite_training_id:session.id, worker_id:Number(id), is_internal:osParticipants[id].internal, certified_by:osParticipants[id].certifiedBy||null, admin_evaluation:osParticipants[id].evaluation }));
+    const {error:e2} = await sb.from('onsite_training_participants').insert(rows);
+    if(e2){ msg.innerHTML='<span style="color:#991b1b;">تم حفظ الجلسة لكن حصل خطأ في المشاركين: '+esc(e2.message)+'</span>'; return; }
+    showToast('تم حفظ جلسة التدريب الميداني ✅');
+    closeOnsiteSessionForm();
+  };
+
+  /* ---------- قايمة الجلسات ---------- */
+  window.loadOnsiteSessionsList = async function(){
+    const box=$('onsite-sessions-list'); if(!box) return;
+    box.innerHTML='<div class="muted" style="font-size:12px;">جاري التحميل...</div>';
+    try{
+      const ids=getAdminScopeIds();
+      let q=sb.from('onsite_trainings').select('*').order('training_date',{ascending:false});
+      if(!adminUser?.isSuper && ids.length) q=q.in('section_id',ids);
+      const {data:sessions} = await q;
+      if(!sessions || !sessions.length){ box.innerHTML='<div class="muted" style="font-size:12px;text-align:center;padding:10px;">لا توجد جلسات بعد</div>'; return; }
+      const sIds=sessions.map(s=>s.id);
+      const {data:allParts} = await sb.from('onsite_training_participants').select('onsite_training_id').in('onsite_training_id',sIds);
+      const countMap={}; (allParts||[]).forEach(p=>{countMap[p.onsite_training_id]=(countMap[p.onsite_training_id]||0)+1;});
+      box.innerHTML = sessions.map(s=>{
+        const sec=sections.find(x=>String(x.id)===String(s.section_id));
+        return '<div class="card" style="padding:12px 14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">'+
+          '<div><b style="font-size:13px;">🎓 '+esc(s.title)+'</b><div class="muted" style="font-size:10.5px;margin-top:3px;">📅 '+fmtDate(s.training_date)+' &nbsp;|&nbsp; 📁 '+esc(sec?tr(sec,'name'):'—')+' &nbsp;|&nbsp; 👥 '+(countMap[s.id]||0)+' موظف</div></div>'+
+          '<div style="display:flex;gap:6px;"><button class="btn-secondary btn-sm" onclick="viewOnsiteSessionDetail('+s.id+')">عرض التفاصيل</button></div>'+
+        '</div>';
+      }).join('');
+    }catch(e){ box.innerHTML='<div class="muted" style="font-size:12px;">تعذر التحميل: '+esc(e.message||'')+' (تأكد من إنشاء جداول التدريبات الميدانية أولاً)</div>'; }
+  };
+
+  /* ---------- عرض تفاصيل جلسة + طباعة ---------- */
+  window.viewOnsiteSessionDetail = async function(sessionId){
+    $('onsite-list-view')?.classList.add('hidden');
+    $('onsite-form-view')?.classList.add('hidden');
+    const box=$('onsite-detail-view'); box.classList.remove('hidden');
+    box.innerHTML='<div class="muted">جاري التحميل...</div>';
+    const {data:s} = await sb.from('onsite_trainings').select('*').eq('id',sessionId).single();
+    const {data:parts} = await sb.from('onsite_training_participants').select('*').eq('onsite_training_id',sessionId).order('id');
+    const workerIds=(parts||[]).map(p=>p.worker_id);
+    const {data:workers} = workerIds.length ? await sb.from('workers_evaluations').select('id,worker_name').in('id',workerIds) : {data:[]};
+    const wMap={}; (workers||[]).forEach(w=>wMap[w.id]=w.worker_name);
+    const sec=sections.find(x=>String(x.id)===String(s.section_id));
+    window._currentOnsiteSession = { s, parts, wMap, secName: sec?tr(sec,'name'):'' };
+    box.innerHTML =
+      '<div class="card" style="padding:16px;">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;">'+
+          '<button class="btn-secondary btn-sm" onclick="closeOnsiteSessionForm()">→ رجوع</button>'+
+          '<button class="btn-primary btn-sm" onclick="printOnsiteSession()">🖨️ طباعة / تحميل PDF</button>'+
+        '</div>'+
+        '<div id="onsite-print-area"></div>'+
+      '</div>';
+    renderOnsitePrintArea();
+  };
+  function renderOnsitePrintArea(){
+    const {s, parts, wMap, secName} = window._currentOnsiteSession;
+    const rows = (parts||[]).map((p,i)=>{
+      const wEval = p.worker_evaluation ? '<span style="color:'+EVAL_COLORS[p.worker_evaluation]+';font-weight:700;">'+EVAL_LABELS[p.worker_evaluation]+'</span>' : '<span class="muted">لسه ما قيّمش</span>';
+      return '<tr>'+
+        '<td style="text-align:center;">'+(i+1)+'</td>'+
+        '<td style="text-align:center;">'+p.worker_id+'</td>'+
+        '<td>'+esc(wMap[p.worker_id]||('#'+p.worker_id))+'</td>'+
+        '<td style="text-align:center;">'+(p.is_internal?'داخلي':'خارجي')+'</td>'+
+        '<td style="text-align:center;">'+esc(p.certified_by||'—')+'</td>'+
+        '<td style="text-align:center;color:'+EVAL_COLORS[p.admin_evaluation]+';font-weight:700;">'+(EVAL_LABELS[p.admin_evaluation]||'—')+'</td>'+
+        '<td style="text-align:center;">'+wEval+'</td>'+
+      '</tr>';
+    }).join('');
+    $('onsite-print-area').innerHTML =
+      '<table style="width:100%;border-collapse:collapse;border:2px solid #000;font-size:12px;" dir="rtl">'+
+        '<tr><td colspan="7" style="border:1px solid #000;padding:10px;text-align:center;font-weight:900;font-size:15px;">EMPLOYEE TRAINING RECORD / سجل تدريب الموظفين</td></tr>'+
+        '<tr><td colspan="7" style="border:1px solid #000;padding:8px;font-weight:700;">DETAILS OF TRAINING / تفاصيل التدريب: '+esc(s.title)+'</td></tr>'+
+        '<tr>'+
+          '<td colspan="2" style="border:1px solid #000;padding:8px;">DATE OF TRAINING/تاريخ التدريب: <b>'+fmtDate(s.training_date)+'</b></td>'+
+          '<td colspan="5" rowspan="2" style="border:1px solid #000;padding:8px;">PURPOSE OF TRAINING/الهدف من التدريب: <b>'+esc(s.purpose||'—')+'</b><br/>Training Provider / جهة التدريب: <b>'+esc(s.provider||'—')+'</b></td>'+
+        '</tr>'+
+        '<tr><td colspan="2" style="border:1px solid #000;padding:8px;">DURATION/مدة التدريب: <b>'+(s.duration_minutes||'—')+' min</b></td></tr>'+
+        '<tr style="background:#f1f5f9;font-weight:700;">'+
+          '<td style="border:1px solid #000;padding:6px;">S.No</td>'+
+          '<td style="border:1px solid #000;padding:6px;">Badge#/الرقم الوظيفي</td>'+
+          '<td style="border:1px solid #000;padding:6px;">Employee Name/اسم الموظف</td>'+
+          '<td style="border:1px solid #000;padding:6px;">Internal/Externalداخلي/خارجي</td>'+
+          '<td style="border:1px solid #000;padding:6px;">Training Certificate/التدريب اعتمادية</td>'+
+          '<td style="border:1px solid #000;padding:6px;">Training Evaluation/تقييم التدريب</td>'+
+          '<td style="border:1px solid #000;padding:6px;">تقييم الموظف للتدريب</td>'+
+        '</tr>'+
+        rows+
+        '<tr><td colspan="7" style="border:1px solid #000;padding:10px;height:40px;">القسم/المصنع: '+esc(secName)+' &nbsp;&nbsp;&nbsp; التوقيع: ______________</td></tr>'+
+      '</table>';
+  }
+  window.printOnsiteSession = function(){
+    const area=$('onsite-print-area'); if(!area) return;
+    const w=window.open('','_blank');
+    w.document.write('<html><head><title>سجل تدريب</title><style>body{font-family:sans-serif;padding:16px;} td{font-family:sans-serif;}</style></head><body>'+area.innerHTML+'</body></html>');
+    w.document.close(); w.focus(); setTimeout(()=>w.print(),300);
+  };
+
+  /* ---------- ربط تحميل القايمة عند فتح التاب ---------- */
+  const oldAdminTabForOnsite=adminTab;
+  adminTab=function(tab){ oldAdminTabForOnsite(tab); if(tab==='onsite'){ $('onsite-form-view')?.classList.add('hidden'); $('onsite-detail-view')?.classList.add('hidden'); $('onsite-list-view')?.classList.remove('hidden'); loadOnsiteSessionsList(); } };
+
+  /* ==================== واجهة الموظف ==================== */
+  let workerOnsiteTotal = 0, workerOnsitePendingCount = 0;
+  window.loadWorkerOnsiteTrainings = async function(){
+    if(!currentUser) return;
+    const box=$('worker-onsite-box'); if(!box) return;
+    try{
+      const {data:parts} = await sb.from('onsite_training_participants').select('*').eq('worker_id',currentUser.id);
+      const ids=(parts||[]).map(p=>p.onsite_training_id);
+      const {data:sessions} = ids.length ? await sb.from('onsite_trainings').select('id,title,training_date,provider').in('id',ids) : {data:[]};
+      const sMap={}; (sessions||[]).forEach(s=>sMap[s.id]=s);
+      workerOnsiteTotal = (parts||[]).length;
+      workerOnsitePendingCount = (parts||[]).filter(p=>!p.worker_evaluation).length;
+      if(typeof updateWorkerIconBadges==='function') setIconBadge('onsite', workerOnsitePendingCount);
+
+      box.innerHTML = (parts||[]).sort((a,b)=>new Date(sMap[b.onsite_training_id]?.training_date||0)-new Date(sMap[a.onsite_training_id]?.training_date||0)).map(p=>{
+        const s=sMap[p.onsite_training_id]; if(!s) return '';
+        const adminEvalHtml = '<span style="color:'+EVAL_COLORS[p.admin_evaluation]+';font-weight:800;">'+(EVAL_LABELS[p.admin_evaluation]||'—')+'</span>';
+        let bottom;
+        if(p.worker_evaluation){
+          bottom = '<div style="background:#ecfdf5;border:1px solid #bbf7d0;border-radius:8px;padding:8px;margin-top:8px;font-size:12px;"><b>تقييمك للتدريب: </b><span style="color:'+EVAL_COLORS[p.worker_evaluation]+';font-weight:800;">'+EVAL_LABELS[p.worker_evaluation]+'</span>'+(p.worker_evaluation_comment?'<div class="muted" style="margin-top:4px;">"'+esc(p.worker_evaluation_comment)+'"</div>':'')+'</div>';
+        } else {
+          bottom = '<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px;margin-top:8px;">'+
+            '<div style="font-size:12px;font-weight:700;margin-bottom:6px;">قيّم التدريب ده بنفسك:</div>'+
+            '<select id="wo-eval-'+p.id+'" class="input-field" style="font-size:12px;margin-bottom:6px;">'+evalOptionsHtml('good')+'</select>'+
+            '<input id="wo-comment-'+p.id+'" type="text" class="input-field" style="font-size:12px;margin-bottom:6px;" placeholder="تعليق (اختياري)"/>'+
+            '<button class="btn-primary btn-sm" onclick="submitOnsiteWorkerEvaluation('+p.id+')">إرسال التقييم</button>'+
+          '</div>';
+        }
+        return '<div style="background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;">'+
+          '<div style="font-weight:800;font-size:13px;">🎓 '+esc(s.title)+'</div>'+
+          '<div class="muted" style="font-size:10.5px;margin-top:3px;">📅 '+fmtDate(s.training_date)+(s.provider?' &nbsp;|&nbsp; المدرّب: '+esc(s.provider):'')+'</div>'+
+          '<div style="margin-top:6px;font-size:12px;">تقييم إدارة الجودة: '+adminEvalHtml+'</div>'+
+          bottom+
+        '</div>';
+      }).join('') || '<div class="muted" style="text-align:center;padding:12px;">لا توجد تدريبات ميدانية مسجلة لك بعد</div>';
+    }catch(e){ box.innerHTML='<div class="muted" style="font-size:12px;">تعذر التحميل</div>'; }
+  };
+  window.submitOnsiteWorkerEvaluation = async function(participantId){
+    const ev=$('wo-eval-'+participantId).value, comment=$('wo-comment-'+participantId).value.trim();
+    const {error} = await sb.from('onsite_training_participants').update({worker_evaluation:ev, worker_evaluation_comment:comment||null, worker_evaluated_at:new Date().toISOString()}).eq('id',participantId);
+    if(error) return showToast('خطأ: '+error.message);
+    showToast('شكرًا لتقييمك ✅');
+    loadWorkerOnsiteTrainings();
+  };
+
+  console.log('V2.10 layer loaded — on-site training records active.');
+})();}catch(e){console.error('طبقة 10 فشلت:',e);}
 </script>
 </body>
 </html>
