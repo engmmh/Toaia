@@ -4031,19 +4031,39 @@ try{(function(){
   let osParticipants = {}; // {workerId: {name, internal:true, certifiedBy:'', evaluation:'good'}}
 
   /* ---------- فورم إنشاء جلسة جديدة ---------- */
-  window.openNewOnsiteSessionForm = function(prefill){
+  let osEditingId = null;
+  window.openNewOnsiteSessionForm = function(prefill, opts){
+    opts = opts || {};
     osParticipants = {};
+    osEditingId = opts.editingId || null;
     $('onsite-list-view')?.classList.add('hidden');
     $('onsite-detail-view')?.classList.add('hidden');
     $('onsite-form-view')?.classList.remove('hidden');
     $('os-title').value=prefill?.title||''; $('os-purpose').value=prefill?.purpose||''; $('os-provider').value=prefill?.provider||''; $('os-duration').value=prefill?.duration_minutes||30;
-    $('os-date').value = new Date().toISOString().slice(0,10);
+    $('os-date').value = (opts.keepDate && prefill?.training_date) ? prefill.training_date : new Date().toISOString().slice(0,10);
     if($('os-section')) $('os-section').innerHTML = sectionOpts(prefill?.section_id||null);
     $('os-same-title-results').innerHTML='';
     $('os-section-workers').innerHTML='';
     $('os-worker-search').value=''; $('os-worker-search-results').innerHTML='';
     renderOsParticipants();
-    if(prefill?.title) searchOnsiteSameTitle();
+    if(prefill?.title && !osEditingId) searchOnsiteSameTitle();
+    const titleEl=document.querySelector('#onsite-form-view .section-title');
+    if(titleEl) titleEl.textContent = osEditingId ? '✏️ تعديل جلسة تدريب ميداني' : '➕ جلسة تدريب ميداني جديدة';
+    const saveBtn=document.querySelector('#onsite-form-view button[onclick="saveOnsiteSession()"]');
+    if(saveBtn) saveBtn.textContent = osEditingId ? '💾 حفظ التعديلات' : '💾 حفظ الجلسة';
+  };
+  window.editOnsiteSession = async function(sessionId){
+    const {data:s} = await sb.from('onsite_trainings').select('*').eq('id',sessionId).single();
+    if(!s) return showToast('تعذر جلب بيانات الجلسة');
+    const {data:parts} = await sb.from('onsite_training_participants').select('*').eq('onsite_training_id',sessionId);
+    openNewOnsiteSessionForm(s, {editingId:sessionId, keepDate:true});
+    const workerIds=(parts||[]).map(p=>p.worker_id);
+    const {data:workers} = workerIds.length ? await sb.from('workers_evaluations').select('id,worker_name').in('id',workerIds) : {data:[]};
+    const wMap={}; (workers||[]).forEach(w=>wMap[w.id]=w.worker_name);
+    (parts||[]).forEach(p=>{
+      osParticipants[p.worker_id] = { name: wMap[p.worker_id]||('#'+p.worker_id), internal: p.is_internal, certifiedBy: p.certified_by||'', evaluation: p.admin_evaluation||'good' };
+    });
+    renderOsParticipants();
   };
   window.duplicateOnsiteSession = async function(sessionId){
     const {data:s} = await sb.from('onsite_trainings').select('*').eq('id',sessionId).single();
@@ -4052,6 +4072,7 @@ try{(function(){
     showToast('اتنسخت بيانات الجلسة، اختار الموظفين والتاريخ الجديد وسجّل 👍');
   };
   window.closeOnsiteSessionForm = function(){
+    osEditingId = null;
     $('onsite-form-view')?.classList.add('hidden');
     $('onsite-detail-view')?.classList.add('hidden');
     $('onsite-list-view')?.classList.remove('hidden');
