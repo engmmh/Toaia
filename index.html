@@ -472,51 +472,61 @@ body{background:linear-gradient(180deg,#f4f7f9 0%,#eef3f6 100%);font-family:'Cai
     </div>
 
     <!-- ===== الأقسام ===== -->
-    <div class="admin-tab" id="tab-sections">
-      <div class="card" style="padding:16px;margin-bottom:14px;">
-        <div class="section-title" style="margin-bottom:12px;">➕ إضافة قسم جديد</div>
-        <p class="muted" style="font-size:12px;margin-bottom:10px;">مثال: فرع، مصنع، موظف كوفي، مشرف، الرياض، ... — القسم ده هيلاقيه الموظف في قايمة منسدلة، والفيديوهات والكروت بتتربط بيه، وبتعزل بيه الأدمن.</p>
-        <div><label class="field-label">اسم القسم (عربي)</label><input id="sec-ar" type="text" class="input-field" placeholder="مثال: الرياض" onblur="autoTranslateGroup('sec-ar',{en:'sec-en',bn:'sec-bn',ne:'sec-ne',hi:'sec-hi'})"/></div>
-        <button class="btn-secondary" id="sec-lang-toggle" onclick="togglePanel('sec-langs')" style="margin-top:10px;">+ لغات أخرى</button>
-        <div class="collapsible-panel" id="sec-langs" style="margin-top:8px;">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-            <input id="sec-en" type="text" class="input-field" placeholder="English"/>
-            <input id="sec-bn" type="text" class="input-field" placeholder="বাংলা"/>
-            <input id="sec-ne" type="text" class="input-field" placeholder="नेपाली"/>
-            <input id="sec-hi" type="text" class="input-field" placeholder="हिन्दी"/>
-          </div>
+    <!-- ===== الهيكل التنظيمي (الأقسام + الوظائف + الإدارات) ===== -->
+    <div class="admin-tab" id="tab-org">
+      <div class="card" style="padding:14px 16px;margin-bottom:14px;">
+        <div class="section-title" style="margin-bottom:4px;">🏢 الهيكل التنظيمي</div>
+        <p class="muted" style="font-size:11.5px;margin-bottom:12px;">الأقسام (المصانع/الفروع) ← الوظائف التابعة لكل قسم ← الإدارات المستهدفة (زي الجودة) اللي بتحكم الوظائف. الثلاثة مرتبطين ببعض.</p>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="wm-tab-btn active" id="orgtabbtn-sections" onclick="toggleOrgTab('sections')">📁 الأقسام</button>
+          <button class="wm-tab-btn" id="orgtabbtn-roles" onclick="toggleOrgTab('roles')">👷 الوظائف/الأدوار</button>
+          <button class="wm-tab-btn" id="orgtabbtn-targets" onclick="toggleOrgTab('targets')">🏬 الإدارات المستهدفة</button>
         </div>
-        <div style="margin-top:12px;"><button class="btn-primary" style="padding:10px 22px;font-size:13px;" onclick="saveSection()">حفظ القسم</button></div>
       </div>
-      <div class="card" style="padding:16px;">
-        <div class="section-title" style="margin-bottom:12px;">الأقسام الحالية</div>
-        <div id="sections-list" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
-      </div>
-    </div>
 
-
-    <!-- ===== الوظائف / الأدوار ===== -->
-    <div class="admin-tab" id="tab-roles">
-      <div class="card" style="padding:16px;margin-bottom:14px;">
-        <div class="section-title" style="margin-bottom:12px;">➕ إضافة وظيفة / دور</div>
-        <input id="role-ar" type="text" class="input-field" placeholder="مثال: موظف إنتاج" onblur="autoTranslateGroup('role-ar',{en:'role-en'})"/>
-        <input id="role-en" type="text" class="input-field" style="margin-top:8px;" placeholder="Job / Role (English)"/>
-        <label class="field-label" style="margin-top:8px;">الإدارة التابعة للوظيفة <span class="nav-en" style="display:inline;font-size:8px;margin-right:5px;">Department</span></label><select id="role-target" class="input-field"></select>
-        <button class="btn-primary" style="padding:10px 22px;font-size:13px;margin-top:10px;" onclick="saveJobRoleV22()">حفظ الوظيفة</button>
+      <div class="wm-panel active" id="orgpanel-sections">
+        <div class="card" style="padding:16px;margin-bottom:14px;">
+          <div class="section-title" style="margin-bottom:12px;">➕ إضافة قسم جديد</div>
+          <p class="muted" style="font-size:12px;margin-bottom:10px;">مثال: فرع، مصنع، موظف كوفي، مشرف، الرياض، ... — القسم ده هيلاقيه الموظف في قايمة منسدلة، والفيديوهات والكروت بتتربط بيه، وبتعزل بيه الأدمن.</p>
+          <div><label class="field-label">اسم القسم (عربي)</label><input id="sec-ar" type="text" class="input-field" placeholder="مثال: الرياض" onblur="autoTranslateGroup('sec-ar',{en:'sec-en',bn:'sec-bn',ne:'sec-ne',hi:'sec-hi'})"/></div>
+          <button class="btn-secondary" id="sec-lang-toggle" onclick="togglePanel('sec-langs')" style="margin-top:10px;">+ لغات أخرى</button>
+          <div class="collapsible-panel" id="sec-langs" style="margin-top:8px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <input id="sec-en" type="text" class="input-field" placeholder="English"/>
+              <input id="sec-bn" type="text" class="input-field" placeholder="বাংলা"/>
+              <input id="sec-ne" type="text" class="input-field" placeholder="नेपाली"/>
+              <input id="sec-hi" type="text" class="input-field" placeholder="हिन्दी"/>
+            </div>
+          </div>
+          <div style="margin-top:12px;"><button class="btn-primary" style="padding:10px 22px;font-size:13px;" onclick="saveSection()">حفظ القسم</button></div>
+        </div>
+        <div class="card" style="padding:16px;">
+          <div class="section-title" style="margin-bottom:12px;">الأقسام الحالية</div>
+          <div id="sections-list" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+        </div>
       </div>
-      <div class="card" style="padding:16px;"><div class="section-title" style="margin-bottom:12px;">الوظائف الحالية</div><div id="roles-list" style="display:flex;flex-direction:column;gap:8px;"></div></div>
-    </div>
 
-    <!-- ===== الإدارات المستهدفة ===== -->
-    <div class="admin-tab" id="tab-targets">
-      <div class="card" style="padding:16px;margin-bottom:14px;">
-        <div class="section-title" style="margin-bottom:12px;">➕ إضافة إدارة / جهة مستهدفة</div>
-        <input id="target-ar" type="text" class="input-field" placeholder="مثال: إدارة الجودة" onblur="autoTranslateGroup('target-ar',{en:'target-en'})"/>
-        <input id="target-en" type="text" class="input-field" style="margin-top:8px;" placeholder="Target Department (English)"/>
-        <label style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-top:8px;cursor:pointer;"><input id="target-is-admin" type="checkbox"/> 🛡️ إدارة إدارية (أي موظف تابع لها يتحول أدمن فرعي تلقائيًا مقيد بقسمه)</label>
-        <button class="btn-primary" style="padding:10px 22px;font-size:13px;margin-top:10px;" onclick="saveTargetDepartmentV22()">حفظ الإدارة</button>
+      <div class="wm-panel hidden" id="orgpanel-roles">
+        <div class="card" style="padding:16px;margin-bottom:14px;">
+          <div class="section-title" style="margin-bottom:12px;">➕ إضافة وظيفة / دور</div>
+          <input id="role-ar" type="text" class="input-field" placeholder="مثال: موظف إنتاج" onblur="autoTranslateGroup('role-ar',{en:'role-en'})"/>
+          <input id="role-en" type="text" class="input-field" style="margin-top:8px;" placeholder="Job / Role (English)"/>
+          <label class="field-label" style="margin-top:8px;">الإدارة التابعة للوظيفة <span class="nav-en" style="display:inline;font-size:8px;margin-right:5px;">Department</span></label><select id="role-target" class="input-field"></select>
+          <button class="btn-primary" style="padding:10px 22px;font-size:13px;margin-top:10px;" onclick="saveJobRoleV22()">حفظ الوظيفة</button>
+        </div>
+        <div class="card" style="padding:16px;"><div class="section-title" style="margin-bottom:12px;">الوظائف الحالية</div><div id="roles-list" style="display:flex;flex-direction:column;gap:8px;"></div></div>
       </div>
-      <div class="card" style="padding:16px;"><div class="section-title" style="margin-bottom:12px;">الإدارات الحالية</div><div id="targets-list" style="display:flex;flex-direction:column;gap:8px;"></div></div>
+
+      <div class="wm-panel hidden" id="orgpanel-targets">
+        <div class="card" style="padding:16px;margin-bottom:14px;">
+          <div class="section-title" style="margin-bottom:12px;">➕ إضافة إدارة / جهة مستهدفة</div>
+          <input id="target-ar" type="text" class="input-field" placeholder="مثال: إدارة الجودة" onblur="autoTranslateGroup('target-ar',{en:'target-en'})"/>
+          <input id="target-en" type="text" class="input-field" style="margin-top:8px;" placeholder="Target Department (English)"/>
+          <label style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-top:8px;cursor:pointer;"><input id="target-is-admin" type="checkbox"/> 🛡️ إدارة إدارية (أي موظف تابع لها يتحول أدمن فرعي تلقائيًا مقيد بقسمه)</label>
+          <button class="btn-primary" style="padding:10px 22px;font-size:13px;margin-top:10px;" onclick="saveTargetDepartmentV22()">حفظ الإدارة</button>
+        </div>
+        <div class="card" style="padding:16px;"><div class="section-title" style="margin-bottom:12px;">الإدارات الحالية</div><div id="targets-list" style="display:flex;flex-direction:column;gap:8px;"></div></div>
+      </div>
     </div>
 
     <!-- ===== الاختبارات ===== -->
@@ -4152,19 +4162,48 @@ try{(function(){
     }).join('')) : '<div class="muted" style="font-size:12px;">لسه مفيش موظفين مضافين</div>';
   }
 
-  /* ---------- حفظ الجلسة ---------- */
+  /* ---------- حفظ الجلسة (إنشاء جديد أو تعديل موجود) ---------- */
   window.saveOnsiteSession = async function(){
     const title=$('os-title').value.trim(), msg=$('os-save-msg');
     if(!title) return msg.innerHTML='<span style="color:#991b1b;">اكتب عنوان التدريب</span>';
     const ids=Object.keys(osParticipants);
     if(!ids.length) return msg.innerHTML='<span style="color:#991b1b;">ضيف موظف واحد على الأقل</span>';
     const payload = { title, training_date:$('os-date').value||new Date().toISOString().slice(0,10), duration_minutes:Number($('os-duration').value)||null, purpose:$('os-purpose').value.trim(), provider:$('os-provider').value.trim(), section_id: num($('os-section').value), created_by: adminUser?.name||'' };
+
+    if(osEditingId){
+      const {error} = await sb.from('onsite_trainings').update(payload).eq('id',osEditingId);
+      if(error) return msg.innerHTML='<span style="color:#991b1b;">'+esc(error.message)+'</span>';
+      const {data:existingParts} = await sb.from('onsite_training_participants').select('id,worker_id').eq('onsite_training_id',osEditingId);
+      const currentIds = new Set(ids.map(Number));
+      const existingByWorker = {}; (existingParts||[]).forEach(p=>existingByWorker[p.worker_id]=p.id);
+      const toDelete = (existingParts||[]).filter(p=>!currentIds.has(p.worker_id)).map(p=>p.id);
+      if(toDelete.length) await sb.from('onsite_training_participants').delete().in('id',toDelete);
+      for(const id of ids){
+        const p=osParticipants[id];
+        if(existingByWorker[id]){
+          await sb.from('onsite_training_participants').update({is_internal:p.internal, certified_by:p.certifiedBy||null, admin_evaluation:p.evaluation}).eq('id',existingByWorker[id]);
+        } else {
+          await sb.from('onsite_training_participants').insert({onsite_training_id:osEditingId, worker_id:Number(id), is_internal:p.internal, certified_by:p.certifiedBy||null, admin_evaluation:p.evaluation});
+        }
+      }
+      showToast('تم حفظ التعديلات ✅');
+      closeOnsiteSessionForm();
+      return;
+    }
+
     const {data:session, error} = await sb.from('onsite_trainings').insert(payload).select().single();
     if(error) return msg.innerHTML='<span style="color:#991b1b;">'+esc(error.message)+'</span>';
     const rows = ids.map(id=>({ onsite_training_id:session.id, worker_id:Number(id), is_internal:osParticipants[id].internal, certified_by:osParticipants[id].certifiedBy||null, admin_evaluation:osParticipants[id].evaluation }));
     const {error:e2} = await sb.from('onsite_training_participants').insert(rows);
     if(e2){ msg.innerHTML='<span style="color:#991b1b;">تم حفظ الجلسة لكن حصل خطأ في المشاركين: '+esc(e2.message)+'</span>'; return; }
     showToast('تم حفظ جلسة التدريب الميداني ✅');
+    closeOnsiteSessionForm();
+  };
+  window.deleteOnsiteSession = async function(sessionId){
+    if(!confirm('متأكد من حذف الجلسة دي؟ هيتحذف معاها كل بيانات المشاركين وتقييماتهم، والإجراء ده نهائي.')) return;
+    const {error} = await sb.from('onsite_trainings').delete().eq('id',sessionId);
+    if(error) return showToast('خطأ: '+error.message);
+    showToast('تم حذف الجلسة ✅');
     closeOnsiteSessionForm();
   };
 
@@ -4209,8 +4248,10 @@ try{(function(){
         '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;">'+
           '<button class="btn-secondary btn-sm" onclick="closeOnsiteSessionForm()">→ رجوع</button>'+
           '<div style="display:flex;gap:6px;flex-wrap:wrap;">'+
+            '<button class="btn-secondary btn-sm" onclick="editOnsiteSession('+sessionId+')">✏️ تعديل</button>'+
             '<button class="btn-secondary btn-sm" onclick="duplicateOnsiteSession('+sessionId+')">📋 مجموعة جديدة (نفس العنوان)</button>'+
             '<button class="btn-primary btn-sm" onclick="printOnsiteSession()">🖨️ طباعة / تحميل PDF</button>'+
+            '<button class="btn-danger btn-sm" onclick="deleteOnsiteSession('+sessionId+')">🗑️ حذف الجلسة</button>'+
           '</div>'+
         '</div>'+
         '<div id="onsite-print-area"></div>'+
