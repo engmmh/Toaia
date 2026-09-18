@@ -3908,6 +3908,20 @@ try{(function(){
     document.body.insertAdjacentHTML('beforeend', html);
   };
 
+  window.toggleDeptWorkers = function(btn, sectionId){
+    const box=$('dept-workers-'+sectionId); if(!box) return;
+    const willOpen = box.classList.contains('hidden');
+    box.classList.toggle('hidden', !willOpen);
+    if(!willOpen || box.dataset.loaded) return;
+    box.dataset.loaded='1';
+    const list=(window._dashPerWorker||[]).filter(r=>String(r.worker.section_id)===String(sectionId));
+    box.innerHTML = list.length ? list.map(r=>
+      '<div style="display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid var(--border);border-radius:7px;padding:6px 9px;margin-bottom:5px;">'+
+        '<span style="font-size:11.5px;">#'+r.worker.id+' '+esc(r.worker.worker_name)+' <b style="color:'+complianceColor(r.compliance)+';">('+Math.round(r.compliance)+'%)</b></span>'+
+        '<button class="btn-secondary btn-sm" style="font-size:9px;" onclick="openCertificateModal(\'w'+r.worker.id+'\',\''+esc(r.worker.worker_name).replace(/'/g,"\\'")+'\','+r.compliance.toFixed(1)+')">🏆 شهادة</button>'+
+      '</div>'
+    ).join('') : '<div class="muted" style="font-size:11px;">لا يوجد موظفين</div>';
+  };
   window.openCertificateModal = function(sectionId, sectionName, pct){
     certState = { sectionName, pct:Number(pct).toFixed(1), lang:'ar', date:new Date().toISOString().slice(0,10), sig:'', note:'' };
     const html =
