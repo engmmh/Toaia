@@ -424,7 +424,7 @@ body{background:linear-gradient(180deg,#f4f7f9 0%,#eef3f6 100%);font-family:'Cai
         <div class="section-title" style="margin-bottom:14px;">🗂️ نظرة عامة على الأقسام</div>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px;">
           <div class="preview-card" style="margin:0;padding:12px;text-align:center;"><div class="muted" style="font-size:10px;font-weight:700;">إجمالي الأقسام</div><div id="dash-sections-total" style="font-size:22px;font-weight:900;">0</div></div>
-          <div class="preview-card" style="margin:0;padding:12px;text-align:center;background:#ecfdf5;"><div class="muted" style="font-size:10px;font-weight:700;">مواضيع تدريب نشطة</div><div id="dash-topics-active" style="font-size:22px;font-weight:900;color:#16a34a;">0</div></div>
+          <div class="preview-card" style="margin:0;padding:12px;text-align:center;background:#ecfdf5;cursor:pointer;" onclick="openActiveTopicsModal()"><div class="muted" style="font-size:10px;font-weight:700;">مواضيع تدريب نشطة</div><div id="dash-topics-active" style="font-size:22px;font-weight:900;color:#16a34a;">0</div><div class="muted" style="font-size:9px;">اضغط للعرض ›</div></div>
           <div class="preview-card" style="margin:0;padding:12px;text-align:center;background:#fef2f2;"><div class="muted" style="font-size:10px;font-weight:700;">مواضيع مخفية</div><div id="dash-topics-hidden" style="font-size:22px;font-weight:900;color:#dc2626;">0</div></div>
         </div>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;">
@@ -3844,6 +3844,70 @@ try{(function(){
     }
   };
   let certState = {};
+  /* ---------- مودال: كل الموظفين (من كارت "إجمالي الموظفين") ---------- */
+  window.openAllWorkersModal = function(){
+    const list=(window._dashPerWorker||[]);
+    const rowsHtml = list.map(r=>{
+      const sec=sections.find(s=>String(s.id)===String(r.worker.section_id));
+      return '<div style="display:flex;justify-content:space-between;align-items:center;background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:6px;">'+
+        '<span style="font-size:12px;"><b>#'+r.worker.id+'</b> '+esc(r.worker.worker_name)+' <span class="muted">('+esc(sec?tr(sec,'name'):'—')+')</span></span>'+
+        '<b style="font-size:12px;color:'+complianceColor(r.compliance)+';">'+Math.round(r.compliance)+'%</b>'+
+      '</div>';
+    }).join('') || '<div class="muted">لا يوجد موظفين</div>';
+    const html='<div class="preview-modal" id="all-workers-modal"><div class="preview-panel" style="max-width:520px;">'+
+      '<div class="preview-top"><b>👥 كل الموظفين ('+list.length+')</b><button class="btn-secondary btn-sm" onclick="document.getElementById(\'all-workers-modal\').remove()">إغلاق ✕</button></div>'+
+      '<div style="max-height:65vh;overflow-y:auto;">'+rowsHtml+'</div>'+
+    '</div></div>';
+    document.body.insertAdjacentHTML('beforeend', html);
+  };
+
+  /* ---------- مودال: الإدارات (من كارت "متوسط الإنجاز") ---------- */
+  window.openDepartmentsModal = function(){
+    const bySection = window._dashBySection||{};
+    const rows = Object.keys(bySection).map(sid=>{
+      const arr=bySection[sid]; const sec=sections.find(s=>String(s.id)===String(sid));
+      return { sid, name: sec?tr(sec,'name'):'بدون قسم', pct: avg(arr,'compliance'), count: arr.length };
+    }).sort((a,b)=>b.pct-a.pct);
+    const rowsHtml = rows.map(r=>
+      '<div style="background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:9px 11px;margin-bottom:7px;">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;"><b style="font-size:12.5px;">🏢 '+esc(r.name)+'</b><b style="font-size:12.5px;color:'+complianceColor(r.pct)+';">'+Math.round(r.pct)+'%</b></div>'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;"><span class="muted" style="font-size:10.5px;">'+r.count+' موظف</span>'+
+          (r.sid!=='undefined'&&r.sid!=='none'?'<span style="display:flex;gap:5px;"><button class="btn-secondary btn-sm" style="font-size:9.5px;" onclick="toggleDeptWorkers(this,\''+r.sid+'\')">👥 الموظفين</button><button class="btn-secondary btn-sm" style="font-size:9.5px;" onclick="openCertificateModal(\''+r.sid+'\',\''+esc(r.name).replace(/'/g,"\\'")+'\','+r.pct.toFixed(1)+')">🏆 شهادة للإدارة</button></span>':'')+
+        '</div>'+
+        '<div id="dept-workers-'+r.sid+'" class="hidden" style="margin-top:8px;"></div>'+
+      '</div>'
+    ).join('') || '<div class="muted">لا توجد بيانات كافية</div>';
+    const html='<div class="preview-modal" id="depts-modal"><div class="preview-panel" style="max-width:480px;">'+
+      '<div class="preview-top"><b>🏢 الإدارات — متوسط الإنجاز</b><button class="btn-secondary btn-sm" onclick="document.getElementById(\'depts-modal\').remove()">إغلاق ✕</button></div>'+
+      '<div style="max-height:65vh;overflow-y:auto;">'+rowsHtml+'</div>'+
+    '</div></div>';
+    document.body.insertAdjacentHTML('beforeend', html);
+  };
+
+  /* ---------- مودال: المواضيع النشطة (فيديوهات/كروت/اختبارات ظاهرة حاليًا) ---------- */
+  window.openActiveTopicsModal = async function(){
+    const ids=getAdminScopeIds();
+    const inScope=t=>adminUser?.isSuper||!t.section_id||ids.includes(Number(t.section_id));
+    const [{data:topics},{data:cards},{data:quizzes}] = await Promise.all([
+      sb.from('training_topics').select('id,title_ar,section_id,is_visible').eq('is_visible',true),
+      sb.from('safety_cards').select('id,title_ar,section_id,is_visible').eq('is_visible',true),
+      sb.from('quizzes').select('id,title_ar,section_id,is_visible').eq('is_visible',true)
+    ]);
+    const sec=t=>{ const s=sections.find(x=>String(x.id)===String(t.section_id)); return s?tr(s,'name'):'كل الأقسام'; };
+    const rowsHtml=(list,icon)=>list.filter(inScope).map(t=>
+      '<div style="display:flex;justify-content:space-between;background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:7px 10px;margin-bottom:5px;"><span style="font-size:12px;">'+icon+' '+esc(t.title_ar)+'</span><span class="muted" style="font-size:10.5px;">'+esc(sec(t))+'</span></div>'
+    ).join('') || '<div class="muted" style="font-size:11px;">لا يوجد</div>';
+    const html='<div class="preview-modal" id="active-topics-modal"><div class="preview-panel" style="max-width:520px;">'+
+      '<div class="preview-top"><b>✅ المواضيع النشطة حاليًا</b><button class="btn-secondary btn-sm" onclick="document.getElementById(\'active-topics-modal\').remove()">إغلاق ✕</button></div>'+
+      '<div style="max-height:65vh;overflow-y:auto;">'+
+        '<div style="font-weight:700;font-size:12px;margin:8px 0 5px;">🎬 فيديوهات ('+(topics||[]).length+')</div>'+rowsHtml(topics||[],'🎬')+
+        '<div style="font-weight:700;font-size:12px;margin:12px 0 5px;">🖼️ كروت ('+(cards||[]).length+')</div>'+rowsHtml(cards||[],'🖼️')+
+        '<div style="font-weight:700;font-size:12px;margin:12px 0 5px;">📝 اختبارات ('+(quizzes||[]).length+')</div>'+rowsHtml(quizzes||[],'📝')+
+      '</div>'+
+    '</div></div>';
+    document.body.insertAdjacentHTML('beforeend', html);
+  };
+
   window.openCertificateModal = function(sectionId, sectionName, pct){
     certState = { sectionName, pct:Number(pct).toFixed(1), lang:'ar', date:new Date().toISOString().slice(0,10), sig:'', note:'' };
     const html =
