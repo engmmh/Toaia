@@ -1123,7 +1123,7 @@ async function enterAdmin(){
 }
 function applyAdminScope(){
   // إخفاء تبويبات السوبر للأدمن الثانوي
-  const superOnly=['branding','admins','vio-lib','org','activity'];
+  const superOnly=['branding','admins','vio-lib','org'];
   superOnly.forEach(t=>{ const el=$('tabbtn-'+t); if(el) el.classList.toggle('hidden', !adminUser.isSuper); });
   // فلتر القسم للموظفين
   const filter=$('worker-filter-section');
@@ -1359,26 +1359,33 @@ async function closeViolationKeep(id){
 }
 async function recordViolation(){
   if(!currentModalWorkerId) return;
-  let title='', title_en='',title_bn='',title_ne='',title_hi='';
-  const pick=$('vio-pick').value;
-  const deduct=parseInt($('vio-deduct').value)||5;
-  if(pick){
-    const lib=violationLibrary.find(v=>String(v.id)===pick);
-    if(lib){ title=lib.title; title_en=lib.title_en; title_bn=lib.title_bn; title_ne=lib.title_ne; title_hi=lib.title_hi; }
-  } else {
-    title=$('vio-custom').value.trim();
-    if(!title) return showToast('اكتب أو اختر سبب المخالفة');
-    title_en=$('vio-custom-en').value.trim(); title_bn=$('vio-custom-bn').value.trim(); title_ne=$('vio-custom-ne').value.trim(); title_hi=$('vio-custom-hi').value.trim();
+  const btn = event?.target?.closest?.('button');
+  if(btn){ if(btn.dataset.busy==='1') return; btn.dataset.busy='1'; btn.disabled=true; btn.style.opacity='.6'; }
+  try{
+    let title='', title_en='',title_bn='',title_ne='',title_hi='';
+    const pick=$('vio-pick').value;
+    const deduct=parseInt($('vio-deduct').value)||5;
+    if(pick){
+      const lib=violationLibrary.find(v=>String(v.id)===pick);
+      if(lib){ title=lib.title; title_en=lib.title_en; title_bn=lib.title_bn; title_ne=lib.title_ne; title_hi=lib.title_hi; }
+    } else {
+      title=$('vio-custom').value.trim();
+      if(!title){ showToast('اكتب أو اختر سبب المخالفة'); return; }
+      title_en=$('vio-custom-en').value.trim(); title_bn=$('vio-custom-bn').value.trim(); title_ne=$('vio-custom-ne').value.trim(); title_hi=$('vio-custom-hi').value.trim();
+    }
+    const { data: w } = await sb.from('workers_evaluations').select('*').eq('id',currentModalWorkerId).single();
+    if(!w) return;
+    const newKpi=Math.max(0,(w.kpi_score??100)-deduct);
+    const newCount=(w.violations_count||0)+1;
+    const {error:insErr} = await sb.from('worker_violations').insert({ worker_id:currentModalWorkerId, violation_title:title, title_en, title_bn, title_ne, title_hi, deduction_points:deduct });
+    if(insErr){ showToast('⚠️ فشل تسجيل المخالفة: '+insErr.message); return; }
+    await sb.from('workers_evaluations').update({ kpi_score:newKpi, violations_count:newCount }).eq('id',currentModalWorkerId);
+    $('vio-custom').value=''; $('vio-pick').value=''; ['vio-custom-en','vio-custom-bn','vio-custom-ne','vio-custom-hi'].forEach(i=>{ if($(i)) $(i).value=''; });
+    loadWorkerViolationsAdmin(currentModalWorkerId); loadWorkers();
+    showToast('✅ تم تسجيل المخالفة وخصم '+deduct+' نقطة فورًا');
+  } finally {
+    if(btn){ btn.dataset.busy='0'; btn.disabled=false; btn.style.opacity='1'; }
   }
-  const { data: w } = await sb.from('workers_evaluations').select('*').eq('id',currentModalWorkerId).single();
-  if(!w) return;
-  const newKpi=Math.max(0,(w.kpi_score??100)-deduct);
-  const newCount=(w.violations_count||0)+1;
-  await sb.from('worker_violations').insert({ worker_id:currentModalWorkerId, violation_title:title, title_en, title_bn, title_ne, title_hi, deduction_points:deduct });
-  await sb.from('workers_evaluations').update({ kpi_score:newKpi, violations_count:newCount }).eq('id',currentModalWorkerId);
-  $('modal-kpi').textContent=newKpi+'%';
-  $('vio-custom').value=''; $('vio-pick').value=''; ['vio-custom-en','vio-custom-bn','vio-custom-ne','vio-custom-hi'].forEach(i=>$(i).value='');
-  loadWorkerViolationsAdmin(currentModalWorkerId); loadWorkers(); showToast('تم تسجيل المخالفة (الخصم فوراً)');
 }
 
 // ==================== WORKER VIDEO CHART ====================
@@ -2205,7 +2212,7 @@ function getAdminScopeIds(){return adminUser?.isSuper?sections.map(s=>s.id):(adm
 async function loginAdminV22(adm){const ids=await loadAdminSectionsMultiV22(adm.id);adminUser={isSuper:false,name:adm.name,section_id:ids[0]||adm.section_id,section_ids:ids,id:adm.id};await enterAdmin();}
 // Override login to support multi-section admins while retaining V2.1 login codes.
 doLogin = async function(){const val=$('login-id').value.trim(),err=$('login-error');err.classList.add('hidden');if(!val)return;if(val==='592001'){adminUser={isSuper:true,name:'المدير الرئيسي',section_id:null,section_ids:sections.map(s=>s.id)};await enterAdmin();return;}const {data:adm}=await sb.from('admins').select('*').eq('code',String(val)).maybeSingle();if(adm&&adm.id){await loginAdminV22(adm);return;}const id=parseInt(val);const {data}=await sb.from('workers_evaluations').select('*').eq('id',id).single();if(!data){err.textContent='رقم غير مسجل (موظف أو أدمن)';err.classList.remove('hidden');return;}currentUser=data;adminUser=null;$('login-section').classList.add('hidden');$('worker-section').classList.remove('hidden');$('worker-section').style.display='block';await loadBranding();await loadSections();$('worker-name-display').textContent=data.worker_name;updateWorkerHeader();loadWorkerData();};
-applyAdminScope = function(){const superOnly=['branding','admins','vio-lib','org','activity'];superOnly.forEach(t=>{const el=$('tabbtn-'+t);if(el)el.classList.toggle('hidden',!adminUser?.isSuper);});const filter=$('worker-filter-section');const ids=getAdminScopeIds();filter.innerHTML=adminUser?.isSuper?'<option value="">كل الأقسام</option>'+sections.map(s=>'<option value="'+s.id+'">'+esc(tr(s,'name'))+'</option>').join(''):ids.map(id=>{const sec=sections.find(s=>String(s.id)===String(id));return '<option value="'+id+'">'+esc(sec?tr(sec,'name'):'قسم')+'</option>';}).join('');$('worker-search').value='';};
+applyAdminScope = function(){const superOnly=['branding','admins','vio-lib','org'];superOnly.forEach(t=>{const el=$('tabbtn-'+t);if(el)el.classList.toggle('hidden',!adminUser?.isSuper);});const filter=$('worker-filter-section');const ids=getAdminScopeIds();filter.innerHTML=adminUser?.isSuper?'<option value="">كل الأقسام</option>'+sections.map(s=>'<option value="'+s.id+'">'+esc(tr(s,'name'))+'</option>').join(''):ids.map(id=>{const sec=sections.find(s=>String(s.id)===String(id));return '<option value="'+id+'">'+esc(sec?tr(sec,'name'):'قسم')+'</option>';}).join('');$('worker-search').value='';};
 // Worker fields: role + section, no branch field in UI. Keep factory_branch in DB for legacy data.
 saveWorker = async function(){const id=$('nw-id').value.trim(),worker_name=$('nw-name').value.trim(),role_id=$('nw-role').value?parseInt($('nw-role').value):null;let section_id=$('nw-section').value?parseInt($('nw-section').value):null;const msg=$('add-worker-msg');if(!id||!worker_name||!role_id||!section_id){msg.innerHTML='<span style="color:#991b1b;">أكمل الرقم والاسم والوظيفة والقسم</span>';return;}if(adminUser&&!adminUser.isSuper){if(!getAdminScopeIds().includes(section_id))return showToast('لا يمكنك إضافة موظف خارج الأقسام المسموح بها');}const {error}=await sb.from('workers_evaluations').insert({id:parseInt(id),worker_name,job_role_id:role_id,section_id,kpi_score:100,violations_count:0});if(error){msg.innerHTML='<span style="color:#991b1b;">خطأ: '+(String(error.message||'').includes('duplicate')?'الرقم مسجل مسبقاً':error.message)+'</span>';return;}msg.innerHTML='<span style="color:#166534;">تمت إضافة الموظف بنجاح ✅</span>';['nw-id','nw-name'].forEach(i=>$(i).value='');$('nw-role').value='';$('nw-section').value='';setTimeout(()=>msg.innerHTML='',3000);loadWorkers();};
 loadWorkers = async function(){const search=$('worker-search').value.trim().toLowerCase(),filterSec=$('worker-filter-section').value;let query=sb.from('workers_evaluations').select('*,job_roles(name_ar)').order('id');const ids=getAdminScopeIds();if(!adminUser?.isSuper&&ids.length)query=query.in('section_id',ids);const {data}=await query;let rows=data||[];if(filterSec)rows=rows.filter(w=>String(w.section_id)===String(filterSec));if(search)rows=rows.filter(w=>String(w.id).includes(search)||(w.worker_name||'').toLowerCase().includes(search));const tbody=$('workers-tbody');tbody.innerHTML=rows.map(w=>{const sec=sections.find(s=>String(s.id)===String(w.section_id));return '<tr class="worker-row" onclick="openWorkerModal('+w.id+')"><td style="font-weight:800;color:var(--primary);">'+w.id+'</td><td style="font-weight:700;">'+esc(w.worker_name)+'</td><td>'+esc(w.job_roles?.name_ar||'—')+'</td><td>'+esc(sec?tr(sec,'name'):'—')+'</td><td style="font-weight:800;color:var(--primary);">'+(w.kpi_score??100)+'%</td><td>'+(w.violations_count||0)+'</td><td><button class="btn-secondary btn-sm" onclick="event.stopPropagation();openWorkerModal('+w.id+')">تفاصيل 📊</button> <button class="btn-danger btn-sm" onclick="event.stopPropagation();deleteWorker('+w.id+')">حذف 🗑️</button></td></tr>';}).join('')||'<tr><td colspan="7" class="muted" style="text-align:center;padding:20px;">لا يوجد موظفين مطابقون</td></tr>';};
@@ -2577,7 +2584,7 @@ window._deprecatedSaveAdminNote = true; // النسخة الفعّالة من sa
 
 getAdminScopeIds=function(){return adminUser?.isSuper?sections.map(s=>Number(s.id)):(adminUser?.section_ids||[]).map(Number).filter(Boolean);};
 applyAdminScope=function(){
-  const superOnly=['branding','admins','vio-lib','org','activity'];superOnly.forEach(t=>{const el=$('tabbtn-'+t);if(el)el.classList.toggle('hidden',!adminUser?.isSuper);});
+  const superOnly=['branding','admins','vio-lib','org'];superOnly.forEach(t=>{const el=$('tabbtn-'+t);if(el)el.classList.toggle('hidden',!adminUser?.isSuper);});
   const filter=$('worker-filter-section');if(!filter)return;const ids=getAdminScopeIds();filter.innerHTML=adminUser?.isSuper?'<option value="">كل الأقسام</option>'+sections.map(s=>'<option value="'+s.id+'">'+esc(tr(s,'name'))+'</option>').join(''):ids.map(id=>{const sec=sections.find(s=>Number(s.id)===Number(id));return '<option value="'+id+'">'+esc(sec?tr(sec,'name'):'قسم')+'</option>';}).join('');$('worker-search').value='';
   const scope=adminUser?.isSuper?'صلاحيات كاملة • جميع الأقسام':('الأقسام المسموح بها: '+ids.map(id=>{const s=sections.find(x=>Number(x.id)===id);return s?tr(s,'name'):'—';}).join('، '));$('admin-scope-display').textContent=scope;
 };
