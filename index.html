@@ -13,7 +13,7 @@
     --text:#1e293b; --muted:#64748b; --border:#e2e8f0;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
-  .app-main{max-width:64rem;margin-left:auto;margin-right:auto;padding:12px;}
+  .app-main{max-width:76rem;margin-left:auto;margin-right:auto;padding:12px;}
   @media(min-width:640px){.app-main{padding:20px;}}
   body{font-family:'Cairo','Poppins',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
   .card{background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:0 4px 20px -2px rgba(0,0,0,.05);}
@@ -1331,11 +1331,14 @@ async function loadWorkerViolationsAdmin(workerId){
     const replyHtml = v.worker_reply ? '<div style="background:#fff;border:1px solid #bbf7d0;border-radius:6px;padding:6px 8px;margin-top:5px;"><div style="font-size:10px;font-weight:700;color:#166534;">رد الموظف:</div><div style="font-size:12px;">'+esc(v.worker_reply)+'</div><div id="vrep-tr-'+v.id+'"></div><div class="muted" style="font-size:9px;">'+fmtDate(v.reply_at)+'</div></div>' : '';
     let actions='';
     if(v.status!=='closed'){
-      actions='<div style="display:flex;gap:6px;margin-top:6px;">'+
+      actions='<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;">'+
         '<button class="btn-sm btn-primary" style="font-size:10px;padding:5px 8px;" onclick="closeViolationRemove('+v.id+','+v.deduction_points+')">✔ الرد أقنعني (أزل الخصم)</button>'+
-        '<button class="btn-sm btn-secondary" style="font-size:10px;padding:5px 8px;" onclick="closeViolationKeep('+v.id+')">أقفل بدون إزالة</button></div>';
+        '<button class="btn-sm btn-secondary" style="font-size:10px;padding:5px 8px;" onclick="closeViolationKeep('+v.id+')">أقفل بدون إزالة</button>'+
+        '<button class="btn-sm btn-danger" style="font-size:10px;padding:5px 8px;" onclick="deleteViolationPermanently('+v.id+')">🗑️ حذف نهائي</button></div>';
     } else if(v.points_removed){
-      actions='<div class="muted" style="font-size:10px;margin-top:5px;">تمت إزالة الخصم بإغلاقها</div>';
+      actions='<div class="muted" style="font-size:10px;margin-top:5px;">تمت إزالة الخصم بإغلاقها</div><button class="btn-sm btn-danger" style="font-size:10px;padding:5px 8px;margin-top:5px;" onclick="deleteViolationPermanently('+v.id+')">🗑️ حذف نهائي</button>';
+    } else {
+      actions='<button class="btn-sm btn-danger" style="font-size:10px;padding:5px 8px;margin-top:5px;" onclick="deleteViolationPermanently('+v.id+')">🗑️ حذف نهائي</button>';
     }
     return '<div style="background:#fff;border:1px solid #fecaca;border-radius:8px;padding:8px 10px;">'+
       '<div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:12px;font-weight:700;">⚠️ '+esc(v.violation_title)+'</span><span style="font-size:12px;font-weight:800;color:#991b1b;">-'+v.deduction_points+'</span></div>'+
@@ -1356,6 +1359,19 @@ async function closeViolationKeep(id){
   const { data } = await sb.from('worker_violations').select('worker_id').eq('id',id).single();
   await sb.from('worker_violations').update({ status:'closed' }).eq('id',id);
   loadWorkerViolationsAdmin(data.worker_id); showToast('تم إغلاق المخالفة');
+}
+async function deleteViolationPermanently(id){
+  if(!confirm('حذف المخالفة دي نهائيًا؟ الإجراء ده مايترجعش، ولو النقاط لسه مخصومة هترجع للموظف تلقائيًا.')) return;
+  const { data:v } = await sb.from('worker_violations').select('worker_id,deduction_points,points_removed').eq('id',id).single();
+  if(!v) return;
+  if(!v.points_removed){
+    const { data:w } = await sb.from('workers_evaluations').select('kpi_score').eq('id',v.worker_id).single();
+    await sb.from('workers_evaluations').update({ kpi_score: Math.min(100,(w?.kpi_score??100)+(v.deduction_points||0)) }).eq('id', v.worker_id);
+  }
+  const { error } = await sb.from('worker_violations').delete().eq('id',id);
+  if(error) return showToast('خطأ: '+error.message);
+  loadWorkerViolationsAdmin(v.worker_id); loadWorkers();
+  showToast('تم حذف المخالفة نهائيًا ✅');
 }
 async function recordViolation(){
   if(!currentModalWorkerId) return;
