@@ -4136,6 +4136,7 @@ try{(function(){
     rated.forEach(p=>{ if(p.worker_evaluation_comment && typeof attachInlineTranslation==='function') attachInlineTranslation(p.worker_evaluation_comment,'oswe-tr-'+p.id); });
   }
   let osParticipants = {}; // {workerId: {name, internal:true, certifiedBy:'', evaluation:'good'}}
+  let osAlreadyTrainedIds = new Set(); // موظفين سبق تدريبهم على نفس عنوان التدريب المكتوب حاليًا
 
   /* ---------- فورم إنشاء جلسة جديدة ---------- */
   let osEditingId = null;
