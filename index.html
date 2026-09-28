@@ -6,6 +6,11 @@
 <title id="page-title">منصة سلامة الغذاء | V2.3</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="manifest" href="manifest.json"/>
+<meta name="theme-color" content="#176b43"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<link rel="apple-touch-icon" href="icon-192.png"/>
 <style>
   :root{
     --primary:#1a6b3a; --primary-light:#27a85a; --primary-dark:#145230;
@@ -169,6 +174,68 @@ body{background:linear-gradient(180deg,#f4f7f9 0%,#eef3f6 100%);font-family:'Cai
 .wm-filter-chip{background:#fff;border:1px solid var(--border);color:var(--muted);font-weight:700;font-size:11px;padding:5px 11px;border-radius:999px;cursor:pointer;font-family:inherit}
 .wm-filter-chip.active{background:#0f172a;color:#fff;border-color:#0f172a}
 @media(max-width:640px){.wm-tab-btn{flex:1 1 calc(33.333% - 6px);justify-content:center;padding:8px 6px;font-size:11px}}
+
+/* ===== V3: تحسينات الشكل (طبقة فوق التصميم الحالي — لا تغيّر أي وظيفة) ===== */
+:root{--primary:#176b43;--primary-light:#2aa764;--primary-dark:#0f4d30;--bg:#f4f6f9;--shadow:0 1px 2px rgba(15,23,42,.04),0 8px 24px rgba(15,23,42,.06);--radius:14px}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);-webkit-font-smoothing:antialiased;padding-bottom:env(safe-area-inset-bottom)}
+.card{border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid rgba(226,232,240,.8)}
+.btn-primary,.btn-secondary,.btn-danger{transition:transform .12s ease,box-shadow .15s ease,filter .15s ease}
+.btn-primary:hover{box-shadow:0 6px 16px rgba(23,107,67,.28);transform:translateY(-1px)}
+.btn-primary:active,.btn-secondary:active,.btn-danger:active{transform:scale(.97)}
+.input-field{border-radius:10px;transition:border-color .15s,box-shadow .15s}
+.input-field:focus{box-shadow:0 0 0 3px rgba(42,167,100,.18)}
+.preview-card{border-radius:12px;box-shadow:var(--shadow);transition:transform .15s}
+.preview-card:hover{transform:translateY(-2px)}
+.toast{border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.2)}
+button,.tab-btn,.os-chip{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:8px}
+
+/* الداشبورد الإضافية */
+#dash-extra{margin-bottom:16px}
+.dx-hero{display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:center;padding:18px 20px;border-radius:16px;color:#fff;background:linear-gradient(135deg,#0f4d30 0%,#176b43 55%,#2aa764 100%);box-shadow:0 12px 30px rgba(23,107,67,.25);margin-bottom:14px}
+.dx-hero-title{font-size:18px;font-weight:800}
+.dx-hero-sub{font-size:12px;opacity:.85;margin-top:3px}
+.dx-hero-stats{display:flex;gap:10px;flex-wrap:wrap}
+.dx-hero-stats>div{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);border-radius:12px;padding:8px 14px;text-align:center;min-width:76px;backdrop-filter:blur(4px)}
+.dx-hero-stats b{display:block;font-size:20px;font-weight:900;line-height:1.2}
+.dx-hero-stats span{font-size:10.5px;opacity:.9}
+.dx-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.dx-card{padding:16px}
+.dx-comp{margin-bottom:12px}
+.dx-comp-top{display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;margin-bottom:5px}
+.dx-track{height:9px;background:#eef2f6;border-radius:99px;overflow:hidden}
+.dx-fill{height:100%;border-radius:99px;transition:width .5s ease}
+.dx-stack{display:flex;height:16px;border-radius:99px;overflow:hidden;background:#eef2f6;margin-bottom:12px}
+.dx-legend{display:flex;flex-direction:column;gap:6px;font-size:12px}
+.dx-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-left:7px}
+.dx-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:12.5px;gap:8px}
+.dx-row:last-child{border-bottom:0}
+
+/* التدريبات الميدانية */
+.os-summary{display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:12px;background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:8px 12px;margin:8px 0}
+.os-summary .btn-secondary{margin-right:auto}
+.os-chips{display:flex;flex-wrap:wrap;gap:7px;max-height:280px;overflow:auto;padding:4px 2px}
+.os-chip{font-family:inherit;font-size:12px;font-weight:700;padding:7px 12px;border-radius:999px;border:1px solid var(--border);background:#fff;color:var(--text);cursor:pointer;transition:all .12s;min-height:34px}
+.os-chip:hover{border-color:var(--primary-light);background:#f0faf4}
+.os-chip-on{background:var(--primary);border-color:var(--primary);color:#fff}
+.os-chip-on:hover{background:var(--primary-dark);border-color:var(--primary-dark)}
+.os-chip-on .os-x{opacity:.75;margin-right:4px}
+.os-chip-done{background:#fffbeb;border-color:#fcd34d;color:#92400e}
+.os-chip-done small{font-weight:600;opacity:.8}
+.os-part{background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:9px 11px}
+.os-search-row{display:flex;justify-content:space-between;align-items:center;gap:8px;background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:8px 11px;margin-bottom:6px}
+.os-info{background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:8px 10px}
+
+/* زر تثبيت التطبيق */
+#pwa-install-btn{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom));left:16px;z-index:9999;align-items:center;gap:6px;background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;border:0;border-radius:999px;padding:11px 18px;font-family:inherit;font-weight:800;font-size:13px;cursor:pointer;box-shadow:0 10px 26px rgba(23,107,67,.4)}
+
+@media (max-width:640px){
+  .dx-hero{padding:14px}.dx-hero-stats>div{min-width:calc(50% - 6px);flex:1}
+  .os-chip{font-size:12.5px;padding:8px 12px}
+}
+@media (display-mode:standalone){#pwa-install-btn{display:none!important}body{overscroll-behavior-y:contain}}
+@media print{#pwa-install-btn,#dash-extra{display:none!important}}
 
 </style>
 </head>
@@ -4136,7 +4203,6 @@ try{(function(){
     rated.forEach(p=>{ if(p.worker_evaluation_comment && typeof attachInlineTranslation==='function') attachInlineTranslation(p.worker_evaluation_comment,'oswe-tr-'+p.id); });
   }
   let osParticipants = {}; // {workerId: {name, internal:true, certifiedBy:'', evaluation:'good'}}
-  let osAlreadyTrainedIds = new Set(); // موظفين سبق تدريبهم على نفس عنوان التدريب المكتوب حاليًا
 
   /* ---------- فورم إنشاء جلسة جديدة ---------- */
   let osEditingId = null;
@@ -4462,6 +4528,389 @@ try{(function(){
 
   console.log('V2.10 layer loaded — on-site training records active.');
 })();}catch(e){console.error('طبقة 10 فشلت:',e);}
+
+/* ===== V3: التدريبات الميدانية (نسخة مصلّحة) — تعمل فوق الكود القديم بدون حذف أي بيانات ===== */
+(function(){
+  const EV = {excellent:'ممتاز', good:'جيد', acceptable:'مقبول', weak:'ضعيف'};
+  let osP = {};            // المشاركون المختارون {workerId: {name, internal, certifiedBy, evaluation}}
+  let osEdit = null;       // رقم الجلسة لو بنعدّل
+  let osShowAll = false;   // عرض كل موظفي القسم (حتى اللي اتدرب قبل كده)
+  let osDone = new Set();  // اللي اتدربوا قبل كده على نفس العنوان
+  let osSecWorkers = [];   // موظفو القسم المختار
+  let osNames = {};        // كاش الأسماء
+  let osTitles = [];       // عناوين مقترحة من جلسات سابقة
+  let osTok = 0;
+
+  const evOpts = s => Object.keys(EV).map(k => '<option value="'+k+'" '+(k===s?'selected':'')+'>'+EV[k]+'</option>').join('');
+  const likeEsc = s => s.replace(/[\\%_]/g, m => '\\'+m);
+  const scopeIds = () => { try{ return getAdminScopeIds(); }catch(e){ return []; } };
+
+  /* ---------- تحميل اللي اتدربوا على نفس العنوان ---------- */
+  async function osLoadDone(){
+    const t = ($('os-title')?.value || '').trim();
+    osDone = new Set();
+    if(!t) return;
+    const {data:ss} = await sb.from('onsite_trainings').select('id').ilike('title', likeEsc(t));
+    const ids = (ss||[]).map(s => s.id).filter(id => id !== osEdit);
+    if(!ids.length) return;
+    const {data:ps} = await sb.from('onsite_training_participants').select('worker_id').in('onsite_training_id', ids);
+    (ps||[]).forEach(p => osDone.add(Number(p.worker_id)));
+  }
+
+  async function osLoadSection(){
+    const secId = $('os-section')?.value;
+    if(!secId){ osSecWorkers = []; return; }
+    const {data} = await sb.from('workers_evaluations').select('id,worker_name').eq('section_id', Number(secId)).order('worker_name').limit(2000);
+    osSecWorkers = (data||[]).map(w => ({id:Number(w.id), name:w.worker_name}));
+    osSecWorkers.forEach(w => osNames[w.id] = w.name);
+  }
+
+  /* ---------- الرسم ---------- */
+  function osRenderSection(){
+    const box = $('os-section-workers'); if(!box) return;
+    if(!$('os-section')?.value){ box.innerHTML = ''; return; }
+    const title = ($('os-title')?.value || '').trim();
+    const list = osSecWorkers;
+    if(!list.length){ box.innerHTML = '<div class="muted" style="font-size:11px;">لا يوجد موظفين مسجلين في القسم ده</div>'; return; }
+    const doneCount = list.filter(w => osDone.has(w.id)).length;
+    const remaining = list.filter(w => !osDone.has(w.id));
+    const filtering = !!title && doneCount > 0;
+    const shown = (filtering && !osShowAll) ? remaining : list;
+    const notAdded = remaining.filter(w => !osP[w.id]).length;
+
+    let head;
+    if(filtering){
+      head = '<div class="os-summary"><span>✅ اتدرّب على نفس العنوان: <b>'+doneCount+'</b></span><span>⏳ المتبقي: <b>'+remaining.length+'</b> من '+list.length+'</span>'+
+        '<button class="btn-secondary btn-sm" onclick="osToggleShowAll()">'+(osShowAll?'عرض المتبقين فقط':'عرض كل القسم')+'</button></div>';
+    } else {
+      head = '<div class="os-summary"><span>👥 موظفو القسم: <b>'+list.length+'</b> (دوس على الاسم للإضافة أو الإزالة)</span></div>';
+    }
+    const addAll = notAdded > 0 ? '<button class="btn-primary btn-sm" style="margin-bottom:8px;" onclick="osAddAllRemaining()">➕ إضافة كل المتبقين ('+notAdded+')</button>' : '';
+
+    const chips = shown.map(w => {
+      if(osP[w.id]) return '<button class="os-chip os-chip-on" onclick="toggleOsWorker('+w.id+')" title="دوس للإزالة">✓ '+esc(w.name)+' <span class="os-x">✕</span></button>';
+      if(osDone.has(w.id)) return '<button class="os-chip os-chip-done" onclick="toggleOsWorker('+w.id+')" title="اتدرب قبل كده على نفس العنوان">'+esc(w.name)+' <small>(تدرّب)</small></button>';
+      return '<button class="os-chip" onclick="toggleOsWorker('+w.id+')">+ '+esc(w.name)+'</button>';
+    }).join('');
+
+    box.innerHTML = head + addAll +
+      (chips ? '<div class="os-chips">'+chips+'</div>' : '<div class="muted" style="font-size:12px;padding:8px;">كل موظفي القسم اتدربوا على هذا التدريب ✅</div>');
+  }
+
+  function osRenderP(){
+    const box = $('os-participants-list'); if(!box) return;
+    const ids = Object.keys(osP);
+    if(!ids.length){ box.innerHTML = '<div class="muted" style="font-size:12px;">لسه مفيش موظفين مضافين</div>'; return; }
+    box.innerHTML = '<div style="font-weight:700;font-size:12px;margin-bottom:6px;">المشاركين ('+ids.length+')</div>' + ids.map(id => {
+      const p = osP[id];
+      return '<div class="os-part">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;"><b style="font-size:12.5px;">#'+id+' '+esc(p.name)+'</b><button class="btn-danger btn-sm" onclick="removeOnsiteParticipant('+id+')">إزالة</button></div>'+
+        '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">'+
+          '<select class="input-field" style="font-size:11px;padding:6px;" onchange="updateOsParticipantField('+id+',\'internal\',this.value===\'true\')"><option value="true" '+(p.internal?'selected':'')+'>داخلي</option><option value="false" '+(!p.internal?'selected':'')+'>خارجي</option></select>'+
+          '<input class="input-field" style="font-size:11px;padding:6px;" placeholder="جهة الاعتماد" value="'+esc(p.certifiedBy)+'" oninput="updateOsParticipantField('+id+',\'certifiedBy\',this.value)"/>'+
+          '<select class="input-field" style="font-size:11px;padding:6px;" onchange="updateOsParticipantField('+id+',\'evaluation\',this.value)">'+evOpts(p.evaluation)+'</select>'+
+        '</div></div>';
+    }).join('');
+  }
+
+  function osRenderTitleInfo(){
+    const box = $('os-same-title-results'); if(!box) return;
+    if(!osTitles.length){
+      box.innerHTML = ($('os-title')?.value||'').trim().length > 1 ? '<div class="muted" style="font-size:11px;">مفيش جلسات سابقة بنفس العنوان ده</div>' : '';
+      return;
+    }
+    box.innerHTML = '<div class="os-info"><div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;">📋 عناوين سابقة مشابهة (دوس لاختيار نفس العنوان بالظبط):</div>'+
+      osTitles.map((t,i) => '<button class="os-chip" style="margin:0 0 5px 5px;" onclick="osPickTitle('+i+')">'+esc(t.title)+' <small>('+t.count+' موظف · '+fmtDate(t.date)+')</small></button>').join('')+'</div>';
+  }
+
+  function osRerenderSearch(){
+    if(($('os-worker-search')?.value||'').trim()) window.searchOnsiteWorkers(true);
+  }
+  function osRefreshUI(){ osRenderP(); osRenderSection(); osRerenderSearch(); }
+
+  async function osRefreshAll(){
+    const tok = ++osTok;
+    await Promise.all([osLoadDone(), osLoadSection()]);
+    if(tok !== osTok) return;
+    osRefreshUI();
+  }
+
+  async function osLoadTitleInfo(){
+    const q = ($('os-title')?.value || '').trim();
+    if(q.length < 2){ osTitles = []; osRenderTitleInfo(); return; }
+    const {data:ss} = await sb.from('onsite_trainings').select('id,title,training_date').ilike('title','%'+likeEsc(q)+'%').order('training_date',{ascending:false}).limit(30);
+    if(!ss || !ss.length){ osTitles = []; osRenderTitleInfo(); return; }
+    const {data:ps} = await sb.from('onsite_training_participants').select('onsite_training_id').in('onsite_training_id', ss.map(s=>s.id));
+    const cnt = {}; (ps||[]).forEach(p => cnt[p.onsite_training_id] = (cnt[p.onsite_training_id]||0)+1);
+    const by = {};
+    ss.forEach(s => {
+      const k = s.title.trim().toLowerCase();
+      if(!by[k]) by[k] = {title:s.title.trim(), count:0, date:s.training_date};
+      by[k].count += cnt[s.id]||0;
+    });
+    osTitles = Object.values(by).slice(0,6);
+    osRenderTitleInfo();
+  }
+
+  /* ---------- الدوال العامة (بتستبدل القديمة بنفس الأسماء) ---------- */
+  window.osToggleShowAll = function(){ osShowAll = !osShowAll; osRenderSection(); };
+  window.osPickTitle = function(i){
+    const t = osTitles[i]; if(!t) return;
+    $('os-title').value = t.title;
+    window.searchOnsiteSameTitle(true);
+  };
+  window.searchOnsiteSameTitle = function(now){
+    clearTimeout(window._osTitleT);
+    const run = async () => { await osLoadDone(); osRenderSection(); await osLoadTitleInfo(); };
+    if(now === true) run(); else window._osTitleT = setTimeout(run, 350);
+  };
+
+  window.loadOsSectionWorkers = async function(){
+    const box = $('os-section-workers');
+    if($('os-section')?.value && box) box.innerHTML = '<div class="muted" style="font-size:11px;">جاري تحميل موظفي القسم...</div>';
+    osShowAll = false;
+    await osRefreshAll();
+  };
+
+  window.toggleOsWorker = function(id){
+    id = Number(id);
+    if(osP[id]) delete osP[id];
+    else osP[id] = {name: osNames[id] || ('#'+id), internal:true, certifiedBy:'', evaluation:'good'};
+    osRefreshUI();
+  };
+  window.osAddAllRemaining = function(){
+    osSecWorkers.filter(w => !osDone.has(w.id) && !osP[w.id]).forEach(w => {
+      osP[w.id] = {name:w.name, internal:true, certifiedBy:'', evaluation:'good'};
+    });
+    osRefreshUI();
+  };
+  window.addOnsiteParticipant = function(id, name){
+    id = Number(id);
+    if(name) osNames[id] = name;
+    if(!osP[id]) osP[id] = {name: osNames[id] || ('#'+id), internal:true, certifiedBy:'', evaluation:'good'};
+    osRefreshUI();
+  };
+  window.removeOnsiteParticipant = function(id){ delete osP[Number(id)]; osRefreshUI(); };
+  window.updateOsParticipantField = function(id, field, val){ if(osP[id]) osP[id][field] = val; };
+
+  /* ---------- البحث بالكود أو الاسم (أي قسم ضمن صلاحيتك) ---------- */
+  window.searchOnsiteWorkers = function(immediate){
+    clearTimeout(window._osWorkerT);
+    const run = async () => {
+      const q = ($('os-worker-search')?.value || '').trim();
+      const box = $('os-worker-search-results');
+      if(!q){ box.innerHTML = ''; return; }
+      let query = sb.from('workers_evaluations').select('id,worker_name,section_id').limit(10);
+      if(/^\d+$/.test(q)) query = query.eq('id', Number(q)); else query = query.ilike('worker_name', '%'+q.replace(/[%_]/g,'')+'%');
+      const ids = scopeIds();
+      if(adminUser && !adminUser.isSuper && ids.length) query = query.in('section_id', ids);
+      const {data} = await query;
+      const list = data || [];
+      list.forEach(w => osNames[Number(w.id)] = w.worker_name);
+      if(!list.length){
+        box.innerHTML = '<div class="muted" style="font-size:11.5px;padding:6px;">'+(/^\d+$/.test(q)?'مفيش موظف بالكود ده: '+esc(q):'مفيش نتائج')+'</div>';
+        return;
+      }
+      box.innerHTML = list.map(w => {
+        const id = Number(w.id), added = !!osP[id], done = osDone.has(id);
+        const sec = sections.find(s => Number(s.id) === Number(w.section_id));
+        const badge = done ? ' <span class="badge badge-yellow" style="font-size:9px;">اتدرّب قبل كده</span>' : '';
+        const btn = added
+          ? '<button class="btn-danger btn-sm" onclick="removeOnsiteParticipant('+id+')">إزالة ✕</button>'
+          : '<button class="btn-primary btn-sm" onclick="addOnsiteParticipant('+id+')">+ إضافة</button>';
+        return '<div class="os-search-row"><span style="font-size:12px;"><b>#'+id+'</b> '+esc(w.worker_name)+' <span class="muted" style="font-size:10.5px;">'+esc(sec?tr(sec,'name'):'')+'</span>'+badge+'</span>'+btn+'</div>';
+      }).join('');
+    };
+    if(immediate === true) run(); else window._osWorkerT = setTimeout(run, 300);
+  };
+
+  /* ---------- فتح/إغلاق الفورم ---------- */
+  window.openNewOnsiteSessionForm = function(prefill, opts){
+    opts = opts || {};
+    osP = {}; osShowAll = false; osDone = new Set(); osSecWorkers = []; osTitles = [];
+    osEdit = opts.editingId || null;
+    $('onsite-list-view')?.classList.add('hidden');
+    $('onsite-detail-view')?.classList.add('hidden');
+    $('onsite-form-view')?.classList.remove('hidden');
+    $('os-title').value = prefill?.title || '';
+    $('os-purpose').value = prefill?.purpose || '';
+    $('os-provider').value = prefill?.provider || '';
+    $('os-duration').value = prefill?.duration_minutes || 30;
+    $('os-date').value = (opts.keepDate && prefill?.training_date) ? prefill.training_date : new Date().toISOString().slice(0,10);
+    if($('os-section')) $('os-section').innerHTML = sectionOpts(prefill?.section_id || null);
+    $('os-same-title-results').innerHTML = '';
+    $('os-section-workers').innerHTML = '';
+    $('os-worker-search').value = ''; $('os-worker-search-results').innerHTML = '';
+    $('os-save-msg') && ($('os-save-msg').innerHTML = '');
+    const titleEl = document.querySelector('#onsite-form-view .section-title');
+    if(titleEl) titleEl.textContent = osEdit ? '✏️ تعديل جلسة تدريب ميداني' : '➕ جلسة تدريب ميداني جديدة';
+    const saveBtn = document.querySelector('#onsite-form-view button[onclick="saveOnsiteSession()"]');
+    if(saveBtn) saveBtn.textContent = osEdit ? '💾 حفظ التعديلات' : '💾 حفظ الجلسة';
+    osRenderP();
+    osRefreshAll();
+    if(prefill?.title && !osEdit) osLoadTitleInfo();
+  };
+  window.closeOnsiteSessionForm = function(){
+    osEdit = null;
+    $('onsite-form-view')?.classList.add('hidden');
+    $('onsite-detail-view')?.classList.add('hidden');
+    $('onsite-list-view')?.classList.remove('hidden');
+    if(typeof window.loadOnsiteSessionsList === 'function') window.loadOnsiteSessionsList();
+  };
+  window.editOnsiteSession = async function(sessionId){
+    const {data:s} = await sb.from('onsite_trainings').select('*').eq('id', sessionId).single();
+    if(!s) return showToast('تعذر جلب بيانات الجلسة');
+    const {data:parts} = await sb.from('onsite_training_participants').select('*').eq('onsite_training_id', sessionId);
+    const wids = (parts||[]).map(p => p.worker_id);
+    const {data:workers} = wids.length ? await sb.from('workers_evaluations').select('id,worker_name').in('id', wids) : {data:[]};
+    (workers||[]).forEach(w => osNames[Number(w.id)] = w.worker_name);
+    window.openNewOnsiteSessionForm(s, {editingId:sessionId, keepDate:true});
+    (parts||[]).forEach(p => {
+      osP[Number(p.worker_id)] = {name: osNames[Number(p.worker_id)] || ('#'+p.worker_id), internal:p.is_internal, certifiedBy:p.certified_by||'', evaluation:p.admin_evaluation||'good'};
+    });
+    osRefreshAll();
+  };
+  window.duplicateOnsiteSession = async function(sessionId){
+    const {data:s} = await sb.from('onsite_trainings').select('*').eq('id', sessionId).single();
+    if(!s) return showToast('تعذر جلب بيانات الجلسة');
+    window.openNewOnsiteSessionForm(s);
+    showToast('اتنسخت بيانات الجلسة — القايمة تحت بتعرض المتبقين اللي لسه ما اتدربوش 👍');
+  };
+
+  /* ---------- الحفظ ---------- */
+  window.saveOnsiteSession = async function(){
+    const title = $('os-title').value.trim(), msg = $('os-save-msg');
+    if(!title) return msg.innerHTML = '<span style="color:#991b1b;">اكتب عنوان التدريب</span>';
+    const ids = Object.keys(osP);
+    if(!ids.length) return msg.innerHTML = '<span style="color:#991b1b;">ضيف موظف واحد على الأقل</span>';
+    const payload = {title, training_date:$('os-date').value || new Date().toISOString().slice(0,10), duration_minutes:Number($('os-duration').value)||null,
+      purpose:$('os-purpose').value.trim(), provider:$('os-provider').value.trim(), section_id:num($('os-section').value), created_by:adminUser?.name||''};
+
+    if(osEdit){
+      const {error} = await sb.from('onsite_trainings').update(payload).eq('id', osEdit);
+      if(error) return msg.innerHTML = '<span style="color:#991b1b;">'+esc(error.message)+'</span>';
+      const {data:ex} = await sb.from('onsite_training_participants').select('id,worker_id').eq('onsite_training_id', osEdit);
+      const keep = new Set(ids.map(Number)), byW = {};
+      (ex||[]).forEach(p => byW[Number(p.worker_id)] = p.id);
+      const del = (ex||[]).filter(p => !keep.has(Number(p.worker_id))).map(p => p.id);
+      if(del.length) await sb.from('onsite_training_participants').delete().in('id', del);
+      for(const id of ids){
+        const p = osP[id];
+        if(byW[Number(id)]) await sb.from('onsite_training_participants').update({is_internal:p.internal, certified_by:p.certifiedBy||null, admin_evaluation:p.evaluation}).eq('id', byW[Number(id)]);
+        else await sb.from('onsite_training_participants').insert({onsite_training_id:osEdit, worker_id:Number(id), is_internal:p.internal, certified_by:p.certifiedBy||null, admin_evaluation:p.evaluation});
+      }
+      showToast('تم حفظ التعديلات ✅');
+      window.closeOnsiteSessionForm();
+      return;
+    }
+    const {data:session, error} = await sb.from('onsite_trainings').insert(payload).select().single();
+    if(error) return msg.innerHTML = '<span style="color:#991b1b;">'+esc(error.message)+'</span>';
+    const rows = ids.map(id => ({onsite_training_id:session.id, worker_id:Number(id), is_internal:osP[id].internal, certified_by:osP[id].certifiedBy||null, admin_evaluation:osP[id].evaluation}));
+    const {error:e2} = await sb.from('onsite_training_participants').insert(rows);
+    if(e2){ msg.innerHTML = '<span style="color:#991b1b;">تم حفظ الجلسة لكن حصل خطأ في المشاركين: '+esc(e2.message)+'</span>'; return; }
+    showToast('تم حفظ جلسة التدريب الميداني ✅');
+    window.closeOnsiteSessionForm();
+  };
+})();
+
+/* ===== V3: إضافات لوحة التحكم (فوق اللوحة الحالية بدون استبدالها) ===== */
+(function(){
+  const col = p => p >= 80 ? '#16a34a' : p >= 50 ? '#d97706' : '#dc2626';
+  const avg = (a, k) => a.length ? a.reduce((s, r) => s + (Number(r[k]) || 0), 0) / a.length : 0;
+
+  function render(){
+    const tab = document.getElementById('tab-dashboard'); if(!tab) return;
+    let box = document.getElementById('dash-extra');
+    if(!box){ box = document.createElement('div'); box.id = 'dash-extra'; tab.insertBefore(box, tab.firstChild); }
+    const rows = window._dashPerWorker || [];
+    if(!rows.length){ box.innerHTML = ''; return; }
+
+    const overall = avg(rows, 'compliance');
+    const hi = rows.filter(r => r.compliance >= 80).length;
+    const mid = rows.filter(r => r.compliance >= 50 && r.compliance < 80).length;
+    const lo = rows.length - hi - mid;
+    const pc = n => rows.length ? Math.round(n / rows.length * 100) : 0;
+    const today = new Date().toLocaleDateString('ar-EG', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+
+    const comps = [
+      ['🎬 إكمال التدريبات', avg(rows, 'trainingPct')],
+      ['📝 نتائج الاختبارات', avg(rows, 'quizPct')],
+      ['⚠️ الخلو من المخالفات', avg(rows, 'violPct')],
+      ['🎓 التدريبات الميدانية', avg(rows, 'onsitePct')]
+    ];
+    const compHtml = comps.map(c => '<div class="dx-comp"><div class="dx-comp-top"><span>'+c[0]+'</span><b style="color:'+col(c[1])+'">'+Math.round(c[1])+'%</b></div>'+
+      '<div class="dx-track"><div class="dx-fill" style="width:'+Math.min(100, c[1])+'%;background:'+col(c[1])+'"></div></div></div>').join('');
+
+    const secName = r => { const s = sections.find(x => String(x.id) === String(r.worker.section_id)); return s ? tr(s, 'name') : '—'; };
+    const rowHtml = r => '<div class="dx-row"><span><b>#'+r.worker.id+'</b> '+esc(r.worker.worker_name)+' <small class="muted">'+esc(secName(r))+'</small></span><b style="color:'+col(r.compliance)+'">'+Math.round(r.compliance)+'%</b></div>';
+    const sorted = rows.slice().sort((a, b) => b.compliance - a.compliance);
+    const top = sorted.slice(0, 5), low = sorted.slice(-5).reverse().filter(r => r.compliance < 80);
+
+    box.innerHTML =
+      '<div class="dx-hero"><div><div class="dx-hero-title">ملخص الأداء</div><div class="dx-hero-sub">'+esc(today)+'</div></div>'+
+        '<div class="dx-hero-stats"><div><b>'+rows.length+'</b><span>موظف</span></div><div><b>'+Math.round(overall)+'%</b><span>الالتزام العام</span></div><div><b>'+hi+'</b><span>متميز ≥80%</span></div><div><b>'+lo+'</b><span>يحتاج متابعة</span></div></div></div>'+
+      '<div class="dx-grid">'+
+        '<div class="card dx-card"><div class="section-title" style="margin-bottom:12px;">📈 مكوّنات الالتزام (المتوسط)</div>'+compHtml+'</div>'+
+        '<div class="card dx-card"><div class="section-title" style="margin-bottom:12px;">🎯 توزيع الموظفين</div>'+
+          '<div class="dx-stack"><div style="width:'+pc(hi)+'%;background:#16a34a" title="متميز"></div><div style="width:'+pc(mid)+'%;background:#d97706" title="متوسط"></div><div style="width:'+pc(lo)+'%;background:#dc2626" title="ضعيف"></div></div>'+
+          '<div class="dx-legend"><span><i style="background:#16a34a"></i>متميز (≥80%) — <b>'+hi+'</b></span><span><i style="background:#d97706"></i>متوسط (50–79%) — <b>'+mid+'</b></span><span><i style="background:#dc2626"></i>ضعيف (&lt;50%) — <b>'+lo+'</b></span></div></div>'+
+        '<div class="card dx-card"><div class="section-title" style="margin-bottom:10px;">🏆 الأعلى التزامًا</div>'+top.map(rowHtml).join('')+'</div>'+
+        '<div class="card dx-card"><div class="section-title" style="margin-bottom:10px;">🔔 يحتاجون متابعة</div>'+(low.map(rowHtml).join('') || '<div class="muted" style="font-size:12px;">الكل فوق 80% ✅</div>')+'</div>'+
+      '</div>';
+  }
+
+  const orig = window.loadAdminDashboard;
+  if(typeof orig === 'function'){
+    window.loadAdminDashboard = async function(){
+      await orig.apply(this, arguments);
+      try{ render(); }catch(e){ console.error('dash extras', e); }
+    };
+  }
+})();
+
+/* ===== V3: تثبيت الموقع كتطبيق (PWA) ===== */
+(function(){
+  const head = document.head;
+  const add = (tag, attrs) => { const e = document.createElement(tag); Object.keys(attrs).forEach(k => e.setAttribute(k, attrs[k])); head.appendChild(e); };
+  if(!document.querySelector('link[rel="manifest"]')) add('link', {rel:'manifest', href:'manifest.json'});
+  add('meta', {name:'theme-color', content:'#0f6b46'});
+  add('meta', {name:'mobile-web-app-capable', content:'yes'});
+  add('meta', {name:'apple-mobile-web-app-capable', content:'yes'});
+  add('meta', {name:'apple-mobile-web-app-status-bar-style', content:'default'});
+  add('link', {rel:'apple-touch-icon', href:'icon-192.png'});
+
+  if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
+    window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  }
+
+  const standalone = () => window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  let deferred = null;
+  const btn = document.createElement('button');
+  btn.id = 'pwa-install-btn';
+  btn.innerHTML = '📲 تثبيت التطبيق';
+  btn.style.display = 'none';
+  document.addEventListener('DOMContentLoaded', () => document.body.appendChild(btn));
+  if(document.body) document.body.appendChild(btn);
+
+  window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferred = e; if(!standalone()) btn.style.display = 'flex'; });
+  window.addEventListener('appinstalled', () => { btn.style.display = 'none'; deferred = null; });
+
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  if(isIOS && !standalone()) btn.style.display = 'flex';
+
+  btn.addEventListener('click', async () => {
+    if(deferred){
+      deferred.prompt();
+      await deferred.userChoice.catch(() => {});
+      deferred = null; btn.style.display = 'none';
+    } else if(isIOS){
+      alert('على الآيفون: دوس زر المشاركة (⬆️) في سفاري، وبعدين اختار "إضافة إلى الشاشة الرئيسية".');
+    } else {
+      alert('من قائمة المتصفح (⋮) اختار "تثبيت التطبيق" أو "إضافة إلى الشاشة الرئيسية".');
+    }
+  });
+})();
+
 </script>
 </body>
 </html>
