@@ -237,6 +237,17 @@ button,.tab-btn,.os-chip{-webkit-tap-highlight-color:transparent;touch-action:ma
 @media (display-mode:standalone){#pwa-install-btn{display:none!important}body{overscroll-behavior-y:contain}}
 @media print{#pwa-install-btn,#dash-extra{display:none!important}}
 
+/* ===== V3: ملء الشاشة للفيديو ===== */
+.video-thumb{position:relative}
+.vfs-btn{position:absolute;bottom:8px;left:8px;z-index:5;background:rgba(15,23,42,.78);color:#fff;border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:7px 13px;font-family:inherit;font-size:12px;font-weight:800;cursor:pointer;backdrop-filter:blur(4px);min-height:34px}
+.vfs{position:fixed!important;top:0;left:0;width:100vw;height:100vh;height:100dvh;z-index:100000;margin:0!important;border-radius:0!important;background:#000!important;aspect-ratio:auto!important}
+.vfs iframe{width:100%!important;height:100%!important}
+.vfs .vfs-btn{top:10px;bottom:auto;left:10px}
+/* موبايل واقف: بنلف الفيديو 90° عشان يملى الشاشة بالعرض */
+@media (orientation:portrait){
+  .vfs{width:100vh;width:100dvh;height:100vw;transform-origin:top left;transform:translateX(100vw) rotate(90deg)}
+}
+
 </style>
 </head>
 <body>
@@ -4909,6 +4920,57 @@ try{(function(){
       alert('من قائمة المتصفح (⋮) اختار "تثبيت التطبيق" أو "إضافة إلى الشاشة الرئيسية".');
     }
   });
+})();
+
+/* ===== V3: تكبير الفيديو / ملء الشاشة على الموبايل (بدون لمس تتبع التقدم) ===== */
+(function(){
+  function lockScroll(on){ try{ document.documentElement.style.overflow = on ? 'hidden' : ''; document.body.style.overflow = on ? 'hidden' : ''; }catch(e){} }
+  function leave(wrap){
+    wrap.classList.remove('vfs');
+    lockScroll(false);
+    const b = wrap.querySelector('.vfs-btn'); if(b) b.textContent = '⛶ ملء الشاشة';
+    try{ if(document.fullscreenElement) document.exitFullscreen(); }catch(e){}
+    try{ if(screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); }catch(e){}
+  }
+  async function enter(wrap){
+    wrap.classList.add('vfs');
+    lockScroll(true);
+    const b = wrap.querySelector('.vfs-btn'); if(b) b.textContent = '✕ إغلاق';
+    try{
+      // ملء الشاشة الأصلي مفيد بس لو قدرنا نقفل الاتجاه بالعرض (أندرويد). غير كده الوضع الداخلي (CSS) بيلف الفيديو.
+      if(wrap.requestFullscreen && screen.orientation && screen.orientation.lock){
+        await wrap.requestFullscreen();
+        try{ await screen.orientation.lock('landscape'); }
+        catch(e){ if(document.fullscreenElement){ window._vfsSwitching=true; await document.exitFullscreen().catch(()=>{}); setTimeout(()=>{window._vfsSwitching=false;},400); } }
+      }
+    }catch(e){ /* آيفون وغيره: هنكمل بالوضع الداخلي (CSS) */ }
+  }
+  function toggle(wrap){ wrap.classList.contains('vfs') ? leave(wrap) : enter(wrap); }
+
+  function addBtn(topicId){
+    const wrap = document.getElementById('topic-player-wrap-' + topicId);
+    if(!wrap || wrap.querySelector('.vfs-btn')) return;
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'vfs-btn'; b.textContent = '⛶ ملء الشاشة';
+    b.addEventListener('click', e => { e.stopPropagation(); toggle(wrap); });
+    wrap.appendChild(b);
+  }
+
+  const orig = window.startTopicVideo;
+  if(typeof orig === 'function'){
+    window.startTopicVideo = function(topicId){
+      const r = orig.apply(this, arguments);
+      addBtn(topicId);
+      return r;
+    };
+  }
+
+  document.addEventListener('fullscreenchange', () => {
+    if(!document.fullscreenElement && !window._vfsSwitching) document.querySelectorAll('.vfs').forEach(leave);
+  });
+  document.addEventListener('keydown', e => { if(e.key === 'Escape') document.querySelectorAll('.vfs').forEach(leave); });
+  // لو الموظف بدّل اللغة أو الصفحة أثناء ملء الشاشة
+  window.addEventListener('pagehide', () => { lockScroll(false); });
 })();
 
 </script>
