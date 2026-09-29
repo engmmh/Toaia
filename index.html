@@ -452,6 +452,45 @@ body.v4d-open{overflow:hidden}
 @media (max-width:640px){.v6-grid{grid-template-columns:1fr 1fr;gap:10px}.v6-cover{height:110px}.v6-act{flex-wrap:wrap}.v6-tiles{grid-template-columns:1fr}.v6-tile{flex-direction:row;text-align:right;padding:16px;gap:12px;flex-wrap:wrap}.v6-tile-ic{width:56px;height:56px;font-size:28px}.v6-search{max-width:none;width:100%}.v6-2{grid-template-columns:1fr}.v6-modal{max-height:100vh;border-radius:16px}}
 @media (max-width:420px){.v6-grid{grid-template-columns:1fr}}
 
+/* ===== V7: صفحة الدخول على الجوال + الفوتر + كلمة السر الموحدة ===== */
+body:not(.on-login) .login-footer-note{display:none}          /* اسم المُعِد يظهر مرة واحدة دايمًا */
+body.on-login #login-section{overflow-y:auto;-webkit-overflow-scrolling:touch}
+@media(max-width:820px){
+  body.on-login .login-split{flex:1 0 auto}
+  .login-hero{padding:22px 18px 20px}
+  .login-hero #login-subtitle-ar{display:block!important;font-size:13px;line-height:1.7;margin:2px 0 12px;color:rgba(255,255,255,.82)}
+  .login-hero .login-feature-row{display:flex!important;gap:8px;margin:0 0 12px}
+  .login-hero .login-feature-card{padding:9px 4px;border-radius:11px}
+  .login-hero .login-feature-card>div:first-child{font-size:17px!important}
+  .login-hero .login-feature-card>div[id$="-ar"]{font-size:11px!important;margin-top:3px!important}
+  .login-hero .login-feature-card>div[id$="-en"]{display:none}
+  .login-hero .login-trust-box{display:block!important;padding:8px 12px;max-width:none}
+  .login-hero .login-trust-box>div[id="login-trust-ar"]{font-size:11.5px!important}
+  .login-hero .login-trust-box>div[id="login-trust-en"]{display:none}
+  #login-headline-en{margin-bottom:10px!important;font-size:12.5px!important;text-align:right}
+  #login-app-name{margin-bottom:14px!important;font-size:17px!important}
+  .login-form-side{padding:20px 16px 26px}
+}
+/* كلمة السر الموحدة */
+.v7-pw{padding:18px;margin-bottom:14px}
+.v7-pw h3{margin:0 0 4px;font-size:15px;font-weight:900}
+.v7-pw .v7-sub{font-size:12px;color:var(--muted);margin-bottom:12px}
+.v7-step{border-top:1px solid var(--border);padding:13px 0}
+.v7-step-t{font-weight:800;font-size:13px;margin-bottom:9px;display:flex;align-items:center;gap:8px}
+.v7-step-t span{width:22px;height:22px;border-radius:50%;background:var(--primary);color:#fff;font-size:12px;display:inline-flex;align-items:center;justify-content:center}
+.v7-radio{display:flex;align-items:center;gap:8px;font-size:13px;padding:6px 2px;cursor:pointer}
+.v7-3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.v7-opt{display:flex;align-items:flex-start;gap:9px;background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-top:8px;cursor:pointer;font-size:12.5px}
+.v7-opt small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+.v7-opt:has(input:checked){background:#f0faf4;border-color:#86efac}
+.v7-sum{background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:12px;margin-top:10px;font-size:12.5px;line-height:1.9}
+.v7-warn{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:12px;padding:10px 12px;margin-top:8px;font-size:12.5px;font-weight:700}
+.v7-danger{background:#fff5f5;border:1px solid #fecaca;color:#991b1b}
+.v7-run{margin-top:10px;font-family:inherit;font-weight:800;font-size:14px;color:#fff;background:var(--primary);border:0;border-radius:12px;padding:12px 22px;cursor:pointer}
+.v7-run.red{background:#b91c1c}.v7-run:disabled{background:#e5e7eb;color:#9ca3af;cursor:not-allowed}
+.v7-ghost{font-family:inherit;font-weight:800;font-size:12.5px;border:1px solid var(--border);background:#fff;border-radius:10px;padding:9px 14px;cursor:pointer}
+@media(max-width:640px){.v7-3{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -6690,6 +6729,231 @@ try{(function(){
   const baseScope = applyAdminScope;
   applyAdminScope = function(){ baseScope.apply(this, arguments); try{ ensureNav(); }catch(e){} };
   ensureNav();
+})();
+/* =====================================================================
+   V7 — كلمة السر الموحدة: تطبيق على الكل أو نطاق محدد + إجبار التغيير عند أول دخول
+   للسوبر أدمن فقط (تبويب الأدمن). إضافات فقط — بتعدّل عمود password وعمود must_change_password.
+   ===================================================================== */
+(function(){
+  const $q = id => document.getElementById(id);
+  const N = v => (v === '' || v == null) ? null : Number(v);
+  const secs = () => (typeof sections !== 'undefined' ? sections : []);
+  const chunk = (a, n) => { const o = []; for(let i = 0; i < a.length; i += n) o.push(a.slice(i, i + n)); return o; };
+  const CONFIRM_WORD = 'تطبيق';
+  let regions = [], depts = [], defaultPass = '', hasForce = true, last = null;
+
+  async function fetchAll(mk){
+    const out = []; let from = 0;
+    for(;;){
+      const r = await mk().range(from, from + 999);
+      if(r.error) throw r.error;
+      const d = r.data || []; out.push(...d);
+      if(d.length < 1000) break; from += 1000;
+    }
+    return out;
+  }
+  const opts = (list, all) => '<option value="">' + all + '</option>' + list.map(o => '<option value="' + o.id + '">' + esc(o.name_ar) + '</option>').join('');
+
+  function build(){
+    const tab = $q('tab-admins'); if(!tab || $q('v7-pw')) return;
+    const box = document.createElement('div');
+    box.className = 'card v7-pw'; box.id = 'v7-pw';
+    box.innerHTML =
+      '<h3>🔐 تعيين كلمة سر موحدة للموظفين</h3>' +
+      '<div class="v7-sub">اختار مين تنطبق عليه الكلمة الجديدة. المعاينة بتوريك العدد قبل أي تنفيذ، ومفيش حاجة بتتغير قبل التأكيد.</div>' +
+      '<div class="v7-step"><div class="v7-step-t"><span>1</span> كلمة السر الجديدة</div>' +
+        '<input id="v7-new" type="text" class="input-field" placeholder="اكتب كلمة السر (4 حروف/أرقام على الأقل)" autocomplete="off"/>' +
+        '<label class="v7-opt"><input type="checkbox" id="v7-force"/><div><b>إجبار الموظف يغيّر كلمة السر عند أول دخول</b><small id="v7-force-note">هيظهر له شاشة تغيير كلمة السر ومايقدرش يكمل قبلها. لو سبت خانة الكلمة فاضية هيتفعل الإجبار بس من غير تغيير الكلمة.</small></div></label></div>' +
+      '<div class="v7-step"><div class="v7-step-t"><span>2</span> تنطبق على مين؟</div>' +
+        '<label class="v7-radio"><input type="radio" name="v7-scope" value="all" checked/> 🌍 كل الموظفين</label>' +
+        '<label class="v7-radio"><input type="radio" name="v7-scope" value="unit"/> 🏭 نطاق محدد (منطقة / إدارة / وحدة)</label>' +
+        '<div id="v7-unit" class="hidden" style="margin:6px 0 4px"><div class="v7-3"><select id="v7-reg" class="input-field"></select><select id="v7-dep" class="input-field"></select><select id="v7-sec" class="input-field"></select></div></div>' +
+        '<label class="v7-radio"><input type="radio" name="v7-scope" value="ids"/> 🔢 موظفين محددين بالأرقام</label>' +
+        '<textarea id="v7-ids" class="input-field hidden" rows="2" placeholder="اكتب أرقام الموظفين مفصولة بمسافة أو فاصلة"></textarea>' +
+        '<label class="v7-opt"><input type="checkbox" id="v7-only"/><div><b>طبّقها بس على اللي لسه على كلمة السر الافتراضية</b><small>الموظفين اللي غيّروا كلمة سرهم بنفسهم مايتأثروش.</small></div></label></div>' +
+      '<div class="v7-step"><div class="v7-step-t"><span>3</span> معاينة</div>' +
+        '<label class="v7-opt"><input type="checkbox" id="v7-backup" checked/><div><b>نزّل نسخة احتياطية قبل التنفيذ</b><small>ملف فيه كلمات السر القديمة للمتأثرين — تقدر ترجّعها من زر الاسترجاع تحت. احفظه في مكان آمن.</small></div></label>' +
+        '<button type="button" class="v7-ghost" id="v7-preview" style="margin-top:10px">🔍 معاينة العدد</button>' +
+        '<div id="v7-summary" class="v7-sum hidden"></div></div>' +
+      '<div id="v7-confirm" class="hidden" style="margin-top:4px"><div id="v7-warn" class="v7-warn"></div>' +
+        '<div id="v7-wordbox" class="hidden" style="margin-top:8px"><label class="field-label">اكتب كلمة "<b>' + CONFIRM_WORD + '</b>" للتأكيد</label><input id="v7-word" class="input-field" autocomplete="off"/></div>' +
+        '<button type="button" class="v7-run" id="v7-run">✅ تنفيذ</button><div id="v7-log" style="font-size:12.5px;margin-top:10px"></div></div>' +
+      '<div class="v7-step"><div class="v7-step-t">↩️ استرجاع من نسخة احتياطية</div>' +
+        '<input type="file" id="v7-restore-file" accept="application/json,.json" style="font-size:12px"/>' +
+        '<button type="button" class="v7-ghost" id="v7-restore" style="margin-inline-start:8px">استرجاع</button><div id="v7-restore-log" style="font-size:12.5px;margin-top:8px"></div></div>';
+    tab.insertBefore(box, tab.firstElementChild);
+    $q('v7-reg').innerHTML = opts([], 'كل المناطق'); $q('v7-dep').innerHTML = opts([], 'كل الإدارات'); $q('v7-sec').innerHTML = opts([], 'كل الوحدات');
+    box.addEventListener('change', e => {
+      if(e.target.name === 'v7-scope'){ $q('v7-unit').classList.toggle('hidden', e.target.value !== 'unit'); $q('v7-ids').classList.toggle('hidden', e.target.value !== 'ids'); reset(); }
+      else reset();
+    });
+    box.addEventListener('input', e => { if(e.target.id === 'v7-word') gate(); else reset(); });
+    $q('v7-preview').onclick = preview; $q('v7-run').onclick = run; $q('v7-restore').onclick = restore;
+  }
+  async function loadMeta(){
+    const [r, d, s] = await Promise.all([
+      sb.from('regions').select('*').order('sort_order').order('id'),
+      sb.from('target_departments').select('*').order('id'),
+      sb.from('app_settings').select('value').eq('key', 'default_worker_password').maybeSingle()
+    ]);
+    regions = r.data || []; depts = (d.data || []).filter(x => x.is_active !== false); defaultPass = (s.data && s.data.value) || '';
+    $q('v7-reg').innerHTML = opts(regions, 'كل المناطق'); $q('v7-dep').innerHTML = opts(depts, 'كل الإدارات');
+    $q('v7-sec').innerHTML = opts(secs().map(x => ({id:x.id, name_ar:x.name_ar})), 'كل الوحدات');
+    const p = await sb.from('workers_evaluations').select('must_change_password').limit(1);
+    hasForce = !p.error;
+    $q('v7-force').disabled = !hasForce;
+    if(!hasForce) $q('v7-force-note').innerHTML = '⚠️ خاصية الإجبار محتاجة تشغيل <b>phase3.sql</b> مرة واحدة في Supabase.';
+  }
+  function reset(){ last = null; $q('v7-summary')?.classList.add('hidden'); $q('v7-confirm')?.classList.add('hidden'); }
+
+  function inScope(w){
+    const sc = document.querySelector('input[name="v7-scope"]:checked').value;
+    if(sc === 'all') return true;
+    if(sc === 'ids') return ids().includes(Number(w.id));
+    const u = secs().find(x => Number(x.id) === Number(w.section_id));
+    const R = N($q('v7-reg').value), D = N($q('v7-dep').value), S = N($q('v7-sec').value);
+    if(S && Number(w.section_id) !== S) return false;
+    if(R && (!u || Number(u.region_id) !== R)) return false;
+    if(D && (!u || Number(u.department_id) !== D)) return false;
+    return true;
+  }
+  const ids = () => ($q('v7-ids').value.match(/\d+/g) || []).map(Number);
+  const changed = w => !!w.password && w.password !== defaultPass;
+
+  async function preview(){
+    const pw = $q('v7-new').value.trim(), force = $q('v7-force').checked;
+    if(!pw && !force) return showToast('اكتب كلمة السر أو فعّل خيار الإجبار');
+    if(pw && pw.length < 4) return showToast('كلمة السر لازم تكون 4 حروف/أرقام على الأقل');
+    const sc = document.querySelector('input[name="v7-scope"]:checked').value;
+    if(sc === 'ids' && !ids().length) return showToast('اكتب رقم موظف واحد على الأقل');
+    const btn = $q('v7-preview'); btn.disabled = true; btn.textContent = '… جاري الحساب';
+    try{
+      const s = await sb.from('app_settings').select('value').eq('key', 'default_worker_password').maybeSingle(); defaultPass = (s.data && s.data.value) || '';
+      const cols = 'id,worker_name,section_id,password' + (hasForce ? ',must_change_password' : '');
+      const all = await fetchAll(() => sb.from('workers_evaluations').select(cols).order('id'));
+      const scoped = all.filter(inScope);
+      const onlyDef = $q('v7-only').checked;
+      const affected = scoped.filter(w => !(onlyDef && changed(w)));
+      const chg = affected.filter(changed);
+      const missing = sc === 'ids' ? ids().filter(i => !all.some(w => Number(w.id) === i)) : [];
+      last = {pw, force: force && hasForce, affected, chg, backup: $q('v7-backup').checked};
+      const el = $q('v7-summary');
+      el.innerHTML = '👥 داخل النطاق: <b>' + scoped.length + '</b> موظف<br>' +
+        '✅ هتتأثر: <b>' + affected.length + '</b> موظف' + (onlyDef ? ' (اللي على الافتراضية بس)' : '') + '<br>' +
+        '🔁 منهم غيّروا كلمة سرهم بنفسهم: <b style="color:' + (chg.length ? '#b91c1c' : 'inherit') + '">' + chg.length + '</b><br>' +
+        (missing.length ? '⚠️ أرقام مش موجودة: ' + esc(missing.join('، ')) + '<br>' : '') +
+        '<div class="muted" style="margin-top:4px">' + esc(affected.slice(0, 6).map(w => w.worker_name).join('، ')) + (affected.length > 6 ? '…' : '') + '</div>';
+      el.classList.remove('hidden');
+      const warn = $q('v7-warn');
+      const act = (pw ? 'تعيين كلمة السر الجديدة' : 'تفعيل إجبار التغيير') + (last.force && pw ? ' + إجبار التغيير عند أول دخول' : '') + ' على ' + affected.length + ' موظف';
+      warn.className = 'v7-warn' + (chg.length ? ' v7-danger' : '');
+      warn.innerHTML = (chg.length ? '⚠️ <b>' + chg.length + '</b> موظف غيّروا كلمة سرهم بنفسهم — <u>كلمتهم الحالية هتتلغي</u> وتتبدل بالجديدة. ' : '') + esc(act) + '.';
+      $q('v7-wordbox').classList.toggle('hidden', !chg.length);
+      $q('v7-word').value = '';
+      $q('v7-run').className = 'v7-run' + (chg.length ? ' red' : '');
+      $q('v7-confirm').classList.remove('hidden');
+      $q('v7-log').textContent = '';
+      gate();
+    }catch(e){ showToast('تعذرت المعاينة: ' + (e.message || e)); }
+    btn.disabled = false; btn.textContent = '🔍 معاينة العدد';
+  }
+  function gate(){
+    const b = $q('v7-run'); if(!b) return;
+    const need = last && last.chg.length > 0;
+    b.disabled = !last || !last.affected.length || (need && $q('v7-word').value.trim() !== CONFIRM_WORD);
+  }
+  function download(name, obj){
+    const blob = new Blob([JSON.stringify(obj)], {type:'application/json'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  }
+  async function run(){
+    if(!last || !last.affected.length) return;
+    if(!(typeof adminUser !== 'undefined' && adminUser && adminUser.isSuper)) return showToast('العملية دي للسوبر أدمن فقط');
+    const L = $q('v7-log'), b = $q('v7-run'); b.disabled = true;
+    if(last.backup){
+      download('password-backup-' + new Date().toISOString().slice(0, 10) + '.json',
+        {meta:{at:new Date().toISOString(), count:last.affected.length, note:'كلمات السر القديمة (null = كان على الافتراضية) — حافظ عليه'},
+         rows:last.affected.map(w => ({id:w.id, name:w.worker_name, password:w.password ?? null, must_change_password:w.must_change_password ?? false}))});
+    }
+    const payload = {};
+    if(last.pw) payload.password = last.pw;
+    if(hasForce && (last.force || last.pw === '')) payload.must_change_password = last.force;
+    let done = 0, failed = 0;
+    for(const part of chunk(last.affected.map(w => w.id), 150)){
+      const r = await sb.from('workers_evaluations').update(payload).in('id', part);
+      if(r.error){ failed += part.length; L.innerHTML = '<span style="color:#991b1b">خطأ: ' + esc(r.error.message) + '</span>'; }
+      else done += part.length;
+      L.textContent = 'جاري التنفيذ… ' + done + ' / ' + last.affected.length;
+    }
+    try{ if(typeof logActivityV22 === 'function') logActivityV22('admin', adminUser.id, 'تعيين كلمة سر موحدة', 'workers', null, {count:done, force:!!last.force, passwordChanged:!!last.pw}); }catch(e){}
+    L.innerHTML = failed ? '<span style="color:#991b1b">تم على ' + done + ' وفشل ' + failed + ' — راجع الاتصال وأعد المحاولة.</span>' : '<span style="color:#166534">تم بنجاح على ' + done + ' موظف ✅</span>';
+    last = null; b.disabled = true; $q('v7-new').value = '';
+  }
+  async function restore(){
+    const f = $q('v7-restore-file').files[0], L = $q('v7-restore-log');
+    if(!f) return showToast('اختار ملف النسخة الاحتياطية');
+    try{
+      const j = JSON.parse(await f.text()); const rows = j.rows || [];
+      if(!rows.length) return showToast('الملف فاضي أو غير صالح');
+      if(!confirm('هيتم إرجاع كلمات السر القديمة لـ ' + rows.length + ' موظف. متأكد؟')) return;
+      const groups = {};
+      rows.forEach(r => { const k = JSON.stringify([r.password ?? null, !!r.must_change_password]); (groups[k] ||= []).push(r.id); });
+      let done = 0;
+      for(const k of Object.keys(groups)){
+        const [pw, mc] = JSON.parse(k);
+        for(const part of chunk(groups[k], 150)){
+          const p = {password:pw}; if(hasForce) p.must_change_password = mc;
+          const r = await sb.from('workers_evaluations').update(p).in('id', part);
+          if(r.error) throw r.error; done += part.length;
+        }
+      }
+      L.innerHTML = '<span style="color:#166534">تم إرجاع ' + done + ' موظف ✅</span>';
+    }catch(e){ L.innerHTML = '<span style="color:#991b1b">تعذر الاسترجاع: ' + esc(e.message || String(e)) + '</span>'; }
+  }
+
+  /* ---------- إظهار الكارت في تبويب الأدمن (للسوبر بس) ---------- */
+  const baseTab = adminTab;
+  adminTab = function(tab){
+    baseTab.apply(this, arguments);
+    if(tab === 'admins'){ try{ build(); const on = typeof adminUser !== 'undefined' && adminUser && adminUser.isSuper; $q('v7-pw')?.classList.toggle('hidden', !on); if(on) loadMeta(); }catch(e){ console.error(e); } }
+  };
+
+  /* =====================  إجبار تغيير كلمة السر عند أول دخول  ===================== */
+  let forced = false;
+  async function checkForced(){
+    try{
+      const wid = (typeof currentUser !== 'undefined' && currentUser && currentUser.id) || (typeof adminUser !== 'undefined' && adminUser && adminUser.workerId);
+      if(!wid) return;
+      const r = await sb.from('workers_evaluations').select('must_change_password').eq('id', wid).maybeSingle();
+      if(r.error || !r.data || !r.data.must_change_password) return;
+      forced = true; openPasswordChangeModal();
+      $q('pw-cancel-btn')?.classList.add('hidden');
+      const t = $q('pw-modal-title'); if(t) t.innerHTML = '🔑 لازم تغيّر كلمة السر قبل ما تكمل <small class="nav-en">Please set a new password</small>';
+    }catch(e){}
+  }
+  const _ew = enterAsWorkerFinal;
+  enterAsWorkerFinal = async function(){ await _ew.apply(this, arguments); await checkForced(); };
+  const _ea = enterAdmin;
+  enterAdmin = async function(){ await _ea.apply(this, arguments); await checkForced(); };
+  const _close = window.closePasswordChangeModal;
+  window.closePasswordChangeModal = function(){ if(forced) return; return _close.apply(this, arguments); };
+  const _submit = window.submitPasswordChange;
+  window.submitPasswordChange = async function(){
+    if(!forced) return _submit.apply(this, arguments);
+    const p1 = $q('pw-new').value.trim(), err = $q('pw-change-error');
+    const wid = (currentUser && currentUser.id) || (adminUser && adminUser.workerId);
+    const cur = await sb.from('workers_evaluations').select('password').eq('id', wid).maybeSingle();
+    const s = await sb.from('app_settings').select('value').eq('key', 'default_worker_password').maybeSingle();
+    const old = (cur.data && cur.data.password) || (s.data && s.data.value) || '';
+    if(p1 && old && p1 === old){ err.textContent = 'اختار كلمة سر مختلفة عن الحالية'; err.classList.remove('hidden'); return; }
+    forced = false;                                    // نسيبها تتحفظ بالمسار العادي (قواعد الطول/التطابق فيه)
+    await _submit.apply(this, arguments);
+    const still = !$q('password-change-modal').classList.contains('hidden');
+    if(still){ forced = true; return; }                // فشل التحقق → الشاشة لسه مفتوحة وإجبارها مستمر
+    await sb.from('workers_evaluations').update({must_change_password:false}).eq('id', wid);
+    $q('pw-cancel-btn')?.classList.remove('hidden');
+  };
 })();
 
 </script>
