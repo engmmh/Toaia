@@ -248,6 +248,43 @@ button,.tab-btn,.os-chip{-webkit-tap-highlight-color:transparent;touch-action:ma
   .vfs{width:100vh;width:100dvh;height:100vw;transform-origin:top left;transform:translateX(100vw) rotate(90deg)}
 }
 
+/* ===== V4: الهيكل التنظيمي والأدمن ===== */
+.v4-ov{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:100001;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(2px)}
+.v4-modal{background:#fff;border-radius:16px;padding:18px;width:100%;max-width:520px;max-height:90vh;overflow:auto;box-shadow:0 24px 60px rgba(0,0,0,.3)}
+.v4-mt{font-size:16px;font-weight:800;margin-bottom:12px}
+.v4-mf{display:flex;gap:8px;align-items:center;margin-top:16px;flex-wrap:wrap}
+.v4-mf .btn-primary,.v4-mf .btn-secondary{padding:9px 20px;font-size:13px}
+.v4-head{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;margin-bottom:12px}
+.v4-title{font-size:18px;font-weight:800}
+.v4-actions{display:flex;gap:6px;flex-wrap:wrap}
+.v4-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.v4-stats>div{background:#fff;border:1px solid var(--border);border-radius:12px;padding:10px;text-align:center;box-shadow:var(--shadow)}
+.v4-stats b{display:block;font-size:20px;font-weight:900;color:var(--primary)}
+.v4-stats span{font-size:11px;color:var(--muted)}
+.v4-warn{background:#fffbeb;border:1px solid #fcd34d;color:#92400e;border-radius:12px;padding:10px 14px;font-size:12.5px;margin-bottom:12px}
+.v4-region{background:#fff;border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:var(--shadow)}
+.v4-region-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.v4-region-name{font-size:16px;font-weight:800}
+.v4-dept{margin-top:8px;padding:10px;background:#f8fafc;border-radius:12px}
+.v4-dept-name{font-size:12.5px;font-weight:800;color:var(--primary-dark);margin-bottom:8px}
+.v4-units{display:flex;flex-wrap:wrap;gap:8px}
+.v4-unit{font-family:inherit;text-align:right;background:#fff;border:1px solid var(--border);border-radius:12px;padding:9px 13px;cursor:pointer;display:flex;flex-direction:column;gap:2px;min-width:120px;transition:all .12s}
+.v4-unit:hover{border-color:var(--primary-light);transform:translateY(-1px);box-shadow:0 6px 14px rgba(23,107,67,.12)}
+.v4-unit b{font-size:13px}.v4-unit span{font-size:11px;color:var(--muted)}
+.v4-orphan{border-style:dashed}
+.v4-rules{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+.v4-rule{display:flex;justify-content:space-between;align-items:center;gap:8px;background:#f0faf4;border:1px solid #bbf7d0;border-radius:10px;padding:8px 11px;font-size:12.5px}
+.v4-addrule{display:grid;grid-template-columns:repeat(3,1fr) auto;gap:6px;align-items:center}
+.v4-addrule .input-field{font-size:12px;padding:8px}
+.v4-check{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:9px 11px;cursor:pointer;margin-top:10px}
+.v4-picked{background:#f0faf4;border:1px solid #bbf7d0;border-radius:10px;padding:8px 11px;font-size:12.5px;margin:6px 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.v4-box{background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:10px;margin-top:8px}
+.v4-admin{padding:12px 14px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
+.v4-admin-btns{display:flex;gap:6px;flex-wrap:wrap}
+.v4-tags{display:flex;flex-wrap:wrap;gap:5px}
+.v4-tag{background:#eef2ff;color:#3730a3;border-radius:999px;padding:3px 10px;font-size:11px;font-weight:700}
+@media (max-width:640px){.v4-stats{grid-template-columns:repeat(2,1fr)}.v4-addrule{grid-template-columns:1fr 1fr}.v4-addrule .sc-add{grid-column:1/-1}}
+
 </style>
 </head>
 <body>
@@ -4971,6 +5008,397 @@ try{(function(){
   document.addEventListener('keydown', e => { if(e.key === 'Escape') document.querySelectorAll('.vfs').forEach(leave); });
   // لو الموظف بدّل اللغة أو الصفحة أثناء ملء الشاشة
   window.addEventListener('pagehide', () => { lockScroll(false); });
+})();
+
+/* =====================================================================
+   V4 — المرحلة 1: الهيكل التنظيمي (منطقة ← إدارة ← وحدة) + نطاقات الأدمن
+   إضافات فقط: مفيش حذف لبيانات موظفين، والدخول والصلاحيات الحالية بتفضل شغالة.
+   ===================================================================== */
+(function(){
+  const $q = id => document.getElementById(id);
+  let regions = [], orgDepts = [], wcount = {}, orgReady = false;
+  const TITLES = ['مدير فرع','مدير مصنع','مدير إنتاج','مدير تشغيل','مشرف','مسؤول جودة'];
+  const num = v => (v === '' || v == null) ? null : Number(v);
+  const nameOf = (list, id) => { const x = list.find(o => Number(o.id) === Number(id)); return x ? x.name_ar : ''; };
+  const secs = () => (typeof sections !== 'undefined' ? sections : []);
+
+  /* ---------- نافذة منبثقة بسيطة ---------- */
+  function modal(html){
+    const ov = document.createElement('div');
+    ov.className = 'v4-ov';
+    ov.innerHTML = '<div class="v4-modal">' + html + '</div>';
+    ov.addEventListener('mousedown', e => { if(e.target === ov) ov.remove(); });
+    document.body.appendChild(ov);
+    return ov;
+  }
+  const opts = (list, sel, allLabel) => (allLabel != null ? '<option value="">' + allLabel + '</option>' : '') +
+    list.map(o => '<option value="' + o.id + '" ' + (Number(o.id) === Number(sel) ? 'selected' : '') + '>' + esc(o.name_ar) + '</option>').join('');
+
+  /* ---------- قاعدة النطاق → الوحدات المطابقة ---------- */
+  function unitsForRule(r){
+    return secs().filter(s =>
+      (!r.region_id || Number(s.region_id) === Number(r.region_id)) &&
+      (!r.department_id || Number(s.department_id) === Number(r.department_id)) &&
+      (!r.section_id || Number(s.id) === Number(r.section_id)));
+  }
+  function ruleText(r){
+    if(r.section_id){
+      const s = secs().find(x => Number(x.id) === Number(r.section_id));
+      return '🏭 ' + (s ? s.name_ar : 'وحدة غير موجودة');
+    }
+    return '🌍 ' + (nameOf(regions, r.region_id) || 'كل المناطق') + ' › ' + (nameOf(orgDepts, r.department_id) || 'كل الإدارات');
+  }
+
+  /* ---------- الأدمن: النطاق الفعلي = القواعد + الأقسام القديمة (admin_sections) ---------- */
+  async function resolveAdminUnits(adminId){
+    const [legacy, rules] = await Promise.all([
+      sb.from('admin_sections').select('section_id').eq('admin_id', adminId),
+      sb.from('admin_scopes').select('*').eq('admin_id', adminId)
+    ]);
+    const set = new Set((legacy.data || []).map(x => Number(x.section_id)));
+    if(!rules.error) (rules.data || []).forEach(r => unitsForRule(r).forEach(s => set.add(Number(s.id))));
+    return [...set].filter(Boolean);
+  }
+  loadAdminSectionsMultiV23 = resolveAdminUnits;   // الدخول القديم بيستخدم الدالة دي، فبقى بيشوف النطاقات الجديدة
+
+  /* ---------- تحميل بيانات الهيكل ---------- */
+  async function loadOrgMeta(){
+    const [r, d] = await Promise.all([
+      sb.from('regions').select('*').order('sort_order').order('id'),
+      sb.from('target_departments').select('*').order('id')
+    ]);
+    orgReady = !r.error;
+    regions = r.data || [];
+    orgDepts = (d.data || []).filter(x => x.is_active !== false);
+  }
+  async function loadOrg(){          // + أعداد الموظفين لكل وحدة (للشاشة الرئيسية فقط)
+    await loadOrgMeta();
+    const counts = await Promise.all(secs().map(s =>
+      sb.from('workers_evaluations').select('id', {count:'exact', head:true}).eq('section_id', s.id).then(x => [s.id, x.count || 0])));
+    wcount = {}; counts.forEach(([id, c]) => wcount[id] = c);
+  }
+
+  /* =====================  شاشة الهيكل التنظيمي  ===================== */
+  async function renderOrgTree(){
+    const panel = $q('orgpanel-sections'); if(!panel) return;
+    const tb = $q('orgtabbtn-sections'); if(tb) tb.textContent = '🏢 المناطق والوحدات';
+    const oldP = $q('tab-org')?.querySelector('.card p.muted'); if(oldP) oldP.textContent = 'المنطقة ← الإدارة ← الوحدة (مصنع / فرع). الوظائف والإدارات ليها تابات منفصلة.';
+    if(!$q('org-tree')) panel.innerHTML = '<div id="org-tree"></div>';
+    const box = $q('org-tree');
+    box.innerHTML = '<div class="muted" style="padding:16px;">جاري التحميل...</div>';
+    try{ await loadOrg(); }catch(e){ console.error(e); }
+    if(!orgReady){
+      box.innerHTML = '<div class="card" style="padding:18px;border-right:4px solid #dc2626;"><b>محتاج تشغّل ملف الـSQL الأول</b><p class="muted" style="font-size:12.5px;margin-top:6px;">ملف <b>phase1.sql</b> بيضيف جدول المناطق وربط الوحدات. شغّله في Supabase (SQL Editor) وبعدها اعمل تحديث للصفحة.</p></div>';
+      return;
+    }
+    const all = secs();
+    const unlinked = all.filter(s => !s.region_id || !s.department_id);
+    const totalW = Object.values(wcount).reduce((a, b) => a + b, 0);
+
+    let html = '<div class="v4-head"><div><div class="v4-title">🏢 الهيكل التنظيمي</div><div class="muted" style="font-size:12px;">المنطقة ← الإدارة ← الوحدة (مصنع / فرع) ← الموظفين</div></div>' +
+      '<div class="v4-actions"><button class="btn-secondary btn-sm" onclick="v4RegionModal()">+ منطقة</button><button class="btn-primary btn-sm" onclick="v4UnitModal()">+ وحدة (مصنع / فرع)</button><button class="btn-secondary btn-sm" onclick="toggleOrgTab(\'targets\')">🏬 إدارة قائمة الإدارات</button></div></div>' +
+      '<div class="v4-stats"><div><b>' + regions.length + '</b><span>منطقة</span></div><div><b>' + orgDepts.length + '</b><span>إدارة</span></div><div><b>' + all.length + '</b><span>وحدة</span></div><div><b>' + totalW + '</b><span>موظف</span></div></div>';
+
+    if(unlinked.length){
+      html += '<div class="v4-warn">⚠️ <b>' + unlinked.length + '</b> وحدة لسه مش مربوطة بمنطقة وإدارة. دوس على الوحدة وحدّد مكانها في الهيكل (الموظفين اللي جواها ما بيتأثروش).</div>';
+    }
+
+    regions.forEach(rg => {
+      const units = all.filter(s => Number(s.region_id) === Number(rg.id));
+      const byDept = {};
+      units.forEach(u => { const k = u.department_id || 0; (byDept[k] ||= []).push(u); });
+      const w = units.reduce((a, u) => a + (wcount[u.id] || 0), 0);
+      html += '<div class="v4-region"><div class="v4-region-head"><div><span class="v4-region-name">📍 ' + esc(rg.name_ar) + '</span> <span class="muted" style="font-size:11.5px;">' + units.length + ' وحدة • ' + w + ' موظف</span></div>' +
+        '<div><button class="btn-secondary btn-sm" onclick="v4UnitModal(null,' + rg.id + ')">+ وحدة هنا</button> <button class="btn-secondary btn-sm" onclick="v4RegionModal(' + rg.id + ')">✏️</button></div></div>';
+      if(!units.length) html += '<div class="muted" style="font-size:12px;padding:8px 2px;">مفيش وحدات في المنطقة دي لسه.</div>';
+      Object.keys(byDept).forEach(k => {
+        html += '<div class="v4-dept"><div class="v4-dept-name">🏬 ' + esc(k === '0' ? 'بدون إدارة (اربطها)' : nameOf(orgDepts, k) || 'إدارة') + '</div><div class="v4-units">' +
+          byDept[k].map(u => '<button class="v4-unit" onclick="v4UnitModal(' + u.id + ')"><b>' + esc(u.name_ar) + '</b><span>' + (wcount[u.id] || 0) + ' موظف</span></button>').join('') + '</div></div>';
+      });
+      html += '</div>';
+    });
+
+    const orphan = all.filter(s => !s.region_id);
+    if(orphan.length){
+      html += '<div class="v4-region v4-orphan"><div class="v4-region-head"><span class="v4-region-name">📦 وحدات بدون منطقة</span></div><div class="v4-units">' +
+        orphan.map(u => '<button class="v4-unit" onclick="v4UnitModal(' + u.id + ')"><b>' + esc(u.name_ar) + '</b><span>' + (wcount[u.id] || 0) + ' موظف' + (u.department_id ? ' • ' + esc(nameOf(orgDepts, u.department_id)) : '') + '</span></button>').join('') + '</div></div>';
+    }
+    box.innerHTML = html;
+  }
+
+  window.v4UnitModal = function(id, presetRegion){
+    const u = id ? secs().find(s => Number(s.id) === Number(id)) : null;
+    const ov = modal('<div class="v4-mt">' + (u ? '✏️ تعديل الوحدة' : '➕ وحدة جديدة (مصنع / فرع)') + '</div>' +
+      '<label class="field-label">اسم الوحدة</label><input id="v4u-name" class="input-field" placeholder="مثال: مصنع الرياض / فرع بريدة" value="' + esc(u ? u.name_ar : '') + '"/>' +
+      '<label class="field-label" style="margin-top:8px;">المنطقة</label><select id="v4u-region" class="input-field">' + opts(regions, u ? u.region_id : presetRegion, '— اختر المنطقة —') + '</select>' +
+      '<label class="field-label" style="margin-top:8px;">الإدارة</label><div style="display:flex;gap:6px;"><select id="v4u-dept" class="input-field">' + opts(orgDepts, u ? u.department_id : null, '— اختر الإدارة —') + '</select><button class="btn-secondary btn-sm" type="button" onclick="v4QuickDept()">+ إدارة</button></div>' +
+      (u ? '<div class="muted" style="font-size:11.5px;margin-top:8px;">' + (wcount[u.id] || 0) + ' موظف في الوحدة دي — تغيير المنطقة أو الإدارة مبيمسحش أي بيانات.</div>' : '') +
+      '<div class="v4-mf"><button class="btn-primary" onclick="v4SaveUnit(' + (u ? u.id : 'null') + ')">💾 حفظ</button><button class="btn-secondary" onclick="this.closest(\'.v4-ov\').remove()">إلغاء</button>' +
+      (u ? '<button class="btn-danger btn-sm" style="margin-right:auto;" onclick="v4DeleteUnit(' + u.id + ')">🗑️ حذف الوحدة</button>' : '') + '</div><div id="v4u-msg" style="font-size:12px;margin-top:8px;"></div>');
+    setTimeout(() => $q('v4u-name')?.focus(), 50);
+  };
+  window.v4QuickDept = async function(){
+    const n = (prompt('اسم الإدارة الجديدة (مثال: الإنتاج / التشغيل):') || '').trim(); if(!n) return;
+    const {data, error} = await sb.from('target_departments').insert({name_ar:n, is_active:true}).select().single();
+    if(error) return showToast('خطأ: ' + error.message);
+    orgDepts.push(data);
+    const sel = $q('v4u-dept'); if(sel) sel.innerHTML = opts(orgDepts, data.id, '— اختر الإدارة —');
+    showToast('تمت إضافة الإدارة ✅');
+  };
+  window.v4SaveUnit = async function(id){
+    const name_ar = ($q('v4u-name').value || '').trim(), msg = $q('v4u-msg');
+    if(!name_ar){ msg.innerHTML = '<span style="color:#991b1b;">اكتب اسم الوحدة</span>'; return; }
+    const payload = {name_ar, region_id:num($q('v4u-region').value), department_id:num($q('v4u-dept').value)};
+    const res = id ? await sb.from('sections').update(payload).eq('id', id) : await sb.from('sections').insert(payload);
+    if(res.error){ msg.innerHTML = '<span style="color:#991b1b;">' + esc(res.error.message) + '</span>'; return; }
+    document.querySelector('.v4-ov')?.remove();
+    await loadSections(); await renderOrgTree(); showToast('تم الحفظ ✅');
+  };
+  window.v4DeleteUnit = async function(id){
+    const tables = ['workers_evaluations','safety_cards','training_topics','quizzes'];
+    const cs = await Promise.all(tables.map(t => sb.from(t).select('id', {count:'exact', head:true}).eq('section_id', id).then(x => x.count || 0)));
+    const adm = await sb.from('admin_sections').select('id', {count:'exact', head:true}).eq('section_id', id);
+    const used = cs[0] + cs[1] + cs[2] + cs[3] + (adm.count || 0);
+    if(used){
+      return showToast('مينفعش تحذف الوحدة: فيها ' + cs[0] + ' موظف و' + (cs[1] + cs[2] + cs[3]) + ' محتوى و' + (adm.count || 0) + ' أدمن. انقلهم الأول.');
+    }
+    if(!confirm('حذف الوحدة الفاضية دي؟')) return;
+    const {error} = await sb.from('sections').delete().eq('id', id);
+    if(error) return showToast('خطأ: ' + error.message);
+    document.querySelector('.v4-ov')?.remove();
+    await loadSections(); await renderOrgTree(); showToast('تم الحذف');
+  };
+  window.v4RegionModal = function(id){
+    const r = id ? regions.find(x => Number(x.id) === Number(id)) : null;
+    modal('<div class="v4-mt">' + (r ? '✏️ تعديل المنطقة' : '➕ منطقة جديدة') + '</div>' +
+      '<label class="field-label">اسم المنطقة</label><input id="v4r-name" class="input-field" placeholder="مثال: الرياض" value="' + esc(r ? r.name_ar : '') + '"/>' +
+      '<div class="v4-mf"><button class="btn-primary" onclick="v4SaveRegion(' + (r ? r.id : 'null') + ')">💾 حفظ</button><button class="btn-secondary" onclick="this.closest(\'.v4-ov\').remove()">إلغاء</button>' +
+      (r ? '<button class="btn-danger btn-sm" style="margin-right:auto;" onclick="v4DeleteRegion(' + r.id + ')">🗑️ حذف</button>' : '') + '</div>');
+    setTimeout(() => $q('v4r-name')?.focus(), 50);
+  };
+  window.v4SaveRegion = async function(id){
+    const name_ar = ($q('v4r-name').value || '').trim(); if(!name_ar) return showToast('اكتب اسم المنطقة');
+    const res = id ? await sb.from('regions').update({name_ar}).eq('id', id) : await sb.from('regions').insert({name_ar, sort_order:regions.length + 1});
+    if(res.error) return showToast('خطأ: ' + res.error.message);
+    document.querySelector('.v4-ov')?.remove(); await renderOrgTree(); showToast('تم الحفظ ✅');
+  };
+  window.v4DeleteRegion = async function(id){
+    if(secs().some(s => Number(s.region_id) === Number(id))) return showToast('فيه وحدات في المنطقة دي. انقلها لمنطقة تانية الأول.');
+    if(!confirm('حذف المنطقة الفاضية؟ (أي نطاق أدمن مبني عليها هيتشال)')) return;
+    const {error} = await sb.from('regions').delete().eq('id', id);
+    if(error) return showToast('خطأ: ' + error.message);
+    document.querySelector('.v4-ov')?.remove(); await renderOrgTree(); showToast('تم الحذف');
+  };
+
+  /* =====================  منشئ النطاق (يُستخدم في الأدمن وفي إضافة الموظف)  ===================== */
+  function mountScope(el, rules){
+    el._rules = (rules || []).map(r => ({region_id:r.region_id || null, department_id:r.department_id || null, section_id:r.section_id || null}));
+    const draw = () => {
+      const chips = el._rules.map((r, i) => {
+        const m = unitsForRule(r);
+        return '<div class="v4-rule"><div><b>' + esc(ruleText(r)) + '</b><div class="muted" style="font-size:11px;">' +
+          (m.length ? 'يشمل ' + m.length + ' وحدة: ' + esc(m.slice(0, 5).map(s => s.name_ar).join('، ')) + (m.length > 5 ? '…' : '') : 'مفيش وحدات مطابقة حاليًا (هتنضم تلقائيًا لو اتربطت بعدين)') +
+          '</div></div><button type="button" class="btn-danger btn-sm" data-i="' + i + '">✕</button></div>';
+      }).join('') || '<div class="muted" style="font-size:12px;">لسه مفيش نطاق. ضيف واحد على الأقل.</div>';
+      el.innerHTML = '<div class="v4-rules">' + chips + '</div>' +
+        '<div class="v4-addrule"><select class="input-field sc-reg">' + opts(regions, null, 'كل المناطق') + '</select><select class="input-field sc-dep">' + opts(orgDepts, null, 'كل الإدارات') + '</select><select class="input-field sc-sec"></select><button type="button" class="btn-primary btn-sm sc-add">+ إضافة نطاق</button></div>' +
+        '<div class="muted" style="font-size:11px;margin-top:5px;">مثال: «الرياض + كل الإدارات» = كل وحدات الرياض • «كل المناطق + الإنتاج» = كل مصانع الإنتاج • «القصيم + التشغيل» = فروع القصيم • أو وحدة بعينها.</div>';
+      const reg = el.querySelector('.sc-reg'), dep = el.querySelector('.sc-dep'), sec = el.querySelector('.sc-sec');
+      const fillSec = () => {
+        const list = unitsForRule({region_id:num(reg.value), department_id:num(dep.value)});
+        sec.innerHTML = '<option value="">كل الوحدات</option>' + list.map(s => '<option value="' + s.id + '">' + esc(s.name_ar) + '</option>').join('');
+      };
+      reg.onchange = fillSec; dep.onchange = fillSec; fillSec();
+      el.querySelector('.sc-add').onclick = () => {
+        const r = {region_id:num(reg.value), department_id:num(dep.value), section_id:num(sec.value)};
+        if(!r.region_id && !r.department_id && !r.section_id) return showToast('اختار منطقة أو إدارة أو وحدة (أو فعّل سوبر أدمن للصلاحيات الكاملة)');
+        if(el._rules.some(x => x.region_id === r.region_id && x.department_id === r.department_id && x.section_id === r.section_id)) return showToast('النطاق ده مضاف بالفعل');
+        el._rules.push(r); draw();
+      };
+      el.querySelectorAll('.v4-rule .btn-danger').forEach(b => b.onclick = () => { el._rules.splice(Number(b.dataset.i), 1); draw(); });
+    };
+    draw();
+  }
+  const getRules = el => (el && el._rules) ? el._rules.slice() : [];
+
+  /* ---------- إنشاء أدمن لموظف (مشترك) ---------- */
+  async function createAdminFor(worker, {is_super, title, rules}){
+    const {data:ex} = await sb.from('admins').select('id').eq('worker_id', worker.id).maybeSingle();
+    if(ex) return {error:'الموظف ده أصلاً عنده صلاحية أدمن.'};
+    let ins = await sb.from('admins').insert({name:worker.worker_name, code:String(worker.id), worker_id:worker.id, is_super:!!is_super, title:title || null}).select().single();
+    if(ins.error && /title/i.test(ins.error.message || '')) ins = await sb.from('admins').insert({name:worker.worker_name, code:String(worker.id), worker_id:worker.id, is_super:!!is_super}).select().single();
+    if(ins.error) return {error:ins.error.message};
+    if(!is_super && rules.length){
+      const r2 = await sb.from('admin_scopes').insert(rules.map(r => ({admin_id:ins.data.id, ...r})));
+      if(r2.error){ await sb.from('admins').delete().eq('id', ins.data.id); return {error:'تعذر حفظ النطاق: ' + r2.error.message + ' (اتأكد إنك شغّلت phase1.sql)'}; }
+    }
+    return {admin:ins.data};
+  }
+
+  /* =====================  شاشة الأدمن  ===================== */
+  let picked = null;
+  function ensureAdminGrant(){
+    const tab = $q('tab-admins'); if(!tab) return;
+    const old = $q('ad-worker-id')?.closest('.card'); if(old) old.classList.add('hidden');
+    if(!$q('v4-grant')){
+      const card = document.createElement('div');
+      card.id = 'v4-grant'; card.className = 'card'; card.style.cssText = 'padding:16px;margin-bottom:14px;';
+      card.innerHTML =
+        '<div class="section-title" style="margin-bottom:4px;">➕ منح صلاحية أدمن لموظف</div>' +
+        '<p class="muted" style="font-size:12px;margin-bottom:12px;">الموظف بيدخل بنفس رقمه وكلمة سره، ولو ليه صلاحية أدمن بيختار يدخل كموظف أو كأدمن. النطاق بيتحدد بالمنطقة والإدارة والوحدة.</p>' +
+        '<label class="field-label">الموظف (رقم أو اسم)</label><input id="v4-ag-q" class="input-field" placeholder="🔍 اكتب رقم الموظف أو اسمه"/>' +
+        '<div id="v4-ag-res" style="margin:6px 0;"></div><div id="v4-ag-picked" class="v4-picked hidden"></div>' +
+        '<label class="v4-check"><input id="v4-ag-super" type="checkbox"/> 🛡️ سوبر أدمن (صلاحيات كاملة على كل الهيكل)</label>' +
+        '<div id="v4-ag-opts"><label class="field-label" style="margin-top:10px;">المسمى (اختياري)</label><input id="v4-ag-title" list="v4-titles" class="input-field" placeholder="مثال: مدير فرع"/>' +
+        '<datalist id="v4-titles">' + TITLES.map(t => '<option value="' + t + '">').join('') + '</datalist>' +
+        '<label class="field-label" style="margin-top:10px;">النطاق (يقدر يتابع موظفين ويضيف محتوى في الوحدات دي بس)</label><div id="v4-ag-scope"></div></div>' +
+        '<div style="margin-top:14px;"><button class="btn-primary" style="padding:10px 22px;font-size:13px;" onclick="v4Grant()">منح الصلاحية</button></div><div id="v4-ag-msg" style="font-size:12px;margin-top:8px;"></div>';
+      old ? old.parentElement.insertBefore(card, old) : tab.prepend(card);
+      let t; $q('v4-ag-q').oninput = () => { clearTimeout(t); t = setTimeout(searchAdminWorker, 250); };
+      $q('v4-ag-super').onchange = e => $q('v4-ag-opts').classList.toggle('hidden', e.target.checked);
+    }
+    loadOrgMeta().then(() => { mountScope($q('v4-ag-scope'), getRules($q('v4-ag-scope'))); renderAdminAdminsV4(); });
+  }
+  async function searchAdminWorker(){
+    const s = ($q('v4-ag-q').value || '').trim(), box = $q('v4-ag-res');
+    if(!s){ box.innerHTML = ''; return; }
+    let qy = sb.from('workers_evaluations').select('id,worker_name,section_id').limit(6);
+    qy = /^\d+$/.test(s) ? qy.eq('id', Number(s)) : qy.ilike('worker_name', '%' + s.replace(/[%_]/g, '') + '%');
+    const {data} = await qy;
+    box.innerHTML = (data || []).map(w => '<button type="button" class="os-chip" data-id="' + w.id + '">#' + w.id + ' ' + esc(w.worker_name) + '</button>').join(' ') || '<span class="muted" style="font-size:12px;">مفيش نتائج</span>';
+    box.querySelectorAll('button').forEach(b => b.onclick = () => {
+      picked = (data || []).find(w => String(w.id) === b.dataset.id);
+      const u = secs().find(x => Number(x.id) === Number(picked.section_id));
+      const pk = $q('v4-ag-picked'); pk.classList.remove('hidden');
+      pk.innerHTML = '✅ <b>#' + picked.id + ' ' + esc(picked.worker_name) + '</b>' + (u ? ' <span class="muted">— ' + esc(u.name_ar) + '</span> <button type="button" class="btn-secondary btn-sm" id="v4-ag-own">استخدم وحدته كنطاق</button>' : '');
+      $q('v4-ag-own') && ($q('v4-ag-own').onclick = () => { const el = $q('v4-ag-scope'); const r = getRules(el); r.push({section_id:u.id}); mountScope(el, r); });
+      box.innerHTML = '';
+    });
+  }
+  window.v4Grant = async function(){
+    const msg = $q('v4-ag-msg'), sup = $q('v4-ag-super').checked, rules = getRules($q('v4-ag-scope'));
+    if(!picked){ msg.innerHTML = '<span style="color:#991b1b;">اختار الموظف الأول</span>'; return; }
+    if(!sup && !rules.length){ msg.innerHTML = '<span style="color:#991b1b;">ضيف نطاق واحد على الأقل أو فعّل سوبر أدمن</span>'; return; }
+    const {error} = await createAdminFor({id:picked.id, worker_name:picked.worker_name}, {is_super:sup, title:($q('v4-ag-title').value || '').trim(), rules});
+    if(error){ msg.innerHTML = '<span style="color:#991b1b;">' + esc(error) + '</span>'; return; }
+    msg.innerHTML = '<span style="color:#166534;">تم منح الصلاحية للموظف #' + picked.id + ' ✅</span>';
+    picked = null; $q('v4-ag-q').value = ''; $q('v4-ag-picked').classList.add('hidden'); $q('v4-ag-title').value = ''; $q('v4-ag-super').checked = false; $q('v4-ag-opts').classList.remove('hidden');
+    mountScope($q('v4-ag-scope'), []); renderAdminAdminsV4();
+  };
+
+  async function renderAdminAdminsV4(){
+    const box = $q('admins-list'); if(!box || !adminUser?.isSuper) return;
+    if(!regions.length) await loadOrgMeta().catch(() => {});
+    const [a, sc, ls] = await Promise.all([sb.from('admins').select('*').order('id'), sb.from('admin_scopes').select('*'), sb.from('admin_sections').select('*')]);
+    const canDeleteAny = adminUser?.isSuper && !adminUser?.id;
+    box.innerHTML = (a.data || []).map(ad => {
+      const rules = (sc.data || []).filter(r => r.admin_id === ad.id).map(ruleText)
+        .concat((ls.data || []).filter(r => r.admin_id === ad.id).map(r => ruleText({section_id:r.section_id})));
+      const canDelete = canDeleteAny || !ad.is_super;
+      return '<div class="card v4-admin"><div><b>' + esc(ad.name) + '</b> ' + (ad.is_super ? '<span class="badge badge-green" style="font-size:9.5px;">Super Admin</span>' : '') + (ad.title ? ' <span class="badge badge-blue" style="font-size:9.5px;">' + esc(ad.title) + '</span>' : '') +
+        '<div class="muted" style="font-size:11px;margin:3px 0 6px;">رقم الموظف: ' + esc(ad.worker_id || ad.code) + '</div>' +
+        '<div class="v4-tags">' + (ad.is_super ? '<span class="v4-tag">كل الهيكل</span>' : (rules.map(t => '<span class="v4-tag">' + esc(t) + '</span>').join('') || '<span class="muted" style="font-size:11.5px;">بدون نطاق</span>')) + '</div></div>' +
+        '<div class="v4-admin-btns">' + (ad.is_super ? '' : '<button class="btn-secondary btn-sm" onclick="v4EditAdmin(' + ad.id + ')">✏️ تعديل النطاق</button>') +
+        (canDelete ? '<button class="btn-danger btn-sm" onclick="deleteAdmin(' + ad.id + ')">إلغاء الصلاحية</button>' : '') + '</div></div>';
+    }).join('') || '<div class="muted">لا يوجد أدمن</div>';
+  }
+  renderAdminAdmins = renderAdminAdminsV4;
+  renderAdminAdminsV23 = renderAdminAdminsV4;
+
+  window.v4EditAdmin = async function(id){
+    if(!orgReady) await loadOrgMeta();
+    const [a, sc, ls] = await Promise.all([sb.from('admins').select('*').eq('id', id).single(), sb.from('admin_scopes').select('*').eq('admin_id', id), sb.from('admin_sections').select('*').eq('admin_id', id)]);
+    if(!a.data) return showToast('تعذر جلب الأدمن');
+    const oldScopeIds = (sc.data || []).map(r => r.id), oldLegacyIds = (ls.data || []).map(r => r.id);
+    const rules = (sc.data || []).map(r => ({region_id:r.region_id, department_id:r.department_id, section_id:r.section_id})).concat((ls.data || []).map(r => ({section_id:r.section_id})));
+    const ov = modal('<div class="v4-mt">✏️ تعديل نطاق: ' + esc(a.data.name) + '</div><label class="field-label">المسمى</label><input id="v4e-title" list="v4-titles" class="input-field" value="' + esc(a.data.title || '') + '"/><label class="field-label" style="margin-top:10px;">النطاق</label><div id="v4e-scope"></div>' +
+      '<div class="v4-mf"><button class="btn-primary" id="v4e-save">💾 حفظ</button><button class="btn-secondary" onclick="this.closest(\'.v4-ov\').remove()">إلغاء</button></div><div id="v4e-msg" style="font-size:12px;margin-top:8px;"></div>');
+    mountScope($q('v4e-scope'), rules);
+    $q('v4e-save').onclick = async () => {
+      const nr = getRules($q('v4e-scope')), msg = $q('v4e-msg');
+      if(!nr.length){ msg.innerHTML = '<span style="color:#991b1b;">لازم نطاق واحد على الأقل</span>'; return; }
+      const ins = await sb.from('admin_scopes').insert(nr.map(r => ({admin_id:id, ...r})));   // نضيف الجديد الأول، وبعدين نشيل القديم
+      if(ins.error){ msg.innerHTML = '<span style="color:#991b1b;">' + esc(ins.error.message) + '</span>'; return; }
+      if(oldScopeIds.length) await sb.from('admin_scopes').delete().in('id', oldScopeIds);
+      if(oldLegacyIds.length) await sb.from('admin_sections').delete().in('id', oldLegacyIds);
+      await sb.from('admins').update({title:($q('v4e-title').value || '').trim() || null}).eq('id', id);
+      ov.remove(); renderAdminAdminsV4(); showToast('تم تحديث النطاق ✅');
+    };
+  };
+
+  /* =====================  نموذج إضافة الموظف: منطقة ← إدارة ← وحدة + الصلاحية  ===================== */
+  function unitListForForm(){
+    let list = secs();
+    if(adminUser && !adminUser.isSuper){ const ids = getAdminScopeIds().map(Number); list = list.filter(s => ids.includes(Number(s.id))); }
+    const rg = num($q('nw-region')?.value), dp = num($q('nw-dept')?.value);
+    return list.filter(s => (!rg || Number(s.region_id) === rg) && (!dp || Number(s.department_id) === dp));
+  }
+  function refreshNwUnits(){
+    const sel = $q('nw-section'); if(!sel || !$q('nw-region')) return;
+    const cur = sel.value;
+    const list = unitListForForm();
+    sel.innerHTML = '<option value="">— اختر الوحدة —</option>' + list.map(s => '<option value="' + s.id + '">' + esc(s.name_ar) + '</option>').join('');
+    if(list.some(s => String(s.id) === cur)) sel.value = cur;
+  }
+  async function enhanceWorkerForm(){
+    const sel = $q('nw-section'); if(!sel) return;
+    await loadOrgMeta().catch(() => {});
+    if(!$q('nw-region')){
+      const wrap = sel.parentElement;
+      const lbl = wrap.querySelector('label'); if(lbl) lbl.textContent = 'الوحدة (مصنع / فرع)';
+      wrap.insertAdjacentHTML('beforebegin',
+        '<div><label class="field-label">المنطقة</label><select id="nw-region" class="input-field"></select></div>' +
+        '<div><label class="field-label">الإدارة</label><select id="nw-dept" class="input-field"></select></div>');
+      wrap.insertAdjacentHTML('afterend',
+        '<div id="nw-perm-wrap"><label class="field-label">الصلاحية</label><select id="nw-perm" class="input-field"><option value="worker">موظف فقط</option><option value="admin">موظف + أدمن (يتابع عمال ويضيف محتوى)</option></select>' +
+        '<div id="nw-admin-box" class="v4-box hidden"><label class="field-label">المسمى</label><input id="nw-admin-title" list="v4-titles" class="input-field" placeholder="مثال: مدير فرع"/>' +
+        '<label class="field-label" style="margin-top:8px;">النطاق (لو سيبته فاضي = وحدته بس)</label><div id="nw-scope"></div></div></div>');
+      $q('nw-region').onchange = refreshNwUnits; $q('nw-dept').onchange = refreshNwUnits;
+      $q('nw-perm').onchange = e => { $q('nw-admin-box').classList.toggle('hidden', e.target.value !== 'admin'); if(e.target.value === 'admin') mountScope($q('nw-scope'), getRules($q('nw-scope'))); };
+    }
+    $q('nw-region').innerHTML = opts(regions, $q('nw-region').value, 'كل المناطق');
+    $q('nw-dept').innerHTML = opts(orgDepts, $q('nw-dept').value, 'كل الإدارات');
+    $q('nw-perm-wrap').classList.toggle('hidden', !adminUser?.isSuper);
+    refreshNwUnits();
+  }
+
+  window.saveWorker = async function(){
+    if(!adminUser) return showToast('هذه العملية للأدمن فقط');
+    const id = ($q('nw-id')?.value || '').trim(), worker_name = ($q('nw-name')?.value || '').trim();
+    const job_role_id = $q('nw-role')?.value ? Number($q('nw-role').value) : null;
+    const section_id = $q('nw-section')?.value ? Number($q('nw-section').value) : null;
+    const msg = $q('add-worker-msg');
+    if(!id || !worker_name || !job_role_id || !section_id){
+      if(msg) msg.innerHTML = '<span style="color:#991b1b;">أكمل الرقم الوظيفي والاسم والوظيفة والوحدة.</span>'; return;
+    }
+    if(!adminUser.isSuper && !getAdminScopeIds().map(Number).includes(section_id)) return showToast('لا يمكنك إضافة موظف خارج نطاقك');
+    const {error} = await sb.from('workers_evaluations').insert({id:Number(id), worker_name, job_role_id, section_id, kpi_score:100, violations_count:0});
+    if(error){ if(msg) msg.innerHTML = '<span style="color:#991b1b;">خطأ: ' + esc(String(error.message || '').includes('duplicate') ? 'الرقم الوظيفي مسجل مسبقًا' : error.message) + '</span>'; return; }
+    let extra = '';
+    if(adminUser.isSuper && $q('nw-perm')?.value === 'admin'){
+      let rules = getRules($q('nw-scope')); if(!rules.length) rules = [{section_id}];
+      const r = await createAdminFor({id:Number(id), worker_name}, {is_super:false, title:($q('nw-admin-title')?.value || '').trim(), rules});
+      extra = r.error ? ' — لكن صلاحية الأدمن ما اتضافتش: ' + esc(r.error) : ' وتم منحه صلاحية أدمن ✅';
+    }
+    ['nw-id', 'nw-name'].forEach(i => { if($q(i)) $q(i).value = ''; });
+    if($q('nw-role')) $q('nw-role').value = ''; if($q('nw-section')) $q('nw-section').value = '';
+    if($q('nw-perm')){ $q('nw-perm').value = 'worker'; $q('nw-admin-box').classList.add('hidden'); if($q('nw-admin-title')) $q('nw-admin-title').value = ''; mountScope($q('nw-scope'), []); }
+    if(msg){ msg.innerHTML = '<span style="color:#166534;">تمت إضافة الموظف بنجاح ✅' + extra + '</span>'; setTimeout(() => msg.innerHTML = '', 5000); }
+    await loadWorkers();
+  };
+
+  /* ---------- توصيل الشاشات بالتابات ---------- */
+  const baseTab = adminTab;
+  adminTab = function(tab){
+    baseTab.apply(this, arguments);
+    try{
+      if(tab === 'org') renderOrgTree();
+      if(tab === 'admins') ensureAdminGrant();
+      if(tab === 'workers') enhanceWorkerForm();
+    }catch(e){ console.error('v4 tab', e); }
+  };
+  const basePop = populateSectionDropdowns;
+  populateSectionDropdowns = function(){ basePop.apply(this, arguments); try{ refreshNwUnits(); }catch(e){} };
 })();
 
 </script>
