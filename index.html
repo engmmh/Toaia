@@ -496,6 +496,69 @@ body.v8-en .tab-btn .nav-en{display:none}
 body.v8-en #admin-section .nav-label{text-align:left}
 body.v8-en #admin-section .btn-danger .nav-en{display:none}
 body.v8-en button small.nav-en,body.v8-en .section-title .nav-en{display:none!important}
+/* V9 — ميزات الموظف + بلاغات الأدمن + تبديل الدور */
+.wicon-row{grid-template-columns:repeat(auto-fit,minmax(86px,1fr))!important}
+.v9-banner,.v9-adminnote{display:flex;justify-content:space-between;align-items:center;gap:10px;background:#eff6ff;border:1px solid #bfdbfe;color:#1e3a8a;border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:13px;font-weight:700}
+.v9-banner.late{background:#fef2f2;border-color:#fecaca;color:#991b1b}
+.v9-adminnote{background:#f0fdf4;border-color:#bbf7d0;color:#166534}
+.v9-offbar{background:#fef3c7;border:1px solid #fde68a;color:#92400e;border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:12px;font-weight:700;text-align:center}
+.v9-panel{padding:16px;margin-bottom:14px}
+.v9-hero{display:flex;align-items:center;gap:16px;margin-bottom:14px}
+.v9-ring{--p:0;width:92px;height:92px;flex:none;border-radius:50%;background:conic-gradient(var(--primary) calc(var(--p)*1%),#e2e8f0 0);display:flex;align-items:center;justify-content:center;position:relative}
+.v9-ring:before{content:"";position:absolute;inset:9px;background:#fff;border-radius:50%}
+.v9-ring b{position:relative;font-size:20px;font-weight:900;color:var(--primary)}
+.v9-hero-t{flex:1;min-width:0}.v9-pts{font-size:15px;font-weight:700}.v9-pts span{font-size:30px;font-weight:900;color:var(--primary)}
+.v9-lvl{font-size:13px;margin:2px 0 6px}.v9-bar{height:9px;background:#e2e8f0;border-radius:9px;overflow:hidden}.v9-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--primary),var(--primary-light))}
+.v9-sm{font-size:11px;color:var(--muted);margin-top:4px}.v9-red{color:#b91c1c;font-weight:800}.v9-ok{color:#166534;font-weight:700;font-size:13px;margin:6px 0}
+.v9-blk{border-top:1px solid var(--border);padding-top:12px;margin-top:12px}.v9-h{font-weight:800;font-size:14px;margin-bottom:8px}
+.v9-pend{font-size:13px;font-weight:700;margin-bottom:6px}.v9-ul{margin:0 0 10px;padding-inline-start:18px;font-size:13px}.v9-ul li.v9-late{color:#b91c1c;font-weight:700}
+.v9-notif{margin-top:10px}
+.v9-badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
+.v9-badge{text-align:center;border:1px dashed var(--border);border-radius:12px;padding:10px 4px;opacity:.4;filter:grayscale(1)}
+.v9-badge.on{opacity:1;filter:none;border:1px solid #bbf7d0;background:#f0fdf4}.v9-badge span{font-size:26px;display:block}.v9-badge small{font-size:10px;font-weight:700;display:block;margin-top:3px}
+.v9-rankme{font-weight:800;color:var(--primary);margin-bottom:6px}
+.v9-lb{list-style:none;margin:0;padding:0}.v9-lb li{display:flex;gap:10px;align-items:center;padding:7px 10px;border-radius:9px;font-size:13px}.v9-lb li:nth-child(odd){background:#f8fafc}
+.v9-lb li.me{background:#ecfdf5;font-weight:800;outline:1px solid #86efac}.v9-lb .rk{width:26px;font-weight:900;color:var(--primary)}.v9-lb .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.v9-lb .pt{font-weight:800}
+.v9-rev-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;font-size:13px}
+.v9-tools{display:flex;gap:8px;flex-wrap:wrap}
+.v9-modal{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:14px}.v9-modal.hidden{display:none}
+.v9-mbox{position:relative;background:#fff;border-radius:16px;max-width:760px;width:100%;max-height:92vh;overflow:auto;padding:20px}
+.v9-x{position:absolute;top:8px;inset-inline-end:10px;background:none;border:0;font-size:18px;cursor:pointer;color:var(--muted)}
+.v9-mact{display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+.v9-revscore{margin:4px 0 12px;font-size:14px}.v9-q{border-radius:10px;padding:10px;margin-bottom:8px;border:1px solid}.v9-q.ok{background:#f0fdf4;border-color:#bbf7d0}.v9-q.bad{background:#fef2f2;border-color:#fecaca}
+.v9-qt{font-weight:800;font-size:13px}.v9-qt span{font-size:11px;margin-inline-start:6px}.v9-qa,.v9-qc{font-size:12px;margin-top:4px}.v9-qc{color:#166534;font-weight:700}
+.v9-lbl{display:block;font-size:12px;font-weight:700;margin:10px 0 4px;color:var(--muted)}
+.v9-photo-btn{display:inline-block;margin-top:10px;padding:9px 14px;border:1px dashed var(--primary);border-radius:10px;color:var(--primary);font-weight:700;font-size:13px;cursor:pointer}
+.v9-prev{display:block;max-width:100%;max-height:220px;border-radius:10px;margin-top:8px}
+.v9-rep{border:1px solid var(--border);border-radius:10px;padding:10px;margin-top:8px;font-size:13px}.v9-reply{background:#ecfdf5;border-radius:8px;padding:6px 8px;margin-top:6px;font-size:12px}
+.v9-st{display:inline-block;font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;background:#fee2e2;color:#991b1b;margin-inline-start:6px}.v9-st.reviewing{background:#fef3c7;color:#92400e}.v9-st.closed{background:#dcfce7;color:#166534}
+.v9-listen{position:fixed;bottom:18px;inset-inline-end:18px;width:58px;height:58px;border-radius:50%;border:0;background:var(--primary);color:#fff;font-size:26px;box-shadow:0 6px 18px rgba(0,0,0,.25);z-index:9000;cursor:pointer}.v9-listen.hidden{display:none}
+/* واجهة مبسطة */
+body.v9-simple #worker-section{font-size:17px}
+body.v9-simple #worker-section .wicon-row{grid-template-columns:repeat(2,1fr)!important;gap:14px}
+body.v9-simple #worker-section .wicon-btn{padding:22px 8px}body.v9-simple #worker-section .wicon-emoji{font-size:46px!important}body.v9-simple #worker-section .wicon-label{font-size:16px!important;font-weight:800}
+body.v9-simple #worker-section .muted,body.v9-simple #wt-videos-hint,body.v9-simple #worker-section .v9-sm{display:none}
+body.v9-simple #worker-section .btn-primary,body.v9-simple #worker-section .btn-secondary{font-size:17px;padding:14px}
+body.v9-simple #worker-section .card{padding:18px}
+/* أوفلاين */
+.v9-off{position:fixed;inset:0;background:#f8fafc;z-index:10000;overflow:auto;padding:16px}.v9-off.hidden{display:none}.v9-offin{max-width:720px;margin:0 auto}
+.v9-offbar2{background:#fef3c7;border:1px solid #fde68a;color:#92400e;border-radius:10px;padding:9px;text-align:center;font-weight:800;margin-bottom:12px;font-size:13px}
+.v9-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}.v9-c{border:1px solid var(--border);border-radius:12px;padding:10px;background:#fff}.v9-c img{width:100%;border-radius:8px}.v9-c p{font-size:12px;color:var(--muted)}
+/* أدمن */
+.v9-adm{padding:16px;margin-bottom:14px}.v9-f{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 12px}
+.v9-arep{border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px}.v9-arep-h{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.v9-desc{margin:6px 0;font-size:13px}
+.v9-arep-f{display:flex;flex-direction:column;gap:6px;margin-top:8px}.v9-img{max-width:100%;max-height:300px;border-radius:10px;cursor:zoom-in;margin-top:6px}
+.v9-warn{background:#fef3c7;border:1px solid #fde68a;color:#92400e;border-radius:10px;padding:8px 10px;font-size:12px;margin-top:8px}
+.v9-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:8px 0;font-size:13px;font-weight:700}.v9-row .input-field{max-width:240px}
+.v9-sub{font-size:12px;color:var(--muted);margin-bottom:8px}
+.v9-navbadge{background:#dc2626;color:#fff;border-radius:20px;font-size:10px;font-weight:800;padding:1px 7px;margin-inline-start:auto}.v9-navbadge.hidden{display:none}
+.v9-dualcard{padding:16px;margin-bottom:14px;background:linear-gradient(135deg,#f0fdf4,#fff);border:1px solid #bbf7d0}
+.v9-dgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;margin:8px 0}.v9-dgrid b{display:block;font-size:22px;font-weight:900;color:var(--primary)}.v9-dgrid small{font-size:11px;color:var(--muted)}
+.v9-drow{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0}
+.v9-auto{display:flex;gap:6px;align-items:center;font-size:12px;margin-top:12px;cursor:pointer;justify-content:center}
+.v9-switch{width:auto!important;padding:0 10px;font-size:12px;font-weight:800;white-space:nowrap}
+@media(max-width:640px){.v9-switch .lbl{display:none}.v9-switch{padding:0 9px}}
+@media(max-width:640px){#admin-section>.card:first-child{flex-wrap:wrap;gap:10px}#admin-section>.card:first-child>div:first-child{flex:1 1 100%}}
 
 </style>
 </head>
@@ -7279,6 +7342,1000 @@ D.rx.push([/صفحة (\d+) من (\d+) — إجمالي/g,'Page $1 of $2 — Tota
     w.document.write('<html lang="' + (en ? 'en' : 'ar') + '" dir="' + (en ? 'ltr' : 'rtl') + '"><head><meta charset="utf-8"><title>' + (en ? CT.en.print : CT.ar.print) + '</title><style>body{font-family:sans-serif;padding:20px;}</style></head><body>' + area.innerHTML + '</body></html>');
     w.document.close(); w.focus(); setTimeout(() => w.print(), 300);
   };
+})();
+/* V9 — نصوص ميزات الموظف بالخمس لغات (ar / en / bn / ne / hi) */
+window.V9_N = {
+ar:{tabMe:'إنجازاتي',tabReport:'إبلاغ',myPoints:'نقاطي',pts:'نقطة',level:'المستوى',l0:'برونزي',l1:'فضي',l2:'ذهبي',l3:'بلاتيني',toNext:'باقي {a} نقطة للمستوى التالي',maxLevel:'وصلت لأعلى مستوى 🎉',
+ badges:'شاراتي',b_first:'أول فيديو',b_allvideos:'كل الفيديوهات',b_ace:'متفوق في الاختبار',b_complete:'أنجزت كل التدريبات',b_onsite:'حضرت تدريب ميداني',b_clean:'سجل نظيف',
+ rank:'ترتيبي في وحدتي',rankYou:'المركز {a} من {b}',you:'أنت',rankNone:'الترتيب يظهر لما يكون في الوحدة 3 موظفين على الأقل',
+ pendTitle:'المتبقي عليّ',pendN:'متبقي عليك {a} من التدريبات',overdueN:'منها {a} متأخرة',allDone:'أنجزت كل المطلوب، شكرًا لك ✅',openIt:'افتح',
+ notifOn:'فعّل التنبيهات',notifOk:'التنبيهات مفعّلة ✅',notifDenied:'التنبيهات محظورة من إعدادات المتصفح',notifNote:'التنبيه بيظهر لما تفتح التطبيق وفيه تدريبات متبقية.',notifTitle:'تذكير بالتدريب',
+ certTitle:'شهادتي',certLocked:'الشهادة بتفتح لما تخلّص كل التدريبات والاختبارات',certReady:'مبروك! شهادتك جاهزة',certBtn:'عرض وطباعة الشهادة',
+ cert_head:'شهادة إتمام التدريب',cert_l1:'تشهد المنصة بأن',cert_l2:'قد أتمّ بنجاح جميع التدريبات المطلوبة',cert_unit:'الوحدة',cert_date:'التاريخ',cert_code:'رمز التحقق',cert_note:'شهادة مُولَّدة تلقائيًا من سجلات المنصة',print:'طباعة / حفظ PDF',close:'إغلاق',
+ revTitle:'مراجعة اختباراتي',revBtn:'راجع إجاباتك',revEmpty:'لسه مفيش اختبارات محلولة للمراجعة على الجهاز ده',revScore:'نتيجتك',yourAns:'إجابتك',correctAns:'الإجابة الصحيحة',correct:'صح ✅',wrong:'غلط ❌',noAns:'لم تجب',
+ simpleOn:'واجهة مبسطة',simpleOff:'الواجهة العادية',listen:'اسمع',stop:'إيقاف',noVoice:'الجهاز مفيهوش صوت لهذه اللغة',
+ offBanner:'أنت غير متصل بالإنترنت — عرض للقراءة فقط',offOpen:'فتح النسخة المحفوظة (بدون نت)',offNone:'مفيش نسخة محفوظة لهذا الرقم على الجهاز ده. لازم تدخل مرة بالنت الأول.',offBad:'كلمة السر غير صحيحة',offNeed:'التدريبات والاختبارات محتاجة إنترنت',offBack:'رجوع',onlineBack:'رجع الاتصال بالإنترنت ✅',
+ rTitle:'إبلاغ عن ملاحظة أو مخالفة',rCat:'نوع البلاغ',c_hygiene:'نظافة وصحة شخصية',c_equipment:'معدات وأجهزة',c_storage:'تخزين وتبريد',c_pests:'آفات وحشرات',c_other:'أخرى',rDesc:'اوصف الملاحظة',rPh:'اكتب باختصار: إيه اللي شفته وفين؟',rPhoto:'📷 أضف صورة (اختياري)',rSend:'إرسال البلاغ',rSent:'تم إرسال البلاغ ✅',rNeed:'اكتب وصف الملاحظة',rMine:'بلاغاتي',rNone:'لسه مبعتش أي بلاغ',s_new:'جديد',s_reviewing:'قيد المراجعة',s_closed:'تم الإغلاق',rReply:'رد الإدارة',rFail:'تعذر إرسال البلاغ',
+ toAdmin:'التحويل لوضع الأدمن',toWorker:'التحويل لوضع الموظف'},
+en:{tabMe:'My Progress',tabReport:'Report',myPoints:'My points',pts:'pts',level:'Level',l0:'Bronze',l1:'Silver',l2:'Gold',l3:'Platinum',toNext:'{a} points to the next level',maxLevel:'You reached the top level 🎉',
+ badges:'My badges',b_first:'First video',b_allvideos:'All videos',b_ace:'Quiz ace',b_complete:'All trainings done',b_onsite:'Attended on-site training',b_clean:'Clean record',
+ rank:'My rank in my unit',rankYou:'Rank {a} of {b}',you:'You',rankNone:'Ranking appears when the unit has at least 3 employees',
+ pendTitle:'What is left for me',pendN:'You have {a} trainings left',overdueN:'{a} of them overdue',allDone:'You finished everything required, thank you ✅',openIt:'Open',
+ notifOn:'Enable reminders',notifOk:'Reminders enabled ✅',notifDenied:'Notifications are blocked in browser settings',notifNote:'A reminder shows when you open the app and trainings are pending.',notifTitle:'Training reminder',
+ certTitle:'My certificate',certLocked:'The certificate unlocks after all trainings and quizzes are done',certReady:'Congratulations! Your certificate is ready',certBtn:'View & print certificate',
+ cert_head:'Certificate of Training Completion',cert_l1:'This is to certify that',cert_l2:'has successfully completed all required trainings',cert_unit:'Unit',cert_date:'Date',cert_code:'Verification code',cert_note:'Automatically generated from platform records',print:'Print / Save PDF',close:'Close',
+ revTitle:'Review my quizzes',revBtn:'Review your answers',revEmpty:'No solved quizzes to review on this device yet',revScore:'Your score',yourAns:'Your answer',correctAns:'Correct answer',correct:'Correct ✅',wrong:'Wrong ❌',noAns:'Not answered',
+ simpleOn:'Simple mode',simpleOff:'Normal view',listen:'Listen',stop:'Stop',noVoice:'This device has no voice for this language',
+ offBanner:'You are offline — read-only view',offOpen:'Open saved copy (offline)',offNone:'No saved copy for this ID on this device. Sign in once online first.',offBad:'Incorrect password',offNeed:'Trainings and quizzes need internet',offBack:'Back',onlineBack:'Back online ✅',
+ rTitle:'Report an observation or violation',rCat:'Report type',c_hygiene:'Hygiene & personal health',c_equipment:'Equipment',c_storage:'Storage & cooling',c_pests:'Pests',c_other:'Other',rDesc:'Describe it',rPh:'Briefly: what did you see and where?',rPhoto:'📷 Add a photo (optional)',rSend:'Send report',rSent:'Report sent ✅',rNeed:'Please describe the observation',rMine:'My reports',rNone:'You have not sent any report yet',s_new:'New',s_reviewing:'Under review',s_closed:'Closed',rReply:'Management reply',rFail:'Could not send the report',
+ toAdmin:'Switch to admin mode',toWorker:'Switch to employee mode'},
+bn:{tabMe:'আমার অর্জন',tabReport:'রিপোর্ট',myPoints:'আমার পয়েন্ট',pts:'পয়েন্ট',level:'লেভেল',l0:'ব্রোঞ্জ',l1:'সিলভার',l2:'গোল্ড',l3:'প্ল্যাটিনাম',toNext:'পরবর্তী লেভেলের জন্য আর {a} পয়েন্ট',maxLevel:'আপনি সর্বোচ্চ লেভেলে পৌঁছেছেন 🎉',
+ badges:'আমার ব্যাজ',b_first:'প্রথম ভিডিও',b_allvideos:'সব ভিডিও',b_ace:'কুইজে সেরা',b_complete:'সব প্রশিক্ষণ শেষ',b_onsite:'মাঠ প্রশিক্ষণে অংশগ্রহণ',b_clean:'পরিষ্কার রেকর্ড',
+ rank:'আমার ইউনিটে আমার অবস্থান',rankYou:'{b} জনের মধ্যে {a} নম্বর',you:'আপনি',rankNone:'ইউনিটে কমপক্ষে ৩ জন কর্মী থাকলে র‍্যাংক দেখা যাবে',
+ pendTitle:'আমার বাকি কাজ',pendN:'আপনার আরও {a}টি প্রশিক্ষণ বাকি',overdueN:'এর মধ্যে {a}টি বিলম্বিত',allDone:'আপনি সব কাজ শেষ করেছেন, ধন্যবাদ ✅',openIt:'খুলুন',
+ notifOn:'রিমাইন্ডার চালু করুন',notifOk:'রিমাইন্ডার চালু ✅',notifDenied:'ব্রাউজার সেটিংসে নোটিফিকেশন বন্ধ আছে',notifNote:'প্রশিক্ষণ বাকি থাকলে অ্যাপ খুললে রিমাইন্ডার দেখাবে।',notifTitle:'প্রশিক্ষণের রিমাইন্ডার',
+ certTitle:'আমার সনদ',certLocked:'সব প্রশিক্ষণ ও কুইজ শেষ হলে সনদ খুলবে',certReady:'অভিনন্দন! আপনার সনদ প্রস্তুত',certBtn:'সনদ দেখুন ও প্রিন্ট করুন',
+ cert_head:'প্রশিক্ষণ সমাপ্তির সনদ',cert_l1:'এই মর্মে প্রত্যয়ন করা হচ্ছে যে',cert_l2:'সকল প্রয়োজনীয় প্রশিক্ষণ সফলভাবে সম্পন্ন করেছেন',cert_unit:'ইউনিট',cert_date:'তারিখ',cert_code:'যাচাইকরণ কোড',cert_note:'প্ল্যাটফর্মের রেকর্ড থেকে স্বয়ংক্রিয়ভাবে তৈরি',print:'প্রিন্ট / PDF সংরক্ষণ',close:'বন্ধ করুন',
+ revTitle:'আমার কুইজ পর্যালোচনা',revBtn:'আপনার উত্তর দেখুন',revEmpty:'এই ডিভাইসে পর্যালোচনার জন্য কোনো কুইজ নেই',revScore:'আপনার স্কোর',yourAns:'আপনার উত্তর',correctAns:'সঠিক উত্তর',correct:'সঠিক ✅',wrong:'ভুল ❌',noAns:'উত্তর দেননি',
+ simpleOn:'সহজ মোড',simpleOff:'সাধারণ ভিউ',listen:'শুনুন',stop:'থামান',noVoice:'এই ডিভাইসে এই ভাষার ভয়েস নেই',
+ offBanner:'আপনি অফলাইনে আছেন — শুধু পড়ার জন্য',offOpen:'সংরক্ষিত কপি খুলুন (অফলাইন)',offNone:'এই ডিভাইসে এই আইডির কোনো সংরক্ষিত কপি নেই। আগে একবার অনলাইনে লগইন করুন।',offBad:'পাসওয়ার্ড ভুল',offNeed:'প্রশিক্ষণ ও কুইজের জন্য ইন্টারনেট লাগবে',offBack:'ফিরে যান',onlineBack:'ইন্টারনেট ফিরে এসেছে ✅',
+ rTitle:'পর্যবেক্ষণ বা লঙ্ঘনের রিপোর্ট',rCat:'রিপোর্টের ধরন',c_hygiene:'পরিচ্ছন্নতা ও ব্যক্তিগত স্বাস্থ্য',c_equipment:'যন্ত্রপাতি',c_storage:'সংরক্ষণ ও শীতলীকরণ',c_pests:'পোকামাকড়',c_other:'অন্যান্য',rDesc:'বর্ণনা করুন',rPh:'সংক্ষেপে লিখুন: কী দেখেছেন এবং কোথায়?',rPhoto:'📷 ছবি যোগ করুন (ঐচ্ছিক)',rSend:'রিপোর্ট পাঠান',rSent:'রিপোর্ট পাঠানো হয়েছে ✅',rNeed:'অনুগ্রহ করে বর্ণনা লিখুন',rMine:'আমার রিপোর্ট',rNone:'আপনি এখনও কোনো রিপোর্ট পাঠাননি',s_new:'নতুন',s_reviewing:'পর্যালোচনায়',s_closed:'বন্ধ',rReply:'ম্যানেজমেন্টের উত্তর',rFail:'রিপোর্ট পাঠানো যায়নি',
+ toAdmin:'অ্যাডমিন মোডে যান',toWorker:'কর্মী মোডে যান'},
+ne:{tabMe:'मेरो उपलब्धि',tabReport:'रिपोर्ट',myPoints:'मेरा अंक',pts:'अंक',level:'स्तर',l0:'कांस्य',l1:'चाँदी',l2:'सुन',l3:'प्लेटिनम',toNext:'अर्को स्तरका लागि {a} अंक बाँकी',maxLevel:'तपाईं उच्चतम स्तरमा पुग्नुभयो 🎉',
+ badges:'मेरा ब्याज',b_first:'पहिलो भिडियो',b_allvideos:'सबै भिडियो',b_ace:'क्विजमा उत्कृष्ट',b_complete:'सबै तालिम सकियो',b_onsite:'फिल्ड तालिममा सहभागी',b_clean:'सफा रेकर्ड',
+ rank:'मेरो एकाइमा मेरो स्थान',rankYou:'{b} मध्ये {a} औं स्थान',you:'तपाईं',rankNone:'एकाइमा कम्तीमा ३ कर्मचारी भएपछि स्थान देखिन्छ',
+ pendTitle:'मेरो बाँकी काम',pendN:'तपाईंको {a} वटा तालिम बाँकी छ',overdueN:'तीमध्ये {a} वटा ढिला',allDone:'तपाईंले सबै काम सक्नुभयो, धन्यवाद ✅',openIt:'खोल्नुहोस्',
+ notifOn:'रिमाइन्डर सक्रिय गर्नुहोस्',notifOk:'रिमाइन्डर सक्रिय ✅',notifDenied:'ब्राउजर सेटिङमा सूचना बन्द छ',notifNote:'तालिम बाँकी हुँदा एप खोल्दा रिमाइन्डर देखिन्छ।',notifTitle:'तालिम रिमाइन्डर',
+ certTitle:'मेरो प्रमाणपत्र',certLocked:'सबै तालिम र क्विज सकेपछि प्रमाणपत्र खुल्छ',certReady:'बधाई छ! तपाईंको प्रमाणपत्र तयार छ',certBtn:'प्रमाणपत्र हेर्नुहोस् र प्रिन्ट गर्नुहोस्',
+ cert_head:'तालिम सम्पन्न प्रमाणपत्र',cert_l1:'यो प्रमाणित गरिन्छ कि',cert_l2:'ले सबै आवश्यक तालिम सफलतापूर्वक पूरा गर्नुभएको छ',cert_unit:'एकाइ',cert_date:'मिति',cert_code:'प्रमाणीकरण कोड',cert_note:'प्लेटफर्मको रेकर्डबाट स्वचालित रूपमा तयार पारिएको',print:'प्रिन्ट / PDF सुरक्षित',close:'बन्द गर्नुहोस्',
+ revTitle:'मेरा क्विज समीक्षा',revBtn:'आफ्नो उत्तर हेर्नुहोस्',revEmpty:'यो उपकरणमा समीक्षा गर्न कुनै क्विज छैन',revScore:'तपाईंको अंक',yourAns:'तपाईंको उत्तर',correctAns:'सही उत्तर',correct:'सही ✅',wrong:'गलत ❌',noAns:'उत्तर दिनुभएन',
+ simpleOn:'सजिलो मोड',simpleOff:'सामान्य दृश्य',listen:'सुन्नुहोस्',stop:'रोक्नुहोस्',noVoice:'यो उपकरणमा यस भाषाको आवाज छैन',
+ offBanner:'तपाईं अफलाइन हुनुहुन्छ — पढ्न मात्र',offOpen:'सुरक्षित प्रति खोल्नुहोस् (अफलाइन)',offNone:'यो उपकरणमा यो आईडीको सुरक्षित प्रति छैन। पहिले एकपटक अनलाइन लगइन गर्नुहोस्।',offBad:'पासवर्ड गलत छ',offNeed:'तालिम र क्विजका लागि इन्टरनेट चाहिन्छ',offBack:'फर्कनुहोस्',onlineBack:'इन्टरनेट फर्कियो ✅',
+ rTitle:'अवलोकन वा उल्लङ्घनको रिपोर्ट',rCat:'रिपोर्टको प्रकार',c_hygiene:'सरसफाइ र व्यक्तिगत स्वास्थ्य',c_equipment:'उपकरण',c_storage:'भण्डारण र चिस्यान',c_pests:'कीरा/जीवजन्तु',c_other:'अन्य',rDesc:'वर्णन गर्नुहोस्',rPh:'छोटकरीमा लेख्नुहोस्: के देख्नुभयो र कहाँ?',rPhoto:'📷 फोटो थप्नुहोस् (ऐच्छिक)',rSend:'रिपोर्ट पठाउनुहोस्',rSent:'रिपोर्ट पठाइयो ✅',rNeed:'कृपया वर्णन लेख्नुहोस्',rMine:'मेरा रिपोर्ट',rNone:'तपाईंले अहिलेसम्म कुनै रिपोर्ट पठाउनुभएको छैन',s_new:'नयाँ',s_reviewing:'समीक्षामा',s_closed:'बन्द',rReply:'व्यवस्थापनको जवाफ',rFail:'रिपोर्ट पठाउन सकिएन',
+ toAdmin:'एडमिन मोडमा जानुहोस्',toWorker:'कर्मचारी मोडमा जानुहोस्'},
+hi:{tabMe:'मेरी उपलब्धियाँ',tabReport:'रिपोर्ट',myPoints:'मेरे अंक',pts:'अंक',level:'स्तर',l0:'कांस्य',l1:'रजत',l2:'स्वर्ण',l3:'प्लैटिनम',toNext:'अगले स्तर के लिए {a} अंक बाकी',maxLevel:'आप सर्वोच्च स्तर पर पहुँच गए 🎉',
+ badges:'मेरे बैज',b_first:'पहला वीडियो',b_allvideos:'सभी वीडियो',b_ace:'क्विज़ में अव्वल',b_complete:'सभी प्रशिक्षण पूरे',b_onsite:'फील्ड प्रशिक्षण में शामिल',b_clean:'साफ़ रिकॉर्ड',
+ rank:'मेरी यूनिट में मेरा स्थान',rankYou:'{b} में से {a} वाँ स्थान',you:'आप',rankNone:'यूनिट में कम से कम 3 कर्मचारी होने पर रैंक दिखेगी',
+ pendTitle:'मेरा बाकी काम',pendN:'आपके {a} प्रशिक्षण बाकी हैं',overdueN:'इनमें से {a} देर से',allDone:'आपने सारा काम पूरा कर लिया, धन्यवाद ✅',openIt:'खोलें',
+ notifOn:'रिमाइंडर चालू करें',notifOk:'रिमाइंडर चालू ✅',notifDenied:'ब्राउज़र सेटिंग में सूचनाएँ बंद हैं',notifNote:'प्रशिक्षण बाकी होने पर ऐप खोलते ही रिमाइंडर दिखेगा।',notifTitle:'प्रशिक्षण रिमाइंडर',
+ certTitle:'मेरा प्रमाणपत्र',certLocked:'सभी प्रशिक्षण और क्विज़ पूरे होने पर प्रमाणपत्र खुलेगा',certReady:'बधाई! आपका प्रमाणपत्र तैयार है',certBtn:'प्रमाणपत्र देखें और प्रिंट करें',
+ cert_head:'प्रशिक्षण पूर्णता प्रमाणपत्र',cert_l1:'यह प्रमाणित किया जाता है कि',cert_l2:'ने सभी आवश्यक प्रशिक्षण सफलतापूर्वक पूरे किए हैं',cert_unit:'इकाई',cert_date:'दिनांक',cert_code:'सत्यापन कोड',cert_note:'प्लेटफ़ॉर्म रिकॉर्ड से स्वतः तैयार',print:'प्रिंट / PDF सहेजें',close:'बंद करें',
+ revTitle:'मेरे क्विज़ की समीक्षा',revBtn:'अपने उत्तर देखें',revEmpty:'इस डिवाइस पर समीक्षा के लिए कोई क्विज़ नहीं है',revScore:'आपका स्कोर',yourAns:'आपका उत्तर',correctAns:'सही उत्तर',correct:'सही ✅',wrong:'गलत ❌',noAns:'उत्तर नहीं दिया',
+ simpleOn:'सरल मोड',simpleOff:'सामान्य दृश्य',listen:'सुनें',stop:'रोकें',noVoice:'इस डिवाइस में इस भाषा की आवाज़ नहीं है',
+ offBanner:'आप ऑफ़लाइन हैं — केवल पढ़ने के लिए',offOpen:'सहेजी हुई कॉपी खोलें (ऑफ़लाइन)',offNone:'इस डिवाइस पर इस आईडी की कोई सहेजी कॉपी नहीं है। पहले एक बार ऑनलाइन लॉगिन करें।',offBad:'पासवर्ड गलत है',offNeed:'प्रशिक्षण और क्विज़ के लिए इंटरनेट चाहिए',offBack:'वापस',onlineBack:'इंटरनेट वापस आ गया ✅',
+ rTitle:'अवलोकन या उल्लंघन की रिपोर्ट',rCat:'रिपोर्ट का प्रकार',c_hygiene:'स्वच्छता और व्यक्तिगत स्वास्थ्य',c_equipment:'उपकरण',c_storage:'भंडारण और शीतलन',c_pests:'कीट',c_other:'अन्य',rDesc:'वर्णन करें',rPh:'संक्षेप में लिखें: क्या देखा और कहाँ?',rPhoto:'📷 फ़ोटो जोड़ें (वैकल्पिक)',rSend:'रिपोर्ट भेजें',rSent:'रिपोर्ट भेज दी गई ✅',rNeed:'कृपया वर्णन लिखें',rMine:'मेरी रिपोर्ट',rNone:'आपने अभी तक कोई रिपोर्ट नहीं भेजी',s_new:'नई',s_reviewing:'समीक्षा में',s_closed:'बंद',rReply:'प्रबंधन का उत्तर',rFail:'रिपोर्ट भेजी नहीं जा सकी',
+ toAdmin:'एडमिन मोड में जाएँ',toWorker:'कर्मचारी मोड में जाएँ'}
+};
+/* V9 — إضافة ترجمة إنجليزي للوحة الأدمن (نصوص البلاغات/الإعدادات/التبديل) */
+(function(){
+  const D = window.V8_DICT; if(!D) return;
+  const X = D.exact;
+  const add = o => Object.keys(o).forEach(k => { if(!(k in X)) X[k] = o[k]; });
+  const N = window.V9_N || {};
+  // حالات وأنواع البلاغ من جدول النصوص الأساسي
+  ['s_new','s_reviewing','s_closed','c_hygiene','c_equipment','c_storage','c_pests','c_other'].forEach(k => { if(N.ar && N.en && N.ar[k]) add({ [N.ar[k]]: N.en[k] }); });
+  add({
+    'بلاغات الموظفين':'Employee Reports','الإعدادات':'Settings','وضع الموظف':'Employee mode','👤 حالتي كموظف':'👤 My status as an employee','حالتي كموظف':'My status as an employee',
+    'تقدّمي في التدريب':'My training progress','متبقي عليّ':'Left for me','متأخر':'Overdue','افتح صفحة الموظف':'Open employee page',
+    'افتح دايمًا على آخر صفحة استخدمتها':'Always open my last used page',
+    'ملاحظة: وإنت داخل بصفة أدمن مينفعش تعدّل نتايجك أو مخالفاتك أو بلاغاتك — الأدمن التاني هو اللي يتعامل معاها.':'Note: while signed in as admin you cannot edit your own results, violations or reports — another admin handles them.',
+    'تعذر تحميل حالتك':'Could not load your status','لا توجد بلاغات':'No reports','رد الإدارة (بيظهر للموظف)':'Management reply (visible to the employee)',
+    '🖼️ عرض الصورة':'🖼️ View photo','لا توجد صورة':'No photo','ده بلاغ بتاعك — مينفعش تتعامل معاه وإنت داخل بصفة أدمن.':'This is your own report — you cannot handle it while signed in as admin.',
+    'جدول البلاغات مش موجود لسه. شغّل ملف phase4.sql في Supabase (SQL Editor) وارجع افتح الصفحة دي.':'The reports table does not exist yet. Run phase4.sql in Supabase (SQL Editor) then reopen this page.',
+    '⚙️ إعدادات تجربة الموظف':'⚙️ Employee experience settings','التغييرات دي بتأثر على شاشة الموظف فقط، ومفيش بيانات بتتمسح.':'These changes affect the employee screen only; no data is deleted.',
+    'مراجعة الإجابات بعد الاختبار':'Answer review after the quiz','مفعّلة (يشوف الصح والغلط)':'On (sees right and wrong)','مقفولة':'Off','لوحة ترتيب الوحدة':'Unit leaderboard','مفعّلة':'On',
+    'أسماء الموظفين في الترتيب':'Employee names in the leaderboard','الاسم الأول':'First name','مخفية (أرقام فقط)':'Hidden (numbers only)',
+    'اعتبار التدريب متأخر بعد (أيام)':'Consider a training overdue after (days)','إبلاغ الموظفين عن الملاحظات':'Employee observation reports','مفعّل':'On','مقفول':'Off',
+    'حفظ الإعدادات':'Save settings','تم الحفظ ✅':'Saved ✅','معالجة بلاغ':'Handle report','الكل':'All'
+  });
+})();
+/* =====================================================================
+   V9 — ميزات الموظف: إنجازاتي (تقدم/نقاط/شارات/ترتيب) + تذكيرات + شهادتي + مراجعة الاختبار
+        + واجهة مبسطة بالصوت + أوفلاين (قراءة) + لغة تلقائية + إبلاغ بصورة
+   كله إضافي: مفيش حاجة من الموجود اتغيّرت، وكل النصوص بالخمس لغات.
+   ===================================================================== */
+(function(){
+  const $q = id => document.getElementById(id);
+  const LNS = ['ar','en','bn','ne','hi'];
+  const N = window.V9_N || {ar:{}};
+  const L = () => (typeof currentLang !== 'undefined' && N[currentLang]) ? currentLang : 'ar';
+  const n = (k, v) => { let s = (N[L()] && N[L()][k] != null) ? N[L()][k] : (N.ar[k] || k); if(v) Object.keys(v).forEach(x => s = s.split('{'+x+'}').join(v[x])); return s; };
+  const E = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const lsGet = k => { try{ return localStorage.getItem(k); }catch(e){ return null; } };
+  const lsSet = (k, v) => { try{ localStorage.setItem(k, v); }catch(e){} };
+  const CH = 150;
+  const S = { review:'on', board:'on', names:'first', overdue:14, reports:'on' };
+  let reportsOk = null, me = null, meBusy = false;
+  const V9 = window.V9 = { S, n, E, lsGet, lsSet, get me(){ return me; } };
+
+  /* ---------- إعدادات (من app_settings؛ لو مش موجودة بنستخدم الافتراضي) ---------- */
+  async function loadSettings(){
+    try{
+      const {data} = await sb.from('app_settings').select('key,value').in('key',['worker_quiz_review','worker_leaderboard','worker_leaderboard_names','worker_overdue_days','worker_reports']);
+      (data||[]).forEach(r => {
+        if(r.key === 'worker_quiz_review') S.review = r.value === 'off' ? 'off' : 'on';
+        if(r.key === 'worker_leaderboard') S.board = r.value === 'off' ? 'off' : 'on';
+        if(r.key === 'worker_leaderboard_names') S.names = r.value === 'anon' ? 'anon' : 'first';
+        if(r.key === 'worker_overdue_days') S.overdue = Math.max(1, parseInt(r.value) || 14);
+        if(r.key === 'worker_reports') S.reports = r.value === 'off' ? 'off' : 'on';
+      });
+    }catch(e){}
+  }
+  V9.loadSettings = loadSettings;
+
+  async function pages(build){
+    let out = [], from = 0;
+    for(;;){
+      const r = await build().range(from, from + 999);
+      if(r.error || !r.data) break;
+      out = out.concat(r.data);
+      if(r.data.length < 1000) break;
+      from += 1000;
+    }
+    return out;
+  }
+
+  /* ---------- النقاط والمستويات (من البيانات الموجودة فقط: مفيش جدول جديد) ---------- */
+  const LV = [0, 100, 250, 500];
+  const pts = (videos, scores, onsite) => videos * 10 + scores.reduce((a, s) => a + Math.round((Number(s) || 0) / 10) + ((Number(s) || 0) >= 60 ? 5 : 0), 0) + onsite * 15;
+  const levelOf = p => { let i = 0; LV.forEach((t, k) => { if(p >= t) i = k; }); return i; };
+  function latestScores(rows){
+    const by = {};
+    (rows || []).forEach(a => {
+      const k = a.quiz_id + '|' + a.worker_id, cur = by[k];
+      if(!cur || (a.is_current === true && cur.is_current !== true) || (a.is_current === cur.is_current && Number(a.id) > Number(cur.id))) by[k] = a;
+    });
+    return by;
+  }
+
+  async function computeMe(){
+    if(!currentUser) return null;
+    const w = currentUser;
+    const [att, ons, vio] = await Promise.all([
+      sb.from('quiz_attempts').select('*').eq('worker_id', w.id),
+      sb.from('onsite_training_participants').select('id').eq('worker_id', w.id),
+      sb.from('worker_violations').select('status,points_removed').eq('worker_id', w.id)
+    ]);
+    const lat = latestScores(att.data);
+    const scores = Object.values(lat).map(a => Number(a.score) || 0);
+    const videosDone = workerTopics.filter(t => workerTopicProgress[String(t.id)]?.completed).length;
+    const onsite = (ons.data || []).length;
+    const points = pts(videosDone, scores, onsite);
+    const lvl = levelOf(points);
+    const vt = workerTopics.length, qt = workerQuizStats.total || 0, qd = workerQuizStats.completed || 0;
+    const total = vt + qt, done = videosDone + qd;
+    const pct = total ? Math.round(done / total * 100) : 0;
+    const openVio = (vio.data || []).filter(v => v.status !== 'closed').length;
+    const now = Date.now(), lim = S.overdue * 86400000;
+    const pendingTopics = workerTopics.filter(t => !workerTopicProgress[String(t.id)]?.completed);
+    const overdue = pendingTopics.filter(t => t.created_at && (now - new Date(t.created_at).getTime()) > lim);
+    const badges = {
+      first: videosDone >= 1, allvideos: vt > 0 && videosDone === vt, ace: scores.some(s => s >= 90),
+      complete: total > 0 && done >= total, onsite: onsite >= 1, clean: openVio === 0 && done > 0
+    };
+    return { points, lvl, next: LV[lvl + 1] != null ? LV[lvl + 1] - points : 0, vt, videosDone, qt, qd, total, done, pct, onsite, openVio,
+             pendingTopics, overdue, pendingQuizzes: Math.max(0, qt - qd), badges };
+  }
+
+  async function computeRank(){
+    if(S.board === 'off' || !currentUser || !currentUser.section_id) return null;
+    const sid = currentUser.section_id;
+    const ws = await pages(() => sb.from('workers_evaluations').select('id,worker_name').eq('section_id', sid).order('id'));
+    if(ws.length < 3 || ws.length > 600) return { few: ws.length < 3 };
+    const ids = ws.map(x => x.id), vids = {}, ons = {}, att = [];
+    for(let i = 0; i < ids.length; i += CH){
+      const c = ids.slice(i, i + CH);
+      const [p, a, o] = await Promise.all([
+        pages(() => sb.from('training_progress').select('worker_id,completed').in('worker_id', c).eq('completed', true)),
+        pages(() => sb.from('quiz_attempts').select('*').in('worker_id', c)),
+        pages(() => sb.from('onsite_training_participants').select('worker_id').in('worker_id', c))
+      ]);
+      p.forEach(r => vids[r.worker_id] = (vids[r.worker_id] || 0) + 1);
+      o.forEach(r => ons[r.worker_id] = (ons[r.worker_id] || 0) + 1);
+      att.push(...a);
+    }
+    const lat = latestScores(att), sc = {};
+    Object.values(lat).forEach(a => (sc[a.worker_id] = sc[a.worker_id] || []).push(Number(a.score) || 0));
+    const rows = ws.map(x => ({ id: x.id, name: x.worker_name, p: pts(vids[x.id] || 0, sc[x.id] || [], ons[x.id] || 0) })).sort((a, b) => b.p - a.p || a.id - b.id);
+    let rank = 0, last = null, r = 0;
+    rows.forEach((x, i) => { if(x.p !== last){ r = i + 1; last = x.p; } x.rank = r; });
+    return { rows, total: rows.length, mine: rows.find(x => String(x.id) === String(currentUser.id)) };
+  }
+
+  /* ---------- واجهة الموظف: أيقونتين جداد + بانر + أدوات ---------- */
+  function ensureUI(){
+    const ws = $q('worker-section'); if(!ws || $q('v9-panel-me')) return;
+    const row = ws.querySelector('.wicon-row');
+    if(row){
+      row.insertAdjacentHTML('beforeend',
+        '<button class="wicon-btn" id="wicon-btn-me" onclick="toggleWorkerSection(\'me\')"><span class="wicon-emoji">⭐</span><span class="wicon-label" id="wicon-label-me"></span></button>' +
+        '<button class="wicon-btn" id="wicon-btn-report" onclick="toggleWorkerSection(\'report\')"><span class="wicon-emoji">📸</span><span class="wicon-label" id="wicon-label-report"></span></button>');
+      const last = ws.querySelectorAll('.wsec-panel'); const anchor = last[last.length - 1] || row;
+      anchor.insertAdjacentHTML('afterend',
+        '<div class="card wsec-panel hidden v9-panel" id="v9-panel-me"></div><div class="card wsec-panel hidden v9-panel" id="v9-panel-report"></div>');
+      $q('v9-panel-me').id = 'wsec-panel-me'; $q('v9-panel-report').id = 'wsec-panel-report';
+      [ 'wsec-panel-me', 'wsec-panel-report' ].forEach(i => $q(i).setAttribute('data-v9', '1'));
+      if(WORKER_SECTIONS.indexOf('me') < 0) WORKER_SECTIONS.push('me', 'report');
+    }
+    const head = ws.firstElementChild;
+    if(head && !$q('v9-banner')) head.insertAdjacentHTML('afterend', '<div id="v9-banner" class="v9-banner hidden"></div><div id="v9-offbar" class="v9-offbar hidden"></div>');
+    const tools = head && head.querySelector('#lang-buttons');
+    if(tools && !$q('v9-simple-btn')){
+      tools.insertAdjacentHTML('afterend', '<button class="icon-btn" id="v9-simple-btn" onclick="V9.toggleSimple()" title="">Aa</button>');
+    }
+    if(!$q('v9-listen')) document.body.insertAdjacentHTML('beforeend', '<button id="v9-listen" class="v9-listen hidden" onclick="V9.speak()">🔊</button>');
+    refreshLabels();
+  }
+  function refreshLabels(){
+    if($q('wicon-label-me')) $q('wicon-label-me').textContent = n('tabMe');
+    if($q('wicon-label-report')) $q('wicon-label-report').textContent = n('tabReport');
+    const sb_ = $q('v9-simple-btn'); if(sb_) sb_.title = document.body.classList.contains('v9-simple') ? n('simpleOff') : n('simpleOn');
+    const ls = $q('v9-listen'); if(ls) ls.title = n('listen');
+    $q('wicon-btn-report')?.classList.toggle('hidden', !(reportsOk && S.reports !== 'off'));
+  }
+
+  /* ---------- لوحة إنجازاتي ---------- */
+  const BADGES = [['first','🎬'],['allvideos','🏅'],['ace','🎯'],['complete','🏆'],['onsite','🎓'],['clean','🛡️']];
+  function nm(x){ const first = String(x || '').trim().split(/\s+/)[0] || '—'; return first; }
+  async function renderMe(){
+    const box = $q('wsec-panel-me'); if(!box || !currentUser || meBusy) return;
+    meBusy = true;
+    try{
+      me = await computeMe(); if(!me) return;
+      const lv = me.lvl, nextTxt = lv >= 3 ? n('maxLevel') : n('toNext', { a: me.next });
+      const base = LV[lv], span = (LV[lv + 1] != null ? LV[lv + 1] - base : 1), prog = lv >= 3 ? 100 : Math.round((me.points - base) / span * 100);
+      const ring = '<div class="v9-ring" style="--p:' + me.pct + '"><b>' + me.pct + '%</b></div>';
+      let h = '<div class="v9-hero">' + ring + '<div class="v9-hero-t"><div class="v9-pts"><span>' + me.points + '</span> ' + E(n('pts')) + '</div>' +
+        '<div class="v9-lvl">' + E(n('level')) + ': <b>' + E(n('l' + lv)) + '</b></div>' +
+        '<div class="v9-bar"><i style="width:' + Math.max(3, prog) + '%"></i></div><div class="v9-sm">' + E(nextTxt) + '</div></div></div>';
+      // المتبقي
+      h += '<div class="v9-blk"><div class="v9-h">📌 ' + E(n('pendTitle')) + '</div>';
+      const pn = me.pendingTopics.length + me.pendingQuizzes;
+      if(!pn) h += '<div class="v9-ok">' + E(n('allDone')) + '</div>';
+      else {
+        h += '<div class="v9-pend">' + E(n('pendN', { a: pn })) + (me.overdue.length ? ' — <span class="v9-red">' + E(n('overdueN', { a: me.overdue.length })) + '</span>' : '') + '</div><ul class="v9-ul">';
+        me.pendingTopics.slice(0, 5).forEach(t => { const late = me.overdue.indexOf(t) >= 0; h += '<li' + (late ? ' class="v9-late"' : '') + '>🎬 ' + E(tr(t, 'title')) + '</li>'; });
+        if(me.pendingQuizzes) h += '<li>📝 ×' + me.pendingQuizzes + '</li>';
+        h += '</ul><button class="btn-primary btn-sm" onclick="toggleWorkerSection(\'' + (me.pendingTopics.length ? 'videos' : 'quizzes') + '\')">' + E(n('openIt')) + '</button>';
+      }
+      if('Notification' in window){
+        const p = Notification.permission;
+        h += '<div class="v9-notif">' + (p === 'granted' ? '<span class="v9-ok">' + E(n('notifOk')) + '</span>' : p === 'denied' ? '<span class="v9-sm">' + E(n('notifDenied')) + '</span>' : '<button class="btn-secondary btn-sm" onclick="V9.askNotif()">🔔 ' + E(n('notifOn')) + '</button>') + '<div class="v9-sm">' + E(n('notifNote')) + '</div></div>';
+      }
+      h += '</div>';
+      // شارات
+      h += '<div class="v9-blk"><div class="v9-h">🏅 ' + E(n('badges')) + '</div><div class="v9-badges">' +
+        BADGES.map(b => '<div class="v9-badge' + (me.badges[b[0]] ? ' on' : '') + '"><span>' + b[1] + '</span><small>' + E(n('b_' + b[0])) + '</small></div>').join('') + '</div></div>';
+      // ترتيب
+      h += '<div class="v9-blk" id="v9-rank"></div>';
+      // شهادة
+      h += '<div class="v9-blk"><div class="v9-h">🎖️ ' + E(n('certTitle')) + '</div>' +
+        (me.badges.complete ? '<div class="v9-ok">' + E(n('certReady')) + '</div><button class="btn-primary" onclick="V9.openCert()">' + E(n('certBtn')) + '</button>' : '<div class="v9-sm">🔒 ' + E(n('certLocked')) + '</div>') + '</div>';
+      // مراجعة
+      const revs = getRevs();
+      h += '<div class="v9-blk"><div class="v9-h">🧾 ' + E(n('revTitle')) + '</div>' + (revs.length ? revs.map((r, i) => '<div class="v9-rev-row"><span>' + E(r.qz ? tr(r.qz, 'title') : (r.title || '')) + ' — ' + r.score + '%</span><button class="btn-secondary btn-sm" onclick="V9.showRev(' + i + ')">' + E(n('revBtn')) + '</button></div>').join('') : '<div class="v9-sm">' + E(n('revEmpty')) + '</div>') + '</div>';
+      // أدوات
+      h += '<div class="v9-blk v9-tools"><button class="btn-secondary btn-sm" onclick="V9.toggleSimple()">Aa ' + E(document.body.classList.contains('v9-simple') ? n('simpleOff') : n('simpleOn')) + '</button></div>';
+      box.innerHTML = h;
+      updateBanner();
+      renderRank();
+      saveSnap();
+    }catch(e){ console.error('v9 me', e); }
+    finally{ meBusy = false; }
+  }
+  async function renderRank(){
+    const box = $q('v9-rank'); if(!box) return;
+    let r = null; try{ r = await computeRank(); }catch(e){}
+    if(!r){ box.style.display = 'none'; return; }
+    if(r.few){ box.innerHTML = '<div class="v9-h">🏁 ' + E(n('rank')) + '</div><div class="v9-sm">' + E(n('rankNone')) + '</div>'; return; }
+    const top = r.rows.slice(0, 5), mine = r.mine;
+    const nmOf = (x, i) => S.names === 'anon' && String(x.id) !== String(currentUser.id) ? '#' + (i + 1) : nm(x.name);
+    let h = '<div class="v9-h">🏁 ' + E(n('rank')) + '</div>' + (mine ? '<div class="v9-rankme">' + E(n('rankYou', { a: mine.rank, b: r.total })) + '</div>' : '') + '<ol class="v9-lb">';
+    top.forEach((x, i) => h += '<li' + (String(x.id) === String(currentUser.id) ? ' class="me"' : '') + '><span class="rk">' + x.rank + '</span><span class="nm">' + E(nmOf(x, i)) + (String(x.id) === String(currentUser.id) ? ' (' + E(n('you')) + ')' : '') + '</span><span class="pt">' + x.p + '</span></li>');
+    if(mine && mine.rank > 5) h += '<li class="me sep"><span class="rk">' + mine.rank + '</span><span class="nm">' + E(nm(mine.name)) + ' (' + E(n('you')) + ')</span><span class="pt">' + mine.p + '</span></li>';
+    box.innerHTML = h + '</ol>';
+  }
+
+  /* ---------- بانر المتبقي + إشعار المتصفح ---------- */
+  async function updateBanner(){
+    const b = $q('v9-banner'); if(!b) return;
+    if(!me){ b.classList.add('hidden'); return; }
+    const pn = me.pendingTopics.length + me.pendingQuizzes;
+    if(!pn){ b.classList.add('hidden'); return; }
+    const late = me.overdue.length;
+    b.className = 'v9-banner' + (late ? ' late' : '');
+    b.innerHTML = '<span>📌 ' + E(n('pendN', { a: pn })) + (late ? ' — ' + E(n('overdueN', { a: late })) : '') + '</span><button class="btn-secondary btn-sm" onclick="toggleWorkerSection(\'me\')">' + E(n('openIt')) + '</button>';
+    try{
+      if('Notification' in window && Notification.permission === 'granted'){
+        const key = 'v9_notif_' + currentUser.id, today = new Date().toISOString().slice(0, 10);
+        if(lsGet(key) !== today){
+          lsSet(key, today);
+          const body = n('pendN', { a: pn }) + (late ? ' — ' + n('overdueN', { a: late }) : '');
+          if(navigator.serviceWorker && navigator.serviceWorker.getRegistration){
+            const reg = await navigator.serviceWorker.getRegistration();
+            if(reg && reg.showNotification){ reg.showNotification(n('notifTitle'), { body, icon: 'icon-192.png' }); return; }
+          }
+          new Notification(n('notifTitle'), { body });
+        }
+      }
+    }catch(e){}
+  }
+  V9.askNotif = async function(){ try{ await Notification.requestPermission(); }catch(e){} renderMe(); };
+
+  /* ---------- مودال بسيط ---------- */
+  function modal(html){
+    let m = $q('v9-modal');
+    if(!m){ document.body.insertAdjacentHTML('beforeend', '<div id="v9-modal" class="v9-modal hidden"><div class="v9-mbox"><button class="v9-x" onclick="V9.closeModal()">✕</button><div id="v9-mbody"></div></div></div>'); m = $q('v9-modal'); }
+    $q('v9-mbody').innerHTML = html; m.classList.remove('hidden');
+    m.classList.toggle('rtl', L() === 'ar');
+  }
+  V9.modal = modal; V9.closeModal = () => $q('v9-modal')?.classList.add('hidden');
+
+  /* ---------- الشهادة الشخصية ---------- */
+  const LOC = { ar: 'ar-EG', en: 'en-GB', bn: 'bn-BD', ne: 'ne-NP', hi: 'hi-IN' };
+  function hash(s){ let h = 7; for(let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 99991; return h; }
+  async function certData(){
+    const w = currentUser, sec = sections.find(s => s.id === w.section_id);
+    let app = document.title || '';
+    try{
+      const {data} = await sb.from('app_settings').select('key,value').in('key', ['app_name', 'app_name_en']);
+      const m = {}; (data || []).forEach(r => m[r.key] = r.value);
+      app = (L() === 'ar' ? m.app_name : (m.app_name_en || m.app_name)) || app;
+    }catch(e){}
+    const d = new Date(), ymd = d.toISOString().slice(0, 10).replace(/-/g, '');
+    return { name: w.worker_name, unit: sec ? tr(sec, 'name') : (w.factory_branch || ''), app, date: d.toLocaleDateString(LOC[L()] || 'en-GB', { year: 'numeric', month: 'long', day: 'numeric' }),
+             code: 'FS-' + w.id + '-' + ymd + '-' + hash(w.worker_name + '|' + w.id + '|' + ymd) };
+  }
+  function certHTML(c, full){
+    const rtl = L() === 'ar';
+    const css = 'body{margin:0;font-family:"Noto Sans","Noto Sans Arabic","Noto Sans Bengali","Noto Sans Devanagari","Segoe UI",Tahoma,Arial,sans-serif;background:#fff}' +
+      '.c{box-sizing:border-box;width:100%;max-width:900px;margin:0 auto;border:8px double #166534;padding:34px 28px;text-align:center;color:#0f172a;background:#fff}' +
+      '.c h1{color:#166534;font-size:30px;margin:6px 0 4px}.c .app{color:#64748b;font-size:14px;font-weight:700}.c .l{font-size:16px;margin:18px 0 6px;color:#475569}' +
+      '.c .nm{font-size:32px;font-weight:800;margin:6px 0;border-bottom:2px solid #16a34a;display:inline-block;padding:0 22px}.c .m{display:flex;justify-content:space-around;gap:10px;margin-top:26px;font-size:14px;flex-wrap:wrap}' +
+      '.c .m b{display:block;color:#166534}.c .f{margin-top:22px;font-size:11px;color:#94a3b8}.seal{font-size:46px}';
+    const body = '<div class="c"><div class="seal">🛡️</div><div class="app">' + E(c.app) + '</div><h1>' + E(n('cert_head')) + '</h1><div class="l">' + E(n('cert_l1')) + '</div><div class="nm">' + E(c.name) + '</div><div class="l">' + E(n('cert_l2')) + '</div>' +
+      '<div class="m"><div><b>' + E(n('cert_unit')) + '</b>' + E(c.unit || '—') + '</div><div><b>' + E(n('cert_date')) + '</b>' + E(c.date) + '</div><div><b>' + E(n('cert_code')) + '</b><span dir="ltr">' + E(c.code) + '</span></div></div><div class="f">' + E(n('cert_note')) + '</div></div>';
+    if(!full) return '<style>' + css + '</style><div dir="' + (rtl ? 'rtl' : 'ltr') + '">' + body + '</div>';
+    return '<!doctype html><html lang="' + L() + '" dir="' + (rtl ? 'rtl' : 'ltr') + '"><head><meta charset="utf-8"><title>' + E(n('cert_head')) + '</title><style>' + css + '@page{size:A4 landscape;margin:12mm}</style></head><body>' + body + '</body></html>';
+  }
+  V9.openCert = async function(){
+    if(!me || !me.badges.complete) return showToast(n('certLocked'));
+    const c = await certData();
+    modal(certHTML(c, false) + '<div class="v9-mact"><button class="btn-primary" onclick="V9.printCert()">🖨️ ' + E(n('print')) + '</button><button class="btn-secondary" onclick="V9.closeModal()">' + E(n('close')) + '</button></div>');
+    V9._cert = c;
+  };
+  V9.printCert = function(){
+    const c = V9._cert; if(!c) return;
+    const w = window.open('', '_blank'); if(!w) return showToast('Popup blocked');
+    w.document.open(); w.document.write(certHTML(c, true)); w.document.close();
+    setTimeout(() => { try{ w.focus(); w.print(); }catch(e){} }, 400);
+  };
+
+  /* ---------- مراجعة الاختبار بعد الحل ---------- */
+  const revKey = () => 'v9_rev_' + (currentUser ? currentUser.id : '0');
+  function getRevs(){ try{ return JSON.parse(lsGet(revKey()) || '[]'); }catch(e){ return []; } }
+  const pick = (o, base) => { const x = {}; LNS.forEach(l => { if(o && o[base + '_' + l] != null) x[base + '_' + l] = o[base + '_' + l]; }); return x; };
+  function reviewHTML(r){
+    const title = r.qz ? (tr(r.qz, 'title') || '') : (r.title || '');
+    return '<h3>' + E(title) + '</h3><div class="v9-revscore">' + E(n('revScore')) + ': <b>' + r.score + '%</b></div>' + r.items.map((it, i) => {
+      const ok = it.picked != null && it.opts.some(o => o.id === it.picked && o.ok);
+      const ot = o => tr(o.o || {}, 'option') || o.t || '—';
+      return '<div class="v9-q ' + (ok ? 'ok' : 'bad') + '"><div class="v9-qt">' + (i + 1) + '. ' + E(it.qo ? tr(it.qo, 'question') : it.q) + ' <span>' + (ok ? E(n('correct')) : E(n('wrong'))) + '</span></div>' +
+        '<div class="v9-qa">' + E(n('yourAns')) + ': ' + (it.picked == null ? '<i>' + E(n('noAns')) + '</i>' : E(ot(it.opts.find(o => o.id === it.picked) || {}))) + '</div>' +
+        (ok ? '' : '<div class="v9-qc">' + E(n('correctAns')) + ': ' + E(it.opts.filter(o => o.ok).map(ot).join(' / ') || '—') + '</div>') + '</div>';
+    }).join('') + '<div class="v9-mact"><button class="btn-secondary" onclick="V9.closeModal()">' + E(n('close')) + '</button></div>';
+  }
+  V9.showRev = i => { const r = getRevs()[i]; if(r) modal(reviewHTML(r)); };
+  if(typeof submitQuiz === 'function'){
+    const _sq = submitQuiz;
+    submitQuiz = async function(quizId, questions){
+      const picks = {};
+      (questions || []).forEach(q => { const s = document.querySelector('input[name="qz-' + q.id + '"]:checked'); if(s) picks[q.id] = Number(s.value); });
+      const maxId = async () => { try{ const {data} = await sb.from('quiz_attempts').select('id').eq('worker_id', currentUser.id).eq('quiz_id', quizId); return Math.max(0, ...((data || []).map(x => Number(x.id) || 0))); }catch(e){ return 0; } };
+      const before = currentUser ? await maxId() : 0;
+      const wid = currentUser && currentUser.id;
+      const r = await _sq.apply(this, arguments);
+      try{
+        if(!wid || !currentUser || currentUser.id !== wid) return r;
+        const after = await maxId();
+        if(after <= before) return r;                       // الحفظ فشل: مفيش مراجعة
+        const [{data: opts}, {data: qz}, {data: att}] = await Promise.all([
+          sb.from('quiz_options').select('*').in('question_id', (questions || []).map(q => q.id)),
+          sb.from('quizzes').select('*').eq('id', quizId).maybeSingle(),
+          sb.from('quiz_attempts').select('*').eq('worker_id', wid).eq('quiz_id', quizId)
+        ]);
+        const last = (att || []).sort((a, b) => Number(b.id) - Number(a.id))[0] || {};
+        const items = (questions || []).map(q => ({ qo: pick(q, 'question'), picked: picks[q.id] == null ? null : picks[q.id],
+          opts: (opts || []).filter(o => String(o.question_id) === String(q.id)).map(o => ({ id: Number(o.id), o: pick(o, 'option'), ok: !!o.is_correct })) }));
+        const rec = { qz: qz ? pick(qz, 'title') : null, score: last.score, at: Date.now(), items };
+        const arr = getRevs(); arr.unshift(rec); lsSet(revKey(), JSON.stringify(arr.slice(0, 5)));
+        if(S.review !== 'off') modal(reviewHTML(rec));
+        if($q('wsec-panel-me') && !$q('wsec-panel-me').classList.contains('hidden')) renderMe();
+        else me = null;
+      }catch(e){ console.error('v9 review', e); }
+      return r;
+    };
+  }
+
+  /* ---------- واجهة مبسطة + قراءة صوتية ---------- */
+  const VOICE = { ar: 'ar-SA', en: 'en-US', bn: 'bn-BD', ne: 'ne-NP', hi: 'hi-IN' };
+  V9.toggleSimple = function(force){
+    const on = typeof force === 'boolean' ? force : !document.body.classList.contains('v9-simple');
+    document.body.classList.toggle('v9-simple', on);
+    if(currentUser) lsSet('v9_simple_' + currentUser.id, on ? '1' : '0');
+    $q('v9-listen')?.classList.toggle('hidden', !on || !currentUser);
+    refreshLabels();
+    if($q('wsec-panel-me') && !$q('wsec-panel-me').classList.contains('hidden')) renderMe();
+  };
+  V9.speak = function(){
+    if(!('speechSynthesis' in window)){ return showToast(n('noVoice')); }
+    const ss = window.speechSynthesis;
+    if(ss.speaking){ ss.cancel(); return; }
+    const act = document.querySelector('.wsec-panel:not(.hidden)');
+    let t = (document.querySelector('#worker-section .wicon-btn.active .wicon-label') || {}).textContent || '';
+    if(act){
+      const parts = []; act.querySelectorAll('.section-title,h3,.v9-pts,.v9-pend,.v9-rankme,.v9-ok,.card-title,b').forEach(el => { const s = (el.textContent || '').trim(); if(s && s.length < 160) parts.push(s); });
+      t += '. ' + parts.slice(0, 12).join('. ');
+    }
+    const u = new SpeechSynthesisUtterance(t); u.lang = VOICE[L()] || 'en-US';
+    try{ const vs = ss.getVoices ? ss.getVoices() : []; if(vs.length && !vs.some(v => (v.lang || '').toLowerCase().startsWith(u.lang.slice(0, 2)))) showToast(n('noVoice')); }catch(e){}
+    ss.speak(u);
+  };
+
+  /* ---------- أوفلاين (قراءة فقط) ---------- */
+  const snapKey = id => 'v9_snap_' + id;
+  function saveSnap(){
+    try{
+      if(!currentUser || !me) return;
+      const sec = sections.find(s => s.id === currentUser.section_id);
+      const snap = { id: currentUser.id, name: currentUser.worker_name, unit: sec ? tr(sec, 'name') : '', ts: Date.now(),
+        me: { points: me.points, lvl: me.lvl, pct: me.pct, pending: me.pendingTopics.length + me.pendingQuizzes, overdue: me.overdue.length, badges: me.badges },
+        pend: me.pendingTopics.slice(0, 8).map(t => tr(t, 'title')),
+        cards: (workerCards || []).slice(0, 60).map(c => ({ t: tr(c, 'title'), d: tr(c, 'description'), img: c.image && String(c.image).indexOf('data:') !== 0 ? c.image : '' })) };
+      lsSet(snapKey(currentUser.id), JSON.stringify(snap)); lsSet('v9_last_worker', String(currentUser.id));
+    }catch(e){}
+  }
+  async function sha(s){
+    try{ const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)); return Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2, '0')).join(''); }catch(e){ return 'h' + hash(s); }
+  }
+  async function rememberLogin(w){
+    try{ const p = ($q('login-password') || {}).value || ''; lsSet('v9_auth_' + w.id, await sha(w.id + ':' + p.trim())); }catch(e){}
+  }
+  function showOffline(snap){
+    let o = $q('v9-off');
+    if(!o){ document.body.insertAdjacentHTML('beforeend', '<div id="v9-off" class="v9-off hidden"></div>'); o = $q('v9-off'); }
+    const ms = snap.me || {};
+    o.innerHTML = '<div class="v9-offin"><div class="v9-offbar2">📴 ' + E(n('offBanner')) + '</div><h2>' + E(snap.name) + '</h2><div class="v9-sm">' + E(snap.unit || '') + '</div>' +
+      '<div class="v9-hero"><div class="v9-ring" style="--p:' + (ms.pct || 0) + '"><b>' + (ms.pct || 0) + '%</b></div><div class="v9-hero-t"><div class="v9-pts"><span>' + (ms.points || 0) + '</span> ' + E(n('pts')) + '</div><div class="v9-lvl">' + E(n('level')) + ': <b>' + E(n('l' + (ms.lvl || 0))) + '</b></div></div></div>' +
+      ((snap.pend || []).length ? '<div class="v9-blk"><div class="v9-h">📌 ' + E(n('pendTitle')) + '</div><ul class="v9-ul">' + snap.pend.map(t => '<li>🎬 ' + E(t) + '</li>').join('') + '</ul><div class="v9-sm">' + E(n('offNeed')) + '</div></div>' : '') +
+      '<div class="v9-blk"><div class="v9-h">🖼️ ' + E(wt('cardsTitle')) + '</div><div class="v9-cards">' + (snap.cards || []).map(c => '<div class="v9-c">' + (c.img ? '<img src="' + E(c.img) + '" alt="">' : '') + '<b>' + E(c.t) + '</b><p>' + E(c.d) + '</p></div>').join('') + '</div></div>' +
+      '<button class="btn-secondary" onclick="V9.closeOffline()">' + E(n('offBack')) + '</button></div>';
+    o.classList.remove('hidden'); o.classList.toggle('rtl', L() === 'ar');
+  }
+  V9.closeOffline = () => $q('v9-off')?.classList.add('hidden');
+  async function offlineLogin(val, pass){
+    const id = parseInt(val), err = $q('login-error');
+    const raw = lsGet(snapKey(id)), auth = lsGet('v9_auth_' + id);
+    const say = m => { if(err){ err.textContent = m; err.classList.remove('hidden'); } };
+    if(!raw){ say(n('offNone')); return; }
+    if(auth && auth !== await sha(id + ':' + (pass || '').trim())){ say(n('offBad')); return; }
+    err && err.classList.add('hidden');
+    try{ showOffline(JSON.parse(raw)); }catch(e){ say(n('offNone')); }
+  }
+  function netBar(){
+    const b = $q('v9-offbar'); if(!b) return;
+    if(!navigator.onLine){ b.textContent = '📴 ' + n('offBanner'); b.classList.remove('hidden'); }
+    else b.classList.add('hidden');
+  }
+  window.addEventListener('offline', netBar);
+  window.addEventListener('online', () => { netBar(); if(currentUser) showToast(n('onlineBack')); });
+
+  /* ---------- لغة تلقائية ---------- */
+  let autoLang = false;
+  function applyAutoLang(w){
+    let l = lsGet('v9_lang_' + w.id);
+    if(!l || LNS.indexOf(l) < 0) l = w.preferred_lang;
+    if(!l || LNS.indexOf(l) < 0){
+      const sc = typeof detectScriptLang === 'function' ? detectScriptLang(w.worker_name) : 'en';
+      const br = (navigator.language || '').slice(0, 2).toLowerCase();
+      l = (sc === 'bn' || sc === 'hi' || sc === 'ar') ? sc : (LNS.indexOf(br) >= 0 ? br : null);
+    }
+    if(l && l !== currentLang){ autoLang = true; try{ setLang(l); }finally{ autoLang = false; } }
+  }
+  if(typeof setLang === 'function'){
+    const _sl = setLang;
+    setLang = function(l){
+      const r = _sl.apply(this, arguments);
+      try{
+        if(currentUser && !autoLang){
+          lsSet('v9_lang_' + currentUser.id, currentLang);
+          sb.from('workers_evaluations').update({ preferred_lang: currentLang }).eq('id', currentUser.id).then(() => {}, () => {});
+        }
+        refreshLabels(); if(currentUser){ me = null; if($q('wsec-panel-me') && !$q('wsec-panel-me').classList.contains('hidden')) renderMe(); else updateBanner(); if($q('wsec-panel-report') && !$q('wsec-panel-report').classList.contains('hidden')) renderReport(); }
+      }catch(e){}
+      return r;
+    };
+  }
+
+  /* ---------- الإبلاغ بصورة ---------- */
+  let photo = null;
+  const CATS = ['hygiene', 'equipment', 'storage', 'pests', 'other'];
+  async function detectReports(){
+    try{ const r = await sb.from('worker_reports').select('id').limit(1); reportsOk = !r.error; }catch(e){ reportsOk = false; }
+    refreshLabels();
+  }
+  function compress(file){
+    return new Promise((res, rej) => {
+      const fr = new FileReader();
+      fr.onerror = () => rej(new Error('read'));
+      fr.onload = () => {
+        const img = new Image();
+        img.onerror = () => rej(new Error('img'));
+        img.onload = () => {
+          const M = 900, k = Math.min(1, M / Math.max(img.width, img.height));
+          const c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+          c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+          res(c.toDataURL('image/jpeg', 0.7));
+        };
+        img.src = fr.result;
+      };
+      fr.readAsDataURL(file);
+    });
+  }
+  V9.pickPhoto = async function(inp){
+    const f = inp.files && inp.files[0]; if(!f) return;
+    try{ photo = await compress(f); const p = $q('v9-r-prev'); if(p){ p.src = photo; p.classList.remove('hidden'); } }catch(e){ photo = null; }
+  };
+  async function renderReport(){
+    const box = $q('wsec-panel-report'); if(!box) return;
+    let h = '<div class="section-title">' + E(n('rTitle')) + '</div>' +
+      '<label class="v9-lbl">' + E(n('rCat')) + '</label><select id="v9-r-cat" class="input-field">' + CATS.map(c => '<option value="' + c + '">' + E(n('c_' + c)) + '</option>').join('') + '</select>' +
+      '<label class="v9-lbl">' + E(n('rDesc')) + '</label><textarea id="v9-r-desc" class="input-field" rows="3" placeholder="' + E(n('rPh')) + '"></textarea>' +
+      '<label class="v9-photo-btn">' + E(n('rPhoto')) + '<input type="file" accept="image/*" capture="environment" onchange="V9.pickPhoto(this)" hidden></label><img id="v9-r-prev" class="v9-prev hidden" alt="">' +
+      '<button class="btn-primary" style="width:100%;margin-top:10px" onclick="V9.sendReport()">' + E(n('rSend')) + '</button>' +
+      '<div class="section-title" style="margin-top:18px">' + E(n('rMine')) + '</div><div id="v9-r-list"></div>';
+    box.innerHTML = h; photo = null; loadMine();
+  }
+  async function loadMine(){
+    const l = $q('v9-r-list'); if(!l || !currentUser) return;
+    const {data} = await sb.from('worker_reports').select('id,category,description,status,admin_reply,created_at').eq('worker_id', currentUser.id).order('created_at', { ascending: false });
+    const rows = (data || []).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    l.innerHTML = rows.length ? rows.map(r => '<div class="v9-rep"><div><b>' + E(n('c_' + r.category) || r.category) + '</b> <span class="v9-st ' + E(r.status) + '">' + E(n('s_' + r.status)) + '</span></div><div>' + E(r.description) + '</div>' +
+      (r.admin_reply ? '<div class="v9-reply">💬 ' + E(n('rReply')) + ': ' + E(r.admin_reply) + '</div>' : '') + '<div class="v9-sm">' + E(new Date(r.created_at).toLocaleString(LOC[L()] || 'en-GB')) + '</div></div>').join('') : '<div class="v9-sm">' + E(n('rNone')) + '</div>';
+  }
+  V9.sendReport = async function(){
+    const d = ($q('v9-r-desc').value || '').trim(); if(!d) return showToast(n('rNeed'));
+    const {error} = await sb.from('worker_reports').insert({ worker_id: currentUser.id, section_id: currentUser.section_id || null, category: $q('v9-r-cat').value, description: d, photo_data: photo, status: 'new' });
+    if(error){ console.error(error); return showToast(n('rFail')); }
+    showToast(n('rSent')); photo = null; renderReport();
+  };
+
+  /* ---------- ربط بالنظام الحالي ---------- */
+  if(typeof toggleWorkerSection === 'function'){
+    const _tw = toggleWorkerSection;
+    toggleWorkerSection = function(name){
+      const r = _tw.apply(this, arguments);
+      try{ if(name === 'me') renderMe(); if(name === 'report') renderReport(); }catch(e){}
+      return r;
+    };
+  }
+  if(typeof renderWorkerStaticLabels === 'function'){
+    const _rl = renderWorkerStaticLabels;
+    renderWorkerStaticLabels = function(){ const r = _rl.apply(this, arguments); try{ refreshLabels(); }catch(e){} return r; };
+  }
+  if(typeof loadWorkerData === 'function'){
+    const _lw = loadWorkerData;
+    loadWorkerData = async function(){
+      const r = await _lw.apply(this, arguments);
+      try{ me = await computeMe(); updateBanner(); saveSnap(); }catch(e){}
+      return r;
+    };
+  }
+  const _ew9 = enterAsWorkerFinal;
+  enterAsWorkerFinal = async function(worker){
+    document.body.classList.remove('v9-simple');
+    await loadSettings();
+    if(reportsOk === null) await detectReports();
+    const r = await _ew9.apply(this, arguments);
+    try{
+      ensureUI(); refreshLabels(); netBar();
+      rememberLogin(worker);
+      applyAutoLang(worker);
+      const s = lsGet('v9_simple_' + worker.id); if(s === '1') V9.toggleSimple(true);
+      $q('v9-listen')?.classList.toggle('hidden', !document.body.classList.contains('v9-simple'));
+      // لو الفيديوهات مفيهاش حاجة نفتح أول تبويب فيه شغل
+      updateBanner();
+    }catch(e){ console.error('v9 enter', e); }
+    return r;
+  };
+  const _lo9 = window.logout;
+  window.logout = function(){
+    try{ window.speechSynthesis && window.speechSynthesis.cancel(); }catch(e){}
+    document.body.classList.remove('v9-simple'); $q('v9-listen')?.classList.add('hidden'); $q('v9-banner')?.classList.add('hidden'); V9.closeModal(); me = null;
+    return _lo9.apply(this, arguments);
+  };
+  const _dl9 = doLogin;
+  doLogin = async function(){
+    const val = ($q('login-id') || {}).value ? $q('login-id').value.trim() : '';
+    if(!navigator.onLine && /^\d+$/.test(val) && val !== '592001') return offlineLogin(val, ($q('login-password') || {}).value);
+    return _dl9.apply(this, arguments);
+  };
+  V9.detectReports = detectReports;
+  V9.refreshLabels = refreshLabels;
+})();
+/* =====================================================================
+   V9 (أدمن) — تبويب "بلاغات الموظفين" + بطاقة "إعدادات تجربة الموظف" (ضمن تبويب الإعدادات للسوبر)
+   ===================================================================== */
+(function(){
+  const $q = id => document.getElementById(id);
+  const E = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const NA = () => (window.V9_N && window.V9_N.ar) || {};
+  const CATS = ['hygiene','equipment','storage','pests','other'];
+  const ST = ['new','reviewing','closed'];
+  let flt = 'all', missing = false;
+  const scopeIds = () => (typeof adminUser !== 'undefined' && adminUser && !adminUser.isSuper) ? (adminUser.section_ids || []) : null;
+
+  function ensure(){
+    const ref = $q('tab-passwords') || $q('tab-admins'); if(!ref) return;
+    if(!$q('tab-reports')) ref.insertAdjacentHTML('afterend', '<div class="admin-tab" id="tab-reports"></div>');
+    const after = $q('tabbtn-vio-lib') || $q('tabbtn-onsite') || $q('tabbtn-admins');
+    if(after && !$q('tabbtn-reports')){
+      after.insertAdjacentHTML('afterend', '<button class="tab-btn" onclick="adminTab(\'reports\')" id="tabbtn-reports" data-label="بلاغات الموظفين"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 22V4a1 1 0 0 1 1-1h11l-1.5 4L16 11H5"/></svg></span><span class="nav-label">بلاغات الموظفين<span class="nav-en">Reports</span></span><span class="v9-navbadge hidden" id="v9-repbadge">0</span></button>');
+    }
+    // إعادة تسمية تبويب كلمات السر إلى "الإعدادات" (فيه كلمات السر + إعدادات تجربة الموظف)
+    const pb = $q('tabbtn-passwords');
+    if(pb && !pb.dataset.v9){ pb.dataset.v9 = '1'; pb.setAttribute('data-label', 'الإعدادات'); const l = pb.querySelector('.nav-label'); if(l) l.innerHTML = 'الإعدادات<span class="nav-en">Settings</span>'; }
+  }
+
+  async function countNew(){
+    ensure();
+    const b = $q('v9-repbadge'); if(!b || typeof adminUser === 'undefined' || !adminUser) return;
+    try{
+      let q = sb.from('worker_reports').select('id', { count: 'exact', head: true }).eq('status', 'new');
+      const ids = scopeIds(); if(ids){ if(!ids.length){ b.classList.add('hidden'); return; } q = q.in('section_id', ids); }
+      const r = await q; if(r.error){ missing = true; return; }
+      missing = false; const c = r.count || 0; b.textContent = c; b.classList.toggle('hidden', !c);
+      window.V9 && (window.V9.newReports = c);
+    }catch(e){}
+  }
+
+  async function renderReports(){
+    ensure();
+    const box = $q('tab-reports'); if(!box) return;
+    box.innerHTML = '<div class="card v9-adm"><h3>📸 بلاغات الموظفين</h3><div id="v9-rep-f" class="v9-f"></div><div id="v9-rep-l">…</div></div>';
+    $q('v9-rep-f').innerHTML = ['all'].concat(ST).map(s => '<button class="btn-' + (flt === s ? 'primary' : 'secondary') + ' btn-sm" onclick="V9A.filter(\'' + s + '\')">' + (s === 'all' ? 'الكل' : NA()['s_' + s]) + '</button>').join('');
+    let q = sb.from('worker_reports').select('id,worker_id,section_id,category,description,status,admin_reply,created_at,handled_by').order('created_at', { ascending: false }).limit(200);
+    if(flt !== 'all') q = q.eq('status', flt);
+    const ids = scopeIds(); if(ids){ if(!ids.length){ $q('v9-rep-l').innerHTML = '<div class="muted">لا توجد بلاغات</div>'; return; } q = q.in('section_id', ids); }
+    const r = await q;
+    if(r.error){ $q('v9-rep-l').innerHTML = '<div class="v9-warn">جدول البلاغات مش موجود لسه. شغّل ملف phase4.sql في Supabase (SQL Editor) وارجع افتح الصفحة دي.</div>'; missing = true; return; }
+    const rows = (r.data || []).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    if(!rows.length){ $q('v9-rep-l').innerHTML = '<div class="muted">لا توجد بلاغات</div>'; countNew(); return; }
+    const wids = Array.from(new Set(rows.map(x => x.worker_id))), wn = {};
+    for(let i = 0; i < wids.length; i += 150){ const {data} = await sb.from('workers_evaluations').select('id,worker_name').in('id', wids.slice(i, i + 150)); (data || []).forEach(w => wn[w.id] = w.worker_name); }
+    $q('v9-rep-l').innerHTML = rows.map(x => {
+      const sec = sections.find(s => s.id === x.section_id), own = adminUser && adminUser.workerId && String(adminUser.workerId) === String(x.worker_id);
+      return '<div class="v9-arep" id="v9-ar-' + x.id + '"><div class="v9-arep-h"><b>' + E(wn[x.worker_id] || ('#' + x.worker_id)) + '</b><span>' + E(sec ? tr(sec, 'name') : '—') + '</span><span class="v9-st ' + E(x.status) + '">' + E(NA()['s_' + x.status] || x.status) + '</span></div>' +
+        '<div class="v9-sm">' + E(NA()['c_' + x.category] || x.category || '') + ' • ' + E(new Date(x.created_at).toLocaleString('ar-EG')) + '</div><div class="v9-desc">' + E(x.description) + '</div>' +
+        '<div class="v9-ph" id="v9-ph-' + x.id + '"><button class="btn-secondary btn-sm" onclick="V9A.photo(' + x.id + ')">🖼️ عرض الصورة</button></div>' +
+        (own ? '<div class="v9-warn">ده بلاغ بتاعك — مينفعش تتعامل معاه وإنت داخل بصفة أدمن.</div>' :
+        '<div class="v9-arep-f"><select id="v9-s-' + x.id + '" class="input-field">' + ST.map(s => '<option value="' + s + '"' + (s === x.status ? ' selected' : '') + '>' + E(NA()['s_' + s]) + '</option>').join('') + '</select>' +
+        '<textarea id="v9-r-' + x.id + '" class="input-field" rows="2" placeholder="رد الإدارة (بيظهر للموظف)">' + E(x.admin_reply || '') + '</textarea><button class="btn-primary btn-sm" onclick="V9A.save(' + x.id + ')">حفظ</button></div>') + '</div>';
+    }).join('');
+    countNew();
+  }
+  window.V9A = {
+    filter(s){ flt = s; renderReports(); },
+    async photo(id){
+      const {data} = await sb.from('worker_reports').select('photo_data').eq('id', id).maybeSingle();
+      const h = $q('v9-ph-' + id); if(!h) return;
+      h.innerHTML = data && data.photo_data ? '<img class="v9-img" src="' + E(data.photo_data) + '" onclick="window.open(this.src)">' : '<span class="muted">لا توجد صورة</span>';
+    },
+    async save(id){
+      const st = $q('v9-s-' + id).value, rp = $q('v9-r-' + id).value.trim();
+      const {error} = await sb.from('worker_reports').update({ status: st, admin_reply: rp || null, handled_by: adminUser && adminUser.name, updated_at: new Date().toISOString() }).eq('id', id);
+      if(error) return showToast(error.message || 'تعذر الحفظ');
+      showToast('تم الحفظ ✅');
+      try{ if(adminUser && adminUser.id) await logActivityV22('admin', adminUser.id, 'معالجة بلاغ موظف', 'worker_report', id, { status: st }); }catch(e){}
+      renderReports();
+    }
+  };
+
+  /* ---------- إعدادات تجربة الموظف ---------- */
+  const KEYS = ['worker_quiz_review', 'worker_leaderboard', 'worker_leaderboard_names', 'worker_overdue_days', 'worker_reports'];
+  async function buildSettings(){
+    const tab = $q('tab-passwords'); if(!tab || $q('v9-set')) return;
+    const box = document.createElement('div'); box.className = 'card v9-adm'; box.id = 'v9-set';
+    box.innerHTML = '<h3>⚙️ إعدادات تجربة الموظف</h3><div class="v9-sub">التغييرات دي بتأثر على شاشة الموظف فقط، ومفيش بيانات بتتمسح.</div>' +
+      '<label class="v9-row">مراجعة الإجابات بعد الاختبار<select id="v9-set-review" class="input-field"><option value="on">مفعّلة (يشوف الصح والغلط)</option><option value="off">مقفولة</option></select></label>' +
+      '<label class="v9-row">لوحة ترتيب الوحدة<select id="v9-set-board" class="input-field"><option value="on">مفعّلة</option><option value="off">مقفولة</option></select></label>' +
+      '<label class="v9-row">أسماء الموظفين في الترتيب<select id="v9-set-names" class="input-field"><option value="first">الاسم الأول</option><option value="anon">مخفية (أرقام فقط)</option></select></label>' +
+      '<label class="v9-row">اعتبار التدريب متأخر بعد (أيام)<input id="v9-set-days" type="number" min="1" class="input-field" value="14"></label>' +
+      '<label class="v9-row">إبلاغ الموظفين عن الملاحظات<select id="v9-set-rep" class="input-field"><option value="on">مفعّل</option><option value="off">مقفول</option></select></label>' +
+      '<button class="btn-primary" onclick="V9A.saveSettings()">حفظ الإعدادات</button><div id="v9-set-msg" class="v9-sm"></div>';
+    tab.appendChild(box);
+    try{
+      const {data} = await sb.from('app_settings').select('key,value').in('key', KEYS);
+      const m = {}; (data || []).forEach(r => m[r.key] = r.value);
+      if(m.worker_quiz_review) $q('v9-set-review').value = m.worker_quiz_review;
+      if(m.worker_leaderboard) $q('v9-set-board').value = m.worker_leaderboard;
+      if(m.worker_leaderboard_names) $q('v9-set-names').value = m.worker_leaderboard_names;
+      if(m.worker_overdue_days) $q('v9-set-days').value = m.worker_overdue_days;
+      if(m.worker_reports) $q('v9-set-rep').value = m.worker_reports;
+    }catch(e){}
+  }
+  V9A.saveSettings = async function(){
+    const rows = [['worker_quiz_review', $q('v9-set-review').value], ['worker_leaderboard', $q('v9-set-board').value], ['worker_leaderboard_names', $q('v9-set-names').value],
+      ['worker_overdue_days', String(Math.max(1, parseInt($q('v9-set-days').value) || 14))], ['worker_reports', $q('v9-set-rep').value]];
+    let bad = null;
+    for(const [key, value] of rows){ const {error} = await sb.from('app_settings').upsert({ key, value }); if(error) bad = error; }
+    $q('v9-set-msg').textContent = bad ? ('تعذر الحفظ: ' + (bad.message || '')) : 'تم الحفظ ✅';
+    if(!bad){ try{ if(adminUser && adminUser.id) await logActivityV22('admin', adminUser.id, 'تعديل إعدادات تجربة الموظف', 'settings', null, {}); }catch(e){} }
+  };
+
+  const _at = adminTab;
+  adminTab = function(tab){
+    const r = _at.apply(this, arguments);
+    try{ if(tab === 'reports') renderReports(); if(tab === 'passwords') buildSettings(); }catch(e){ console.error(e); }
+    return r;
+  };
+  const _ea = enterAdmin;
+  enterAdmin = async function(){ const r = await _ea.apply(this, arguments); try{ ensure(); countNew(); }catch(e){} return r; };
+  const _as = applyAdminScope;
+  applyAdminScope = function(){ const r = _as.apply(this, arguments); try{ ensure(); }catch(e){} return r; };
+  V9A.countNew = countNew; V9A.ensure = ensure;
+})();
+/* =====================================================================
+   V9 (أدمن + موظف) — الحساب اللي ليه صفتين:
+   زر تبديل الدور بدون خروج • لوحة موحدة • منع تقييم النفس • سجل "بصفة" • فتح على آخر دور
+   ===================================================================== */
+(function(){
+  const $q = id => document.getElementById(id);
+  const E = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const V = window.V9 = window.V9 || {};
+  const lsGet = k => { try{ return localStorage.getItem(k); }catch(e){ return null; } };
+  const lsSet = (k, v) => { try{ localStorage.setItem(k, v); }catch(e){} };
+  V.dual = null;                                   // { worker, adm }
+  const isEn = () => !!(window.V8 && window.V8.lang === 'en');
+  const T = (ar, en) => isEn() ? en : ar;
+
+  /* ---------- سجل النشاط: نضيف "بصفة" لو الحساب مزدوج ---------- */
+  if(typeof logActivityV22 === 'function'){
+    const _la = logActivityV22;
+    logActivityV22 = function(a, b, c, d, e, meta){
+      if(V.dual){ meta = Object.assign({}, meta || {}, { as: (typeof adminUser !== 'undefined' && adminUser) ? 'admin' : 'worker', dual: true, worker_id: V.dual.worker.id }); }
+      return _la.call(this, a, b, c, d, e, meta || {});
+    };
+  }
+  async function logRole(role, how){
+    const d = V.dual; if(!d) return;
+    try{
+      if(role === 'admin' && d.adm && d.adm.id) await logActivityV22('admin', d.adm.id, 'دخول بصفة أدمن', 'role', d.worker.id, { how });
+      else await logActivityV22('worker', d.worker.id, role === 'admin' ? 'دخول بصفة أدمن' : 'دخول بصفة موظف', 'role', d.worker.id, { how });
+    }catch(e){}
+  }
+
+  /* ---------- حارس منع تقييم النفس ---------- */
+  const SELF = ['worker_violations', 'quiz_unlocks', 'quiz_attempts', 'training_progress', 'onsite_training_participants', 'content_answers'];
+  const OK_SELF_KEYS = ['password', 'must_change_password', 'preferred_lang'];
+  const msg = () => T('مينفعش تعدّل أو تقيّم بياناتك الشخصية وإنت داخل بصفة أدمن — اطلب من أدمن تاني.', 'You cannot edit or evaluate your own records while signed in as admin — ask another admin.');
+  const blocked = () => { try{ showToast(msg()); }catch(e){} return { data: null, error: { message: msg(), code: 'v9_self' }, count: null, status: 403, statusText: 'Forbidden' }; };
+  const inAdminDual = () => typeof adminUser !== 'undefined' && adminUser && adminUser.workerId;
+  if(sb && typeof sb.from === 'function' && !sb.__v9guard){
+    const origFrom = sb.from.bind(sb);
+    sb.__v9guard = true;
+    sb.from = function(table){
+      const qb = origFrom(table);
+      if(!(SELF.indexOf(table) >= 0 || table === 'worker_reports' || table === 'workers_evaluations')) return qb;
+      return new Proxy(qb, {
+        get(t, p){
+          const v = t[p];
+          if(typeof v !== 'function') return v;
+          if(p === 'insert' || p === 'update' || p === 'delete' || p === 'upsert'){
+            return function(){ const st = { op: p, args: arguments, eqs: [] }; return wrap(v.apply(t, arguments), table, st, origFrom); };
+          }
+          return v.bind(t);
+        }
+      });
+    };
+  }
+  function wrap(b, table, st, origFrom){
+    if(!b || typeof b.then !== 'function') return b;
+    return new Proxy(b, {
+      get(t, p){
+        if(p === 'then'){
+          return function(res, rej){
+            return Promise.resolve().then(() => check(table, st, origFrom)).then(bad => bad ? blocked() : t).then(res, rej);
+          };
+        }
+        const v = t[p];
+        if(typeof v !== 'function') return v;
+        return function(){
+          if(p === 'eq' || p === 'in') st.eqs.push([p, arguments[0], arguments[1]]);
+          const r = v.apply(t, arguments);
+          return r === t ? wrap(t, table, st, origFrom) : r;
+        };
+      }
+    });
+  }
+  async function check(table, st, origFrom){
+    if(!inAdminDual()) return false;
+    const wid = String(adminUser.workerId), sup = !!adminUser.isSuper;
+    const hasW = (col) => st.eqs.some(e => e[1] === col && (e[0] === 'eq' ? String(e[2]) === wid : (e[2] || []).map(String).indexOf(wid) >= 0));
+    const payload = st.args && st.args[0], rows = Array.isArray(payload) ? payload : (payload ? [payload] : []);
+    if(table === 'workers_evaluations'){
+      if(st.op === 'update'){
+        const keys = Object.keys(payload || {}); if(!keys.length || keys.every(k => OK_SELF_KEYS.indexOf(k) >= 0)) return false;
+        return hasW('id');
+      }
+      if(st.op === 'delete') return !sup && hasW('id');
+      return false;
+    }
+    if(table === 'worker_reports'){
+      if(st.op === 'update' || st.op === 'delete'){
+        if(hasW('worker_id')) return true;
+        const idE = st.eqs.find(e => e[1] === 'id' && e[0] === 'eq');
+        if(idE){ try{ const {data} = await origFrom(table).select('worker_id').eq('id', idE[2]).maybeSingle(); return !!data && String(data.worker_id) === wid; }catch(e){ return false; } }
+      }
+      return false;
+    }
+    if(st.op === 'insert' || st.op === 'upsert') return rows.some(r => r && String(r.worker_id) === wid);
+    if(st.op === 'update'){
+      if(hasW('worker_id')) return true;
+      const idE = st.eqs.find(e => e[1] === 'id' && e[0] === 'eq');
+      if(idE){ try{ const {data} = await origFrom(table).select('worker_id').eq('id', idE[2]).maybeSingle(); return !!data && String(data.worker_id) === wid; }catch(e){ return false; } }
+      return false;
+    }
+    if(st.op === 'delete'){
+      if(sup) return false;                                   // السوبر أدمن: أدوات المسح الجماعي تفضل شغالة
+      if(hasW('worker_id')) return true;
+      const idE = st.eqs.find(e => e[1] === 'id' && e[0] === 'eq');
+      if(idE){ try{ const {data} = await origFrom(table).select('worker_id').eq('id', idE[2]).maybeSingle(); return !!data && String(data.worker_id) === wid; }catch(e){ return false; } }
+    }
+    return false;
+  }
+
+  /* ---------- تبديل الدور ---------- */
+  function hideAll(){
+    ['worker-section', 'admin-section'].forEach(id => { const el = $q(id); if(el){ el.classList.add('hidden'); el.style.display = 'none'; } });
+  }
+  async function switchTo(role){
+    const d = V.dual; if(!d) return;
+    try{ window.speechSynthesis && window.speechSynthesis.cancel(); }catch(e){}
+    try{ destroyAllPlayers(); }catch(e){}
+    if(role === 'worker'){
+      hideAll(); document.body.classList.remove('on-admin');
+      let w = d.worker;
+      try{ const {data} = await sb.from('workers_evaluations').select('*').eq('id', d.worker.id).maybeSingle(); if(data) w = d.worker = data; }catch(e){}
+      adminUser = null;
+      await enterAsWorkerFinal(w);
+      afterEnter();
+    } else {
+      hideAll(); currentUser = null;
+      pendingLoginWorker = d.worker; pendingLoginAdmin = d.adm;
+      await window.chooseLoginRole('admin');
+    }
+    lsSet('v9_lastrole_' + d.worker.id, role);
+    logRole(role, 'switch');
+    setTimeout(() => window.scrollTo(0, 0), 0);
+  }
+  V.switchTo = switchTo;
+
+  ensureRoleCardChk();
+  const _cr = window.chooseLoginRole;
+  window.chooseLoginRole = async function(role){
+    if(pendingLoginWorker && pendingLoginAdmin){
+      const first = !V.dual || V.dual.worker.id !== pendingLoginWorker.id;
+      V.dual = { worker: pendingLoginWorker, adm: pendingLoginAdmin };
+      const chk = $q('v9-autorole');
+      if(chk){ lsSet('v9_autorole_' + V.dual.worker.id, chk.checked ? '1' : '0'); }
+      lsSet('v9_lastrole_' + V.dual.worker.id, role);
+      if(first) logRole(role, 'login');
+    }
+    const r = await _cr.apply(this, arguments);
+    try{ afterEnter(); }catch(e){ console.error(e); }
+    return r;
+  };
+  /* لو الموظف اختار "افتح دايمًا على آخر دور" نتخطى شاشة الاختيار */
+  const _dl = doLogin;
+  doLogin = async function(){
+    const r = await _dl.apply(this, arguments);
+    try{
+      if(pendingLoginWorker && pendingLoginAdmin){
+        const id = pendingLoginWorker.id, last = lsGet('v9_lastrole_' + id);
+        if(lsGet('v9_autorole_' + id) === '1' && (last === 'admin' || last === 'worker')) await window.chooseLoginRole(last);
+      }
+    }catch(e){ console.error(e); }
+    return r;
+  };
+  const _lo = window.logout;
+  window.logout = function(){
+    V.dual = null; V.dualMe = null;
+    $q('v9-switch-a')?.remove(); $q('v9-switch-w')?.remove(); $q('v9-dualcard')?.remove(); $q('v9-adminnote')?.remove();
+    return _lo.apply(this, arguments);
+  };
+
+  /* ---------- الأزرار + الكروت ---------- */
+  function ensureRoleCardChk(){
+    const c = $q('login-role-card'); if(!c || $q('v9-autorole-wrap')) return;
+    c.insertAdjacentHTML('beforeend', '<label id="v9-autorole-wrap" class="v9-auto"><input type="checkbox" id="v9-autorole"> <span>افتح دايمًا على آخر صفحة استخدمتها / Always open my last page</span></label>');
+  }
+  function workerBtnText(){ return '🛡️ ' + ((window.V9 && V9.n) ? V9.n('toAdmin') : 'Admin'); }
+  function afterEnter(){
+    ensureRoleCardChk();
+    const d = V.dual; if(!d) return;
+    if(typeof adminUser !== 'undefined' && adminUser){
+      if(!$q('v9-switch-a')){
+        const lg = document.querySelector('#admin-section .btn-danger[onclick="logout()"]');
+        if(lg) lg.insertAdjacentHTML('beforebegin', '<button type="button" class="icon-btn v9-switch" id="v9-switch-a" onclick="V9.switchTo(\'worker\')" title="وضع الموظف">👤<span class="lbl"> وضع الموظف</span></button>');
+      }
+      $q('v9-switch-w')?.remove();
+      buildDualCard();
+    } else if(typeof currentUser !== 'undefined' && currentUser){
+      if(!$q('v9-switch-w')){
+        const lg = $q('worker-logout-btn');
+        if(lg) lg.insertAdjacentHTML('beforebegin', '<button type="button" class="icon-btn v9-switch" id="v9-switch-w" onclick="V9.switchTo(\'admin\')"></button>');
+      }
+      const b = $q('v9-switch-w'); if(b) b.innerHTML = '🛡️<span class="lbl"> ' + E(V.n('toAdmin')) + '</span>';
+      $q('v9-switch-a')?.remove(); $q('v9-dualcard')?.remove();
+      workerNote();
+    }
+    if(window.V8 && document.body.classList.contains('on-admin')) V8.setLang(V8.lang);
+  }
+  V.refreshDual = afterEnter;
+
+  async function myProgress(){
+    // نحسب حالة الموظف وإحنا في وضع الأدمن: نحط currentUser لحظياً ونرجّعه
+    const w = V.dual.worker, prev = currentUser;
+    try{
+      currentUser = w;
+      await loadWorkerVideos(); await loadWorkerQuizzes();
+      const now = Date.now(), lim = (V.S ? V.S.overdue : 14) * 86400000;
+      const pt = workerTopics.filter(t => !workerTopicProgress[String(t.id)]?.completed);
+      const od = pt.filter(t => t.created_at && (now - new Date(t.created_at).getTime()) > lim);
+      const vt = workerTopics.length, qt = workerQuizStats.total || 0, qd = workerQuizStats.completed || 0;
+      const total = vt + qt, done = (vt - pt.length) + qd;
+      return { pct: total ? Math.round(done / total * 100) : 0, pending: pt.length + Math.max(0, qt - qd), overdue: od.length };
+    }finally{ currentUser = prev; }
+  }
+  async function buildDualCard(){
+    const tab = $q('tab-dashboard'); if(!tab || !V.dual) return;
+    let c = $q('v9-dualcard');
+    if(!c){ tab.insertAdjacentHTML('beforebegin', '<div class="card v9-dualcard" id="v9-dualcard"></div>'); c = $q('v9-dualcard'); }
+    c.innerHTML = '<div class="v9-h">👤 حالتي كموظف</div><div class="v9-sm">…</div>';
+    let m = null; try{ m = await myProgress(); }catch(e){ console.error(e); }
+    const id = V.dual.worker.id, auto = lsGet('v9_autorole_' + id) === '1';
+    c.innerHTML = '<div class="v9-h">👤 حالتي كموظف</div>' + (m ?
+      '<div class="v9-dgrid"><div><b>' + m.pct + '%</b><small>تقدّمي في التدريب</small></div><div><b>' + m.pending + '</b><small>متبقي عليّ</small></div><div><b class="' + (m.overdue ? 'v9-red' : '') + '">' + m.overdue + '</b><small>متأخر</small></div></div>' : '<div class="v9-sm">تعذر تحميل حالتك</div>') +
+      '<div class="v9-drow"><button class="btn-primary btn-sm" onclick="V9.switchTo(\'worker\')">افتح صفحة الموظف</button>' +
+      '<label class="v9-auto"><input type="checkbox" ' + (auto ? 'checked' : '') + ' onchange="V9.setAuto(this.checked)"> <span>افتح دايمًا على آخر صفحة استخدمتها</span></label></div>' +
+      '<div class="v9-sm">ملاحظة: وإنت داخل بصفة أدمن مينفعش تعدّل نتايجك أو مخالفاتك أو بلاغاتك — الأدمن التاني هو اللي يتعامل معاها.</div>';
+    if(window.V8) V8.setLang(V8.lang);
+  }
+  const _at9 = adminTab;
+  adminTab = function(tab){ const r = _at9.apply(this, arguments); const c = $q('v9-dualcard'); if(c) c.style.display = (tab === 'dashboard') ? '' : 'none'; return r; };
+  V.setAuto = on => { if(V.dual) lsSet('v9_autorole_' + V.dual.worker.id, on ? '1' : '0'); };
+
+  async function workerNote(){
+    const ws = $q('worker-section'); if(!ws || !V.dual) return;
+    $q('v9-adminnote')?.remove();
+    let cnt = 0;
+    try{
+      let q = sb.from('worker_reports').select('id', { count: 'exact', head: true }).eq('status', 'new');
+      const adm = V.dual.adm || {};
+      if(!adm.is_super){
+        let ids = [];
+        try{ if(adm.id){ const {data} = await sb.from('admin_sections').select('section_id').eq('admin_id', adm.id); ids = (data || []).map(x => Number(x.section_id)); } }catch(e){}
+        if(!ids.length && (adm.section_id || V.dual.worker.section_id)) ids = [Number(adm.section_id || V.dual.worker.section_id)];
+        if(!ids.length) return;
+        q = q.in('section_id', ids);
+      }
+      const r = await q; if(!r.error) cnt = r.count || 0;
+    }catch(e){}
+    if(!cnt || !$q('worker-section') || $q('worker-section').classList.contains('hidden')) return;
+    const anchor = $q('v9-banner') || ws.firstElementChild;
+    anchor.insertAdjacentHTML('afterend', '<div class="v9-adminnote" id="v9-adminnote"><span>🛡️ ' + E(V.n('toAdmin')) + ' — 📸 ' + cnt + '</span><button class="btn-secondary btn-sm" onclick="V9.switchTo(\'admin\')">' + E(V.n('openIt')) + '</button></div>');
+  }
 })();
 
 </script>
