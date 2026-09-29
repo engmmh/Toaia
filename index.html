@@ -644,6 +644,23 @@ body.v9-dark .v9-dark-float{filter:none}
 @media(max-width:700px) and (min-height:760px){body.on-login .login-hero #login-headline-ar{font-size:28px!important}body.on-login .login-hero #login-logo-box{width:56px!important;height:56px!important}body.on-login .login-hero .login-feature-row{margin-top:6px}}
 
 .v9-rankline{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:12px;padding:8px 12px;border-radius:12px;background:#f0fdf4;border:1px solid #bbf7d0;font-size:12.5px;color:#166534}.v9-rankline.hidden{display:none}.v9-rankline b{font-size:14px;font-weight:900}.v9-rl-pts{font-weight:800;color:var(--primary)}
+/* ===== زر لغة صفحة الدخول + وضع English ===== */
+.v9-lang-float{left:54px;font-size:13px;font-weight:800}
+body.on-login .v9-lang-float{display:flex}
+body.v9-login-en .login-hero,body.v9-login-en .login-form-side{text-align:left}
+body.v9-login-en #login-section .login-hero [id$="-ar"]{display:none!important}
+body.on-login.v9-login-en .login-hero #login-headline-en,body.on-login.v9-login-en .login-hero #login-subtitle-en{display:block!important}
+body.on-login.v9-login-en .login-hero #login-headline-en{font-size:23px!important;font-weight:900;color:#fff!important;line-height:1.3;margin:0 0 8px!important}
+body.on-login.v9-login-en .login-hero #login-subtitle-en{display:none!important}
+body.on-login.v9-login-en .login-hero .login-feature-card>div[id$="-en"]{display:block!important;font-size:10.5px!important;color:#fff!important;margin-top:2px!important;font-weight:700}
+@media(max-width:700px){body.on-login.v9-login-en .login-hero #login-trust-en{display:none!important}}
+body.v9-login-en .login-hero *{text-align:left!important}
+@media(min-width:701px){
+  body.v9-login-en .login-hero #login-headline-en{font-size:34px!important;color:#fff!important;font-weight:900;margin-bottom:12px!important}
+  body.v9-login-en .login-hero #login-subtitle-en{font-size:15px!important;color:rgba(255,255,255,.8)!important}
+  body.v9-login-en .login-hero .login-feature-card>div[id$="-en"]{display:block!important;color:#fff!important;font-size:12px!important;margin-top:4px!important}
+  body.v9-login-en .login-hero #login-trust-en{display:block!important;color:rgba(255,255,255,.85)!important;font-size:12.5px!important}
+}
 
 </style>
 </head>
@@ -7886,6 +7903,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   function applyAutoLang(w){
     let l = lsGet('v9_lang_' + w.id);
     if(!l || LNS.indexOf(l) < 0) l = w.preferred_lang;
+    if((!l || LNS.indexOf(l) < 0) && lsGet('v9_login_lang') === 'en') l = 'en';     // اختار English في صفحة الدخول
     if(!l || LNS.indexOf(l) < 0){
       const sc = typeof detectScriptLang === 'function' ? detectScriptLang(w.worker_name) : 'en';
       const br = (navigator.language || '').slice(0, 2).toLowerCase();
@@ -8382,6 +8400,61 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     const anchor = $q('v9-banner') || ws.firstElementChild;
     anchor.insertAdjacentHTML('afterend', '<div class="v9-adminnote" id="v9-adminnote"><span>🛡️ ' + E(V.n('toAdmin')) + ' — 📸 ' + cnt + '</span><button class="btn-secondary btn-sm" onclick="V9.switchTo(\'admin\')">' + E(V.n('openIt')) + '</button></div>');
   }
+})();
+/* =====================================================================
+   V9 — زر لغة في صفحة الدخول (عربي ⇄ English).
+   لو الموظف اختار English هنا، بعد الدخول بيبدأ بالإنجليزي وبيقدر يختار أي لغة من الـ٥ من جوه.
+   ===================================================================== */
+(function(){
+  const $q = id => document.getElementById(id);
+  const KEY = 'v9_login_lang';
+  const lsGet = k => { try{ return localStorage.getItem(k); }catch(e){ return null; } };
+  const lsSet = (k, v) => { try{ localStorage.setItem(k, v); }catch(e){} };
+  let lang = lsGet(KEY) === 'en' ? 'en' : 'ar';
+  const ERR = { 'رقم غير مسجل': 'ID not registered', 'كلمة السر غير صحيحة / Incorrect password': 'Incorrect password' };
+  const saved = new Map();      // نص عربي أصلي لكل عنصر، عشان الرجوع للعربي بدون فقدان أي تعديل من الأدمن
+  const setTxt = (el, en) => { if(!el) return; if(!saved.has(el)) saved.set(el, el.textContent); el.textContent = lang === 'en' ? en : saved.get(el); };
+  const setPh = (el, en) => { if(!el) return; if(!el.dataset.v9ph) el.dataset.v9ph = el.placeholder; el.placeholder = lang === 'en' ? en : el.dataset.v9ph; };
+
+  async function appNameEn(){
+    try{ const {data} = await sb.from('app_settings').select('value').eq('key', 'app_name_en').maybeSingle(); return (data && data.value) || 'Food Safety Training Platform'; }
+    catch(e){ return 'Food Safety Training Platform'; }
+  }
+  async function apply(){
+    const en = lang === 'en', ls = $q('login-section'); if(!ls) return;
+    document.body.classList.toggle('v9-login-en', en);
+    ls.setAttribute('dir', en ? 'ltr' : 'rtl');
+    const fc = $q('login-form-card');
+    if(fc){
+      setTxt(fc.querySelector('h2'), 'Login');
+      setTxt(fc.querySelector('.btn-primary'), 'Enter');
+    }
+    setPh($q('login-id'), 'Enter your ID number');
+    setPh($q('login-password'), 'Password');
+    const rc = $q('login-role-card'); if(rc) setTxt(rc.querySelector('h2'), 'Choose your page');
+    const nm = $q('login-app-name'); if(nm){ if(!saved.has(nm)) saved.set(nm, nm.textContent); nm.textContent = en ? await appNameEn() : saved.get(nm); }
+    const ft = document.querySelector('#login-section .login-footer-note');
+    if(ft && ft.firstChild && ft.firstChild.nodeType === 3){ if(!saved.has(ft)) saved.set(ft, ft.firstChild.textContent); ft.firstChild.textContent = en ? '© 2026 UFUQ Trading Co. | All rights reserved' : saved.get(ft); }
+    const b = $q('v9-lang-l'); if(b) b.textContent = en ? 'ع' : 'EN';
+    const er = $q('login-error'); if(er) trErr();
+  }
+  function trErr(){
+    const er = $q('login-error'); if(!er) return;
+    const t = er.textContent.trim();
+    if(lang === 'en' && ERR[t]) er.textContent = ERR[t];
+  }
+  function ensureBtn(){
+    if($q('v9-lang-l')) return;
+    document.body.insertAdjacentHTML('beforeend', '<button class="v9-dark-float v9-lang-float" id="v9-lang-l" type="button"></button>');
+    $q('v9-lang-l').onclick = () => { lang = lang === 'en' ? 'ar' : 'en'; lsSet(KEY, lang); apply(); };
+  }
+  ensureBtn();
+  const er = $q('login-error');
+  if(er) new MutationObserver(trErr).observe(er, { childList: true, characterData: true, subtree: true });
+  apply(); setTimeout(apply, 1500);            // بعد ما نصوص الصفحة (اللي الأدمن بيعدلها) تتحمّل
+  const _lo = window.logout;
+  window.logout = function(){ const r = _lo.apply(this, arguments); try{ apply(); }catch(e){} return r; };
+  window.V9 = window.V9 || {}; window.V9.loginLang = () => lang;
 })();
 
 </script>
