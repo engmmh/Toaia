@@ -532,14 +532,6 @@ body.v8-en button small.nav-en,body.v8-en .section-title .nav-en{display:none!im
 .v9-prev{display:block;max-width:100%;max-height:220px;border-radius:10px;margin-top:8px}
 .v9-rep{border:1px solid var(--border);border-radius:10px;padding:10px;margin-top:8px;font-size:13px}.v9-reply{background:#ecfdf5;border-radius:8px;padding:6px 8px;margin-top:6px;font-size:12px}
 .v9-st{display:inline-block;font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;background:#fee2e2;color:#991b1b;margin-inline-start:6px}.v9-st.reviewing{background:#fef3c7;color:#92400e}.v9-st.closed{background:#dcfce7;color:#166534}
-.v9-listen{position:fixed;bottom:18px;inset-inline-end:18px;width:58px;height:58px;border-radius:50%;border:0;background:var(--primary);color:#fff;font-size:26px;box-shadow:0 6px 18px rgba(0,0,0,.25);z-index:9000;cursor:pointer}.v9-listen.hidden{display:none}
-/* واجهة مبسطة */
-body.v9-simple #worker-section{font-size:17px}
-body.v9-simple #worker-section .wicon-row{grid-template-columns:repeat(2,1fr)!important;gap:14px}
-body.v9-simple #worker-section .wicon-btn{padding:22px 8px}body.v9-simple #worker-section .wicon-emoji{font-size:46px!important}body.v9-simple #worker-section .wicon-label{font-size:16px!important;font-weight:800}
-body.v9-simple #worker-section .muted,body.v9-simple #wt-videos-hint,body.v9-simple #worker-section .v9-sm{display:none}
-body.v9-simple #worker-section .btn-primary,body.v9-simple #worker-section .btn-secondary{font-size:17px;padding:14px}
-body.v9-simple #worker-section .card{padding:18px}
 /* أوفلاين */
 .v9-off{position:fixed;inset:0;background:#f8fafc;z-index:10000;overflow:auto;padding:16px}.v9-off.hidden{display:none}.v9-offin{max-width:720px;margin:0 auto}
 .v9-offbar2{background:#fef3c7;border:1px solid #fde68a;color:#92400e;border-radius:10px;padding:9px;text-align:center;font-weight:800;margin-bottom:12px;font-size:13px}
@@ -560,7 +552,7 @@ body.v9-simple #worker-section .card{padding:18px}
 @media(max-width:640px){.v9-switch .lbl{display:none}.v9-switch{padding:0 9px}}
 @media(max-width:640px){#admin-section>.card:first-child{flex-wrap:wrap;gap:10px}#admin-section>.card:first-child>div:first-child{flex:1 1 100%}}
 /* ===== V9b: ترتيب شاشة الموظف على الموبايل (بدون زحمة ولا فراغ جانبي) ===== */
-html,body{max-width:100%;overflow-x:hidden}
+html,body{max-width:100%;overflow-x:clip;overscroll-behavior:none}
 #worker-section{max-width:100%;overflow-x:clip}
 @media(max-width:640px){
   #worker-section>.card:first-child{padding:12px 14px!important;gap:10px!important;flex-direction:column;align-items:stretch!important}
@@ -590,11 +582,66 @@ html,body{max-width:100%;overflow-x:hidden}
   .v9-hero{gap:12px}.v9-ring{width:78px;height:78px}.v9-ring:before{inset:8px}.v9-ring b{font-size:17px}.v9-pts span{font-size:26px}
   .v9-blk{margin-top:10px;padding-top:10px}
 }
-/* الواجهة المبسطة تفضل شبكة كبيرة */
-body.v9-simple #worker-section .wicon-row{display:grid!important;grid-template-columns:repeat(2,1fr)!important;overflow:visible}
-body.v9-simple #worker-section .wicon-btn{flex-direction:column;border-radius:14px;padding:22px 8px}
-body.v9-simple #worker-section .wicon-emoji{font-size:46px!important}
-body.v9-simple .v9-banner:not(.late){display:flex}
+
+/* ===== V9c: هيدر ثابت + وضع ليلي + صفحة دخول في شاشة واحدة ===== */
+.v9-darkbtn{cursor:pointer}
+.v9-dark-float{position:fixed;top:10px;inset-inline-end:auto;left:10px;z-index:30;width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.18);color:#fff;font-size:16px;line-height:1;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+body.on-login .v9-dark-float{display:flex}
+/* ثبات: الهيدر وشريط التنقل ثابتين والمحتوى بس اللي بيتحرك */
+#worker-section>.v9-head{position:sticky;top:0;z-index:40;box-shadow:0 2px 10px rgba(15,23,42,.08)}
+#worker-section .wicon-row{position:sticky;top:var(--v9-hh,120px);z-index:35;background:var(--bg,#f4f6fb);padding-top:8px!important;margin-top:0}
+#admin-section>.card:first-child{position:sticky;top:0;z-index:40}
+@media(max-width:640px){
+  #worker-section>.v9-head{padding:10px 12px!important;gap:8px!important;margin-bottom:8px!important;border-radius:0 0 16px 16px}
+  #worker-section>.v9-head>div:first-child{display:flex;align-items:center;gap:10px}
+  #worker-section>.v9-head>div:first-child>div:first-child{width:38px!important;height:38px!important;border-radius:11px!important;flex:none}
+  #worker-section>.v9-head>div:first-child>div:nth-child(2){flex:1;min-width:0}
+  #worker-section>.v9-head #worker-name-display{font-size:14px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #worker-section>.v9-head #worker-meta{font-size:11px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #worker-section>.v9-head .v9-lg{margin:0!important;flex:none;padding:6px 12px}
+  #worker-section>.v9-head>div:last-child{flex-wrap:nowrap!important;gap:6px!important}
+  #worker-section>.v9-head #lang-buttons{flex:1 1 auto;order:0;min-width:0}
+  #worker-section>.v9-head .lang-flags-row{width:100%;padding:2px}
+  #worker-section>.v9-head .lang-flag-btn{flex:1;height:28px;font-size:14px}
+  #worker-section>.v9-head .icon-btn{width:32px;height:32px;flex:none}
+  #worker-section .wicon-row{margin:0 -12px 8px!important;padding:8px 12px 8px!important;box-shadow:0 6px 8px -8px rgba(15,23,42,.25)}
+  #admin-section>.card:first-child{border-radius:0 0 16px 16px;margin-top:-1px}
+}
+/* الوضع الليلي: قلب الألوان للأقسام كلها ورجّع الصور والفيديو زي ما هي */
+body.v9-dark{background:#151515!important;color-scheme:dark}
+body.v9-dark>*:not(script):not(style):not(.v9-nofilter){filter:invert(1) hue-rotate(180deg) contrast(.86)}
+body.v9-dark img,body.v9-dark video,body.v9-dark iframe,body.v9-dark canvas,body.v9-dark .wicon-emoji,body.v9-dark .lang-flag-btn,body.v9-dark .v9-badge span,body.v9-dark #login-icon,body.v9-dark .topic-player-wrap,body.v9-dark [id^="topic-player-"],body.v9-dark .card-img{filter:invert(1) hue-rotate(180deg)}
+body.v9-dark .v9-dark-float{filter:none}
+/* ===== صفحة الدخول على الموبايل: شاشة واحدة ثابتة بدون تمرير ===== */
+@media(max-width:700px){
+  html:has(body.on-login),body.on-login{height:100%;overflow:hidden!important;overscroll-behavior:none;touch-action:manipulation}
+  body.on-login #login-section{position:fixed;inset:0;height:100dvh;overflow:hidden!important;display:flex;flex-direction:column}
+  body.on-login .login-split{flex:1 1 auto;min-height:0;width:100%!important;margin:0!important;display:flex;flex-direction:column}
+  body.on-login .login-hero{flex:1 1 auto;padding:max(14px,env(safe-area-inset-top)) 18px 14px;align-items:center;justify-content:center;min-height:0}
+  body.on-login .login-hero>div{width:100%}
+  body.on-login .login-hero #login-logo-box{width:44px!important;height:44px!important;border-radius:13px!important;margin:0 0 8px!important}
+  body.on-login .login-hero #login-icon{font-size:22px!important}
+  body.on-login .login-hero #login-app-name{font-size:14px!important;margin:0 0 8px!important;opacity:.9}
+  body.on-login .login-hero #login-headline-ar{font-size:23px!important;line-height:1.35;margin:0 0 8px!important}
+  body.on-login .login-hero #login-headline-en,body.on-login .login-hero #login-subtitle-en,body.on-login .login-hero #login-subtitle-ar,body.on-login .login-hero .login-trust-box{display:none!important}
+  body.on-login .login-hero .login-feature-row{display:flex!important;gap:6px;margin:0}
+  body.on-login .login-hero .login-feature-card{flex:1;padding:6px 2px;border-radius:10px}
+  body.on-login .login-hero .login-feature-card>div:first-child{font-size:15px!important}
+  body.on-login .login-hero .login-feature-card>div[id$="-ar"]{font-size:10.5px!important;margin-top:2px!important}
+  body.on-login .login-form-side{flex:0 0 auto;padding:14px 16px 8px!important;justify-content:flex-start;overflow:hidden;background:var(--bg,#f4f6fb)}
+  body.on-login #login-form-card,body.on-login #login-role-card{padding:16px!important;max-width:none!important}
+  body.on-login #login-form-card h2{font-size:15px!important;margin-bottom:10px!important}
+  body.on-login #login-form-card .input-field{padding:11px!important;margin-bottom:9px!important}
+  body.on-login #login-form-card .btn-primary{padding:12px!important}
+  body.on-login .login-footer-note{margin-top:10px!important;font-size:9.5px!important;line-height:1.5}
+}
+@media(max-width:700px) and (max-height:660px){
+  body.on-login .login-hero .login-feature-row{display:none!important}
+  body.on-login .login-hero #login-headline-ar{font-size:19px!important}
+  body.on-login .login-hero #login-logo-box{display:none!important}
+}
+@media(max-width:700px) and (max-height:540px){body.on-login .login-hero{display:none}}
+@media(max-width:700px) and (min-height:760px){body.on-login .login-hero #login-headline-ar{font-size:28px!important}body.on-login .login-hero #login-logo-box{width:56px!important;height:56px!important}body.on-login .login-hero .login-feature-row{margin-top:6px}}
 
 </style>
 </head>
@@ -7381,7 +7428,7 @@ D.rx.push([/صفحة (\d+) من (\d+) — إجمالي/g,'Page $1 of $2 — Tota
 })();
 /* V9 — نصوص ميزات الموظف بالخمس لغات (ar / en / bn / ne / hi) */
 window.V9_N = {
-ar:{tabMe:'إنجازاتي',tabReport:'إبلاغ',myPoints:'نقاطي',pts:'نقطة',level:'المستوى',l0:'برونزي',l1:'فضي',l2:'ذهبي',l3:'بلاتيني',toNext:'باقي {a} نقطة للمستوى التالي',maxLevel:'وصلت لأعلى مستوى 🎉',
+ar:{darkMode:'الوضع الليلي',lightMode:'الوضع النهاري',tabMe:'إنجازاتي',tabReport:'إبلاغ',myPoints:'نقاطي',pts:'نقطة',level:'المستوى',l0:'برونزي',l1:'فضي',l2:'ذهبي',l3:'بلاتيني',toNext:'باقي {a} نقطة للمستوى التالي',maxLevel:'وصلت لأعلى مستوى 🎉',
  badges:'شاراتي',b_first:'أول فيديو',b_allvideos:'كل الفيديوهات',b_ace:'متفوق في الاختبار',b_complete:'أنجزت كل التدريبات',b_onsite:'حضرت تدريب ميداني',b_clean:'سجل نظيف',
  rank:'ترتيبي في وحدتي',rankYou:'المركز {a} من {b}',you:'أنت',rankNone:'الترتيب يظهر لما يكون في الوحدة 3 موظفين على الأقل',
  pendTitle:'المتبقي عليّ',pendN:'متبقي عليك {a} من التدريبات',overdueN:'منها {a} متأخرة',allDone:'أنجزت كل المطلوب، شكرًا لك ✅',openIt:'افتح',
@@ -7393,7 +7440,7 @@ ar:{tabMe:'إنجازاتي',tabReport:'إبلاغ',myPoints:'نقاطي',pts:'�
  offBanner:'أنت غير متصل بالإنترنت — عرض للقراءة فقط',offOpen:'فتح النسخة المحفوظة (بدون نت)',offNone:'مفيش نسخة محفوظة لهذا الرقم على الجهاز ده. لازم تدخل مرة بالنت الأول.',offBad:'كلمة السر غير صحيحة',offNeed:'التدريبات والاختبارات محتاجة إنترنت',offBack:'رجوع',onlineBack:'رجع الاتصال بالإنترنت ✅',
  rTitle:'إبلاغ عن ملاحظة أو مخالفة',rCat:'نوع البلاغ',c_hygiene:'نظافة وصحة شخصية',c_equipment:'معدات وأجهزة',c_storage:'تخزين وتبريد',c_pests:'آفات وحشرات',c_other:'أخرى',rDesc:'اوصف الملاحظة',rPh:'اكتب باختصار: إيه اللي شفته وفين؟',rPhoto:'📷 أضف صورة (اختياري)',rSend:'إرسال البلاغ',rSent:'تم إرسال البلاغ ✅',rNeed:'اكتب وصف الملاحظة',rMine:'بلاغاتي',rNone:'لسه مبعتش أي بلاغ',s_new:'جديد',s_reviewing:'قيد المراجعة',s_closed:'تم الإغلاق',rReply:'رد الإدارة',rFail:'تعذر إرسال البلاغ',
  toAdmin:'التحويل لوضع الأدمن',toWorker:'التحويل لوضع الموظف'},
-en:{tabMe:'My Progress',tabReport:'Report',myPoints:'My points',pts:'pts',level:'Level',l0:'Bronze',l1:'Silver',l2:'Gold',l3:'Platinum',toNext:'{a} points to the next level',maxLevel:'You reached the top level 🎉',
+en:{darkMode:'Night mode',lightMode:'Day mode',tabMe:'My Progress',tabReport:'Report',myPoints:'My points',pts:'pts',level:'Level',l0:'Bronze',l1:'Silver',l2:'Gold',l3:'Platinum',toNext:'{a} points to the next level',maxLevel:'You reached the top level 🎉',
  badges:'My badges',b_first:'First video',b_allvideos:'All videos',b_ace:'Quiz ace',b_complete:'All trainings done',b_onsite:'Attended on-site training',b_clean:'Clean record',
  rank:'My rank in my unit',rankYou:'Rank {a} of {b}',you:'You',rankNone:'Ranking appears when the unit has at least 3 employees',
  pendTitle:'What is left for me',pendN:'You have {a} trainings left',overdueN:'{a} of them overdue',allDone:'You finished everything required, thank you ✅',openIt:'Open',
@@ -7405,7 +7452,7 @@ en:{tabMe:'My Progress',tabReport:'Report',myPoints:'My points',pts:'pts',level:
  offBanner:'You are offline — read-only view',offOpen:'Open saved copy (offline)',offNone:'No saved copy for this ID on this device. Sign in once online first.',offBad:'Incorrect password',offNeed:'Trainings and quizzes need internet',offBack:'Back',onlineBack:'Back online ✅',
  rTitle:'Report an observation or violation',rCat:'Report type',c_hygiene:'Hygiene & personal health',c_equipment:'Equipment',c_storage:'Storage & cooling',c_pests:'Pests',c_other:'Other',rDesc:'Describe it',rPh:'Briefly: what did you see and where?',rPhoto:'📷 Add a photo (optional)',rSend:'Send report',rSent:'Report sent ✅',rNeed:'Please describe the observation',rMine:'My reports',rNone:'You have not sent any report yet',s_new:'New',s_reviewing:'Under review',s_closed:'Closed',rReply:'Management reply',rFail:'Could not send the report',
  toAdmin:'Switch to admin mode',toWorker:'Switch to employee mode'},
-bn:{tabMe:'আমার অর্জন',tabReport:'রিপোর্ট',myPoints:'আমার পয়েন্ট',pts:'পয়েন্ট',level:'লেভেল',l0:'ব্রোঞ্জ',l1:'সিলভার',l2:'গোল্ড',l3:'প্ল্যাটিনাম',toNext:'পরবর্তী লেভেলের জন্য আর {a} পয়েন্ট',maxLevel:'আপনি সর্বোচ্চ লেভেলে পৌঁছেছেন 🎉',
+bn:{darkMode:'নাইট মোড',lightMode:'ডে মোড',tabMe:'আমার অর্জন',tabReport:'রিপোর্ট',myPoints:'আমার পয়েন্ট',pts:'পয়েন্ট',level:'লেভেল',l0:'ব্রোঞ্জ',l1:'সিলভার',l2:'গোল্ড',l3:'প্ল্যাটিনাম',toNext:'পরবর্তী লেভেলের জন্য আর {a} পয়েন্ট',maxLevel:'আপনি সর্বোচ্চ লেভেলে পৌঁছেছেন 🎉',
  badges:'আমার ব্যাজ',b_first:'প্রথম ভিডিও',b_allvideos:'সব ভিডিও',b_ace:'কুইজে সেরা',b_complete:'সব প্রশিক্ষণ শেষ',b_onsite:'মাঠ প্রশিক্ষণে অংশগ্রহণ',b_clean:'পরিষ্কার রেকর্ড',
  rank:'আমার ইউনিটে আমার অবস্থান',rankYou:'{b} জনের মধ্যে {a} নম্বর',you:'আপনি',rankNone:'ইউনিটে কমপক্ষে ৩ জন কর্মী থাকলে র‍্যাংক দেখা যাবে',
  pendTitle:'আমার বাকি কাজ',pendN:'আপনার আরও {a}টি প্রশিক্ষণ বাকি',overdueN:'এর মধ্যে {a}টি বিলম্বিত',allDone:'আপনি সব কাজ শেষ করেছেন, ধন্যবাদ ✅',openIt:'খুলুন',
@@ -7417,7 +7464,7 @@ bn:{tabMe:'আমার অর্জন',tabReport:'রিপোর্ট',myPoi
  offBanner:'আপনি অফলাইনে আছেন — শুধু পড়ার জন্য',offOpen:'সংরক্ষিত কপি খুলুন (অফলাইন)',offNone:'এই ডিভাইসে এই আইডির কোনো সংরক্ষিত কপি নেই। আগে একবার অনলাইনে লগইন করুন।',offBad:'পাসওয়ার্ড ভুল',offNeed:'প্রশিক্ষণ ও কুইজের জন্য ইন্টারনেট লাগবে',offBack:'ফিরে যান',onlineBack:'ইন্টারনেট ফিরে এসেছে ✅',
  rTitle:'পর্যবেক্ষণ বা লঙ্ঘনের রিপোর্ট',rCat:'রিপোর্টের ধরন',c_hygiene:'পরিচ্ছন্নতা ও ব্যক্তিগত স্বাস্থ্য',c_equipment:'যন্ত্রপাতি',c_storage:'সংরক্ষণ ও শীতলীকরণ',c_pests:'পোকামাকড়',c_other:'অন্যান্য',rDesc:'বর্ণনা করুন',rPh:'সংক্ষেপে লিখুন: কী দেখেছেন এবং কোথায়?',rPhoto:'📷 ছবি যোগ করুন (ঐচ্ছিক)',rSend:'রিপোর্ট পাঠান',rSent:'রিপোর্ট পাঠানো হয়েছে ✅',rNeed:'অনুগ্রহ করে বর্ণনা লিখুন',rMine:'আমার রিপোর্ট',rNone:'আপনি এখনও কোনো রিপোর্ট পাঠাননি',s_new:'নতুন',s_reviewing:'পর্যালোচনায়',s_closed:'বন্ধ',rReply:'ম্যানেজমেন্টের উত্তর',rFail:'রিপোর্ট পাঠানো যায়নি',
  toAdmin:'অ্যাডমিন মোডে যান',toWorker:'কর্মী মোডে যান'},
-ne:{tabMe:'मेरो उपलब्धि',tabReport:'रिपोर्ट',myPoints:'मेरा अंक',pts:'अंक',level:'स्तर',l0:'कांस्य',l1:'चाँदी',l2:'सुन',l3:'प्लेटिनम',toNext:'अर्को स्तरका लागि {a} अंक बाँकी',maxLevel:'तपाईं उच्चतम स्तरमा पुग्नुभयो 🎉',
+ne:{darkMode:'रात्रि मोड',lightMode:'दिन मोड',tabMe:'मेरो उपलब्धि',tabReport:'रिपोर्ट',myPoints:'मेरा अंक',pts:'अंक',level:'स्तर',l0:'कांस्य',l1:'चाँदी',l2:'सुन',l3:'प्लेटिनम',toNext:'अर्को स्तरका लागि {a} अंक बाँकी',maxLevel:'तपाईं उच्चतम स्तरमा पुग्नुभयो 🎉',
  badges:'मेरा ब्याज',b_first:'पहिलो भिडियो',b_allvideos:'सबै भिडियो',b_ace:'क्विजमा उत्कृष्ट',b_complete:'सबै तालिम सकियो',b_onsite:'फिल्ड तालिममा सहभागी',b_clean:'सफा रेकर्ड',
  rank:'मेरो एकाइमा मेरो स्थान',rankYou:'{b} मध्ये {a} औं स्थान',you:'तपाईं',rankNone:'एकाइमा कम्तीमा ३ कर्मचारी भएपछि स्थान देखिन्छ',
  pendTitle:'मेरो बाँकी काम',pendN:'तपाईंको {a} वटा तालिम बाँकी छ',overdueN:'तीमध्ये {a} वटा ढिला',allDone:'तपाईंले सबै काम सक्नुभयो, धन्यवाद ✅',openIt:'खोल्नुहोस्',
@@ -7429,7 +7476,7 @@ ne:{tabMe:'मेरो उपलब्धि',tabReport:'रिपोर्ट'
  offBanner:'तपाईं अफलाइन हुनुहुन्छ — पढ्न मात्र',offOpen:'सुरक्षित प्रति खोल्नुहोस् (अफलाइन)',offNone:'यो उपकरणमा यो आईडीको सुरक्षित प्रति छैन। पहिले एकपटक अनलाइन लगइन गर्नुहोस्।',offBad:'पासवर्ड गलत छ',offNeed:'तालिम र क्विजका लागि इन्टरनेट चाहिन्छ',offBack:'फर्कनुहोस्',onlineBack:'इन्टरनेट फर्कियो ✅',
  rTitle:'अवलोकन वा उल्लङ्घनको रिपोर्ट',rCat:'रिपोर्टको प्रकार',c_hygiene:'सरसफाइ र व्यक्तिगत स्वास्थ्य',c_equipment:'उपकरण',c_storage:'भण्डारण र चिस्यान',c_pests:'कीरा/जीवजन्तु',c_other:'अन्य',rDesc:'वर्णन गर्नुहोस्',rPh:'छोटकरीमा लेख्नुहोस्: के देख्नुभयो र कहाँ?',rPhoto:'📷 फोटो थप्नुहोस् (ऐच्छिक)',rSend:'रिपोर्ट पठाउनुहोस्',rSent:'रिपोर्ट पठाइयो ✅',rNeed:'कृपया वर्णन लेख्नुहोस्',rMine:'मेरा रिपोर्ट',rNone:'तपाईंले अहिलेसम्म कुनै रिपोर्ट पठाउनुभएको छैन',s_new:'नयाँ',s_reviewing:'समीक्षामा',s_closed:'बन्द',rReply:'व्यवस्थापनको जवाफ',rFail:'रिपोर्ट पठाउन सकिएन',
  toAdmin:'एडमिन मोडमा जानुहोस्',toWorker:'कर्मचारी मोडमा जानुहोस्'},
-hi:{tabMe:'मेरी उपलब्धियाँ',tabReport:'रिपोर्ट',myPoints:'मेरे अंक',pts:'अंक',level:'स्तर',l0:'कांस्य',l1:'रजत',l2:'स्वर्ण',l3:'प्लैटिनम',toNext:'अगले स्तर के लिए {a} अंक बाकी',maxLevel:'आप सर्वोच्च स्तर पर पहुँच गए 🎉',
+hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मेरी उपलब्धियाँ',tabReport:'रिपोर्ट',myPoints:'मेरे अंक',pts:'अंक',level:'स्तर',l0:'कांस्य',l1:'रजत',l2:'स्वर्ण',l3:'प्लैटिनम',toNext:'अगले स्तर के लिए {a} अंक बाकी',maxLevel:'आप सर्वोच्च स्तर पर पहुँच गए 🎉',
  badges:'मेरे बैज',b_first:'पहला वीडियो',b_allvideos:'सभी वीडियो',b_ace:'क्विज़ में अव्वल',b_complete:'सभी प्रशिक्षण पूरे',b_onsite:'फील्ड प्रशिक्षण में शामिल',b_clean:'साफ़ रिकॉर्ड',
  rank:'मेरी यूनिट में मेरा स्थान',rankYou:'{b} में से {a} वाँ स्थान',you:'आप',rankNone:'यूनिट में कम से कम 3 कर्मचारी होने पर रैंक दिखेगी',
  pendTitle:'मेरा बाकी काम',pendN:'आपके {a} प्रशिक्षण बाकी हैं',overdueN:'इनमें से {a} देर से',allDone:'आपने सारा काम पूरा कर लिया, धन्यवाद ✅',openIt:'खोलें',
@@ -7596,17 +7643,16 @@ hi:{tabMe:'मेरी उपलब्धियाँ',tabReport:'रिपो�
     const head = ws.firstElementChild;
     if(head && !$q('v9-banner')) head.insertAdjacentHTML('afterend', '<div id="v9-banner" class="v9-banner hidden"></div><div id="v9-offbar" class="v9-offbar hidden"></div>');
     const tools = head && head.querySelector('#lang-buttons');
-    if(tools && !$q('v9-simple-btn')){
-      tools.insertAdjacentHTML('afterend', '<button class="icon-btn" id="v9-simple-btn" onclick="V9.toggleSimple()" title="">Aa</button>');
-    }
-    if(!$q('v9-listen')) document.body.insertAdjacentHTML('beforeend', '<button id="v9-listen" class="v9-listen hidden" onclick="V9.speak()">🔊</button>');
+    if(tools && !$q('v9-dark-w')) tools.insertAdjacentHTML('afterend', '<button class="icon-btn v9-darkbtn" id="v9-dark-w" onclick="V9.toggleDark()"></button>');
+    const lg = $q('worker-logout-btn'), first = head && head.firstElementChild;   // زر الخروج جنب الاسم عشان الهيدر يبقى صف واحد أنضف
+    if(lg && first && lg.parentElement !== first){ first.appendChild(lg); lg.classList.add('v9-lg'); }
+    if(head) head.classList.add('v9-head');
     refreshLabels();
   }
   function refreshLabels(){
     if($q('wicon-label-me')) $q('wicon-label-me').textContent = n('tabMe');
     if($q('wicon-label-report')) $q('wicon-label-report').textContent = n('tabReport');
-    const sb_ = $q('v9-simple-btn'); if(sb_) sb_.title = document.body.classList.contains('v9-simple') ? n('simpleOff') : n('simpleOn');
-    const ls = $q('v9-listen'); if(ls) ls.title = n('listen');
+    darkUI();
     $q('wicon-btn-report')?.classList.toggle('hidden', !(reportsOk && S.reports !== 'off'));
   }
 
@@ -7650,8 +7696,6 @@ hi:{tabMe:'मेरी उपलब्धियाँ',tabReport:'रिपो�
       // مراجعة
       const revs = getRevs();
       h += '<div class="v9-blk"><div class="v9-h">🧾 ' + E(n('revTitle')) + '</div>' + (revs.length ? revs.map((r, i) => '<div class="v9-rev-row"><span>' + E(r.qz ? tr(r.qz, 'title') : (r.title || '')) + ' — ' + r.score + '%</span><button class="btn-secondary btn-sm" onclick="V9.showRev(' + i + ')">' + E(n('revBtn')) + '</button></div>').join('') : '<div class="v9-sm">' + E(n('revEmpty')) + '</div>') + '</div>';
-      // أدوات
-      h += '<div class="v9-blk v9-tools"><button class="btn-secondary btn-sm" onclick="V9.toggleSimple()">Aa ' + E(document.body.classList.contains('v9-simple') ? n('simpleOff') : n('simpleOn')) + '</button></div>';
       box.innerHTML = h;
       updateBanner();
       renderRank();
@@ -7793,30 +7837,32 @@ hi:{tabMe:'मेरी उपलब्धियाँ',tabReport:'रिपो�
     };
   }
 
-  /* ---------- واجهة مبسطة + قراءة صوتية ---------- */
-  const VOICE = { ar: 'ar-SA', en: 'en-US', bn: 'bn-BD', ne: 'ne-NP', hi: 'hi-IN' };
-  V9.toggleSimple = function(force){
-    const on = typeof force === 'boolean' ? force : !document.body.classList.contains('v9-simple');
-    document.body.classList.toggle('v9-simple', on);
-    if(currentUser) lsSet('v9_simple_' + currentUser.id, on ? '1' : '0');
-    $q('v9-listen')?.classList.toggle('hidden', !on || !currentUser);
-    refreshLabels();
-    if($q('wsec-panel-me') && !$q('wsec-panel-me').classList.contains('hidden')) renderMe();
+  /* ---------- الوضع الليلي (اختياري، بيتحفظ على الجهاز) ---------- */
+  const DK = 'v9_dark';
+  function darkUI(){
+    const on = document.body.classList.contains('v9-dark');
+    document.querySelectorAll('.v9-darkbtn').forEach(b => { b.textContent = on ? '☀\uFE0E' : '☾'; b.title = n(on ? 'lightMode' : 'darkMode'); });
+    const m = document.querySelector('meta[name="theme-color"]'); if(m) m.setAttribute('content', on ? '#0b0f14' : '#176b43');
+  }
+  V9.toggleDark = function(force){
+    const on = typeof force === 'boolean' ? force : !document.body.classList.contains('v9-dark');
+    document.body.classList.toggle('v9-dark', on); lsSet(DK, on ? '1' : '0'); darkUI();
   };
-  V9.speak = function(){
-    if(!('speechSynthesis' in window)){ return showToast(n('noVoice')); }
-    const ss = window.speechSynthesis;
-    if(ss.speaking){ ss.cancel(); return; }
-    const act = document.querySelector('.wsec-panel:not(.hidden)');
-    let t = (document.querySelector('#worker-section .wicon-btn.active .wicon-label') || {}).textContent || '';
-    if(act){
-      const parts = []; act.querySelectorAll('.section-title,h3,.v9-pts,.v9-pend,.v9-rankme,.v9-ok,.card-title,b').forEach(el => { const s = (el.textContent || '').trim(); if(s && s.length < 160) parts.push(s); });
-      t += '. ' + parts.slice(0, 12).join('. ');
-    }
-    const u = new SpeechSynthesisUtterance(t); u.lang = VOICE[L()] || 'en-US';
-    try{ const vs = ss.getVoices ? ss.getVoices() : []; if(vs.length && !vs.some(v => (v.lang || '').toLowerCase().startsWith(u.lang.slice(0, 2)))) showToast(n('noVoice')); }catch(e){}
-    ss.speak(u);
-  };
+  function ensureDarkBtns(){
+    if(!$q('v9-dark-l')) document.body.insertAdjacentHTML('beforeend', '<button class="v9-darkbtn v9-dark-float" id="v9-dark-l" onclick="V9.toggleDark()"></button>');
+    const lg = document.querySelector('#admin-section .btn-danger[onclick="logout()"]');
+    if(lg && !$q('v9-dark-a')) lg.insertAdjacentHTML('beforebegin', '<button type="button" class="icon-btn v9-darkbtn" id="v9-dark-a" onclick="V9.toggleDark()"></button>');
+    darkUI();
+  }
+  V9.ensureDarkBtns = ensureDarkBtns;
+  if(lsGet(DK) === '1') document.body.classList.add('v9-dark');
+  ensureDarkBtns();
+  const _eA = enterAdmin;
+  enterAdmin = async function(){ const r = await _eA.apply(this, arguments); try{ ensureDarkBtns(); }catch(e){} return r; };
+  /* ثبات الصفحة: ارتفاع الهيدر بيتحسب عشان شريط التنقل يثبت تحته */
+  function measure(){ const h = document.querySelector('#worker-section > .v9-head'); if(h) document.documentElement.style.setProperty('--v9-hh', Math.round(h.getBoundingClientRect().height) + 'px'); }
+  window.addEventListener('resize', measure); window.addEventListener('orientationchange', measure);
+  V9.measure = measure;
 
   /* ---------- أوفلاين (قراءة فقط) ---------- */
   const snapKey = id => 'v9_snap_' + id;
@@ -7969,7 +8015,6 @@ hi:{tabMe:'मेरी उपलब्धियाँ',tabReport:'रिपो�
   }
   const _ew9 = enterAsWorkerFinal;
   enterAsWorkerFinal = async function(worker){
-    document.body.classList.remove('v9-simple');
     await loadSettings();
     if(reportsOk === null) await detectReports();
     const r = await _ew9.apply(this, arguments);
@@ -7977,8 +8022,7 @@ hi:{tabMe:'मेरी उपलब्धियाँ',tabReport:'रिपो�
       ensureUI(); refreshLabels(); netBar();
       rememberLogin(worker);
       applyAutoLang(worker);
-      const s = lsGet('v9_simple_' + worker.id); if(s === '1') V9.toggleSimple(true);
-      $q('v9-listen')?.classList.toggle('hidden', !document.body.classList.contains('v9-simple'));
+      measure(); setTimeout(measure, 400);
       // لو الفيديوهات مفيهاش حاجة نفتح أول تبويب فيه شغل
       updateBanner();
     }catch(e){ console.error('v9 enter', e); }
@@ -7986,8 +8030,7 @@ hi:{tabMe:'मेरी उपलब्धियाँ',tabReport:'रिपो�
   };
   const _lo9 = window.logout;
   window.logout = function(){
-    try{ window.speechSynthesis && window.speechSynthesis.cancel(); }catch(e){}
-    document.body.classList.remove('v9-simple'); $q('v9-listen')?.classList.add('hidden'); $q('v9-banner')?.classList.add('hidden'); V9.closeModal(); me = null;
+    $q('v9-banner')?.classList.add('hidden'); V9.closeModal(); me = null;
     return _lo9.apply(this, arguments);
   };
   const _dl9 = doLogin;
