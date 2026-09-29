@@ -643,6 +643,8 @@ body.v9-dark .v9-dark-float{filter:none}
 @media(max-width:700px) and (max-height:540px){body.on-login .login-hero{display:none}}
 @media(max-width:700px) and (min-height:760px){body.on-login .login-hero #login-headline-ar{font-size:28px!important}body.on-login .login-hero #login-logo-box{width:56px!important;height:56px!important}body.on-login .login-hero .login-feature-row{margin-top:6px}}
 
+.v9-rankline{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:12px;padding:8px 12px;border-radius:12px;background:#f0fdf4;border:1px solid #bbf7d0;font-size:12.5px;color:#166534}.v9-rankline.hidden{display:none}.v9-rankline b{font-size:14px;font-weight:900}.v9-rl-pts{font-weight:800;color:var(--primary)}
+
 </style>
 </head>
 <body>
@@ -7627,18 +7629,14 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
   /* ---------- واجهة الموظف: أيقونتين جداد + بانر + أدوات ---------- */
   function ensureUI(){
-    const ws = $q('worker-section'); if(!ws || $q('v9-panel-me')) return;
+    const ws = $q('worker-section'); if(!ws || $q('wsec-panel-report')) return;
     const row = ws.querySelector('.wicon-row');
     if(row){
       row.insertAdjacentHTML('beforeend',
-        '<button class="wicon-btn" id="wicon-btn-me" onclick="toggleWorkerSection(\'me\')"><span class="wicon-emoji">⭐</span><span class="wicon-label" id="wicon-label-me"></span></button>' +
         '<button class="wicon-btn" id="wicon-btn-report" onclick="toggleWorkerSection(\'report\')"><span class="wicon-emoji">📸</span><span class="wicon-label" id="wicon-label-report"></span></button>');
       const last = ws.querySelectorAll('.wsec-panel'); const anchor = last[last.length - 1] || row;
-      anchor.insertAdjacentHTML('afterend',
-        '<div class="card wsec-panel hidden v9-panel" id="v9-panel-me"></div><div class="card wsec-panel hidden v9-panel" id="v9-panel-report"></div>');
-      $q('v9-panel-me').id = 'wsec-panel-me'; $q('v9-panel-report').id = 'wsec-panel-report';
-      [ 'wsec-panel-me', 'wsec-panel-report' ].forEach(i => $q(i).setAttribute('data-v9', '1'));
-      if(WORKER_SECTIONS.indexOf('me') < 0) WORKER_SECTIONS.push('me', 'report');
+      anchor.insertAdjacentHTML('afterend', '<div class="card wsec-panel hidden v9-panel" id="wsec-panel-report" data-v9="1"></div>');
+      if(WORKER_SECTIONS.indexOf('report') < 0) WORKER_SECTIONS.push('report');
     }
     const head = ws.firstElementChild;
     if(head && !$q('v9-banner')) head.insertAdjacentHTML('afterend', '<div id="v9-banner" class="v9-banner hidden"></div><div id="v9-offbar" class="v9-offbar hidden"></div>');
@@ -7650,7 +7648,6 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     refreshLabels();
   }
   function refreshLabels(){
-    if($q('wicon-label-me')) $q('wicon-label-me').textContent = n('tabMe');
     if($q('wicon-label-report')) $q('wicon-label-report').textContent = n('tabReport');
     darkUI();
     $q('wicon-btn-report')?.classList.toggle('hidden', !(reportsOk && S.reports !== 'off'));
@@ -7690,9 +7687,6 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
         BADGES.map(b => '<div class="v9-badge' + (me.badges[b[0]] ? ' on' : '') + '"><span>' + b[1] + '</span><small>' + E(n('b_' + b[0])) + '</small></div>').join('') + '</div></div>';
       // ترتيب
       h += '<div class="v9-blk" id="v9-rank"></div>';
-      // شهادة
-      h += '<div class="v9-blk"><div class="v9-h">🎖️ ' + E(n('certTitle')) + '</div>' +
-        (me.badges.complete ? '<div class="v9-ok">' + E(n('certReady')) + '</div><button class="btn-primary" onclick="V9.openCert()">' + E(n('certBtn')) + '</button>' : '<div class="v9-sm">🔒 ' + E(n('certLocked')) + '</div>') + '</div>';
       // مراجعة
       const revs = getRevs();
       h += '<div class="v9-blk"><div class="v9-h">🧾 ' + E(n('revTitle')) + '</div>' + (revs.length ? revs.map((r, i) => '<div class="v9-rev-row"><span>' + E(r.qz ? tr(r.qz, 'title') : (r.title || '')) + ' — ' + r.score + '%</span><button class="btn-secondary btn-sm" onclick="V9.showRev(' + i + ')">' + E(n('revBtn')) + '</button></div>').join('') : '<div class="v9-sm">' + E(n('revEmpty')) + '</div>') + '</div>';
@@ -7716,6 +7710,20 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     box.innerHTML = h + '</ol>';
   }
 
+  /* ---------- سطر ترتيبي (مركزي فقط، بدون أسماء) في بطاقة الترحيب ---------- */
+  let lastRank = null;
+  function drawRank(){
+    const bar = $q('wt-progress-bar'); if(!bar) return;
+    let el = $q('v9-rankline');
+    if(!el){ bar.parentElement.insertAdjacentHTML('afterend', '<div id="v9-rankline" class="v9-rankline hidden"></div>'); el = $q('v9-rankline'); }
+    const r = lastRank;
+    if(!r || r.few || !r.mine){ el.classList.add('hidden'); return; }
+    el.innerHTML = '<span>🏁 ' + E(n('rank')) + '</span><b>' + E(n('rankYou', { a: r.mine.rank, b: r.total })) + '</b><span class="v9-rl-pts">' + r.mine.p + ' ' + E(n('pts')) + '</span>';
+    el.classList.remove('hidden');
+  }
+  async function renderRankLine(){ try{ lastRank = await computeRank(); }catch(e){ lastRank = null; } drawRank(); }
+  V9.renderRankLine = renderRankLine;
+
   /* ---------- بانر المتبقي + إشعار المتصفح ---------- */
   async function updateBanner(){
     const b = $q('v9-banner'); if(!b) return;
@@ -7724,7 +7732,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     if(!pn){ b.classList.add('hidden'); return; }
     const late = me.overdue.length;
     b.className = 'v9-banner' + (late ? ' late' : '');
-    b.innerHTML = '<span>📌 ' + E(n('pendN', { a: pn })) + (late ? ' — ' + E(n('overdueN', { a: late })) : '') + '</span><button class="btn-secondary btn-sm" onclick="toggleWorkerSection(\'me\')">' + E(n('openIt')) + '</button>';
+    b.innerHTML = '<span>📌 ' + E(n('pendN', { a: pn })) + (late ? ' — ' + E(n('overdueN', { a: late })) : '') + '</span><button class="btn-secondary btn-sm" onclick="toggleWorkerSection(\'' + (me.pendingTopics.length ? 'videos' : 'quizzes') + '\')">' + E(n('openIt')) + '</button>';
     try{
       if('Notification' in window && Notification.permission === 'granted'){
         const key = 'v9_notif_' + currentUser.id, today = new Date().toISOString().slice(0, 10);
@@ -7751,45 +7759,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   }
   V9.modal = modal; V9.closeModal = () => $q('v9-modal')?.classList.add('hidden');
 
-  /* ---------- الشهادة الشخصية ---------- */
   const LOC = { ar: 'ar-EG', en: 'en-GB', bn: 'bn-BD', ne: 'ne-NP', hi: 'hi-IN' };
-  function hash(s){ let h = 7; for(let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 99991; return h; }
-  async function certData(){
-    const w = currentUser, sec = sections.find(s => s.id === w.section_id);
-    let app = document.title || '';
-    try{
-      const {data} = await sb.from('app_settings').select('key,value').in('key', ['app_name', 'app_name_en']);
-      const m = {}; (data || []).forEach(r => m[r.key] = r.value);
-      app = (L() === 'ar' ? m.app_name : (m.app_name_en || m.app_name)) || app;
-    }catch(e){}
-    const d = new Date(), ymd = d.toISOString().slice(0, 10).replace(/-/g, '');
-    return { name: w.worker_name, unit: sec ? tr(sec, 'name') : (w.factory_branch || ''), app, date: d.toLocaleDateString(LOC[L()] || 'en-GB', { year: 'numeric', month: 'long', day: 'numeric' }),
-             code: 'FS-' + w.id + '-' + ymd + '-' + hash(w.worker_name + '|' + w.id + '|' + ymd) };
-  }
-  function certHTML(c, full){
-    const rtl = L() === 'ar';
-    const css = 'body{margin:0;font-family:"Noto Sans","Noto Sans Arabic","Noto Sans Bengali","Noto Sans Devanagari","Segoe UI",Tahoma,Arial,sans-serif;background:#fff}' +
-      '.c{box-sizing:border-box;width:100%;max-width:900px;margin:0 auto;border:8px double #166534;padding:34px 28px;text-align:center;color:#0f172a;background:#fff}' +
-      '.c h1{color:#166534;font-size:30px;margin:6px 0 4px}.c .app{color:#64748b;font-size:14px;font-weight:700}.c .l{font-size:16px;margin:18px 0 6px;color:#475569}' +
-      '.c .nm{font-size:32px;font-weight:800;margin:6px 0;border-bottom:2px solid #16a34a;display:inline-block;padding:0 22px}.c .m{display:flex;justify-content:space-around;gap:10px;margin-top:26px;font-size:14px;flex-wrap:wrap}' +
-      '.c .m b{display:block;color:#166534}.c .f{margin-top:22px;font-size:11px;color:#94a3b8}.seal{font-size:46px}';
-    const body = '<div class="c"><div class="seal">🛡️</div><div class="app">' + E(c.app) + '</div><h1>' + E(n('cert_head')) + '</h1><div class="l">' + E(n('cert_l1')) + '</div><div class="nm">' + E(c.name) + '</div><div class="l">' + E(n('cert_l2')) + '</div>' +
-      '<div class="m"><div><b>' + E(n('cert_unit')) + '</b>' + E(c.unit || '—') + '</div><div><b>' + E(n('cert_date')) + '</b>' + E(c.date) + '</div><div><b>' + E(n('cert_code')) + '</b><span dir="ltr">' + E(c.code) + '</span></div></div><div class="f">' + E(n('cert_note')) + '</div></div>';
-    if(!full) return '<style>' + css + '</style><div dir="' + (rtl ? 'rtl' : 'ltr') + '">' + body + '</div>';
-    return '<!doctype html><html lang="' + L() + '" dir="' + (rtl ? 'rtl' : 'ltr') + '"><head><meta charset="utf-8"><title>' + E(n('cert_head')) + '</title><style>' + css + '@page{size:A4 landscape;margin:12mm}</style></head><body>' + body + '</body></html>';
-  }
-  V9.openCert = async function(){
-    if(!me || !me.badges.complete) return showToast(n('certLocked'));
-    const c = await certData();
-    modal(certHTML(c, false) + '<div class="v9-mact"><button class="btn-primary" onclick="V9.printCert()">🖨️ ' + E(n('print')) + '</button><button class="btn-secondary" onclick="V9.closeModal()">' + E(n('close')) + '</button></div>');
-    V9._cert = c;
-  };
-  V9.printCert = function(){
-    const c = V9._cert; if(!c) return;
-    const w = window.open('', '_blank'); if(!w) return showToast('Popup blocked');
-    w.document.open(); w.document.write(certHTML(c, true)); w.document.close();
-    setTimeout(() => { try{ w.focus(); w.print(); }catch(e){} }, 400);
-  };
 
   /* ---------- مراجعة الاختبار بعد الحل ---------- */
   const revKey = () => 'v9_rev_' + (currentUser ? currentUser.id : '0');
@@ -7830,8 +7800,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
         const rec = { qz: qz ? pick(qz, 'title') : null, score: last.score, at: Date.now(), items };
         const arr = getRevs(); arr.unshift(rec); lsSet(revKey(), JSON.stringify(arr.slice(0, 5)));
         if(S.review !== 'off') modal(reviewHTML(rec));
-        if($q('wsec-panel-me') && !$q('wsec-panel-me').classList.contains('hidden')) renderMe();
-        else me = null;
+        me = null; renderRankLine();
       }catch(e){ console.error('v9 review', e); }
       return r;
     };
@@ -7933,7 +7902,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
           lsSet('v9_lang_' + currentUser.id, currentLang);
           sb.from('workers_evaluations').update({ preferred_lang: currentLang }).eq('id', currentUser.id).then(() => {}, () => {});
         }
-        refreshLabels(); if(currentUser){ me = null; if($q('wsec-panel-me') && !$q('wsec-panel-me').classList.contains('hidden')) renderMe(); else updateBanner(); if($q('wsec-panel-report') && !$q('wsec-panel-report').classList.contains('hidden')) renderReport(); }
+        refreshLabels(); if(currentUser){ drawRank(); updateBanner(); if($q('wsec-panel-report') && !$q('wsec-panel-report').classList.contains('hidden')) renderReport(); }
       }catch(e){}
       return r;
     };
@@ -7997,7 +7966,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     const _tw = toggleWorkerSection;
     toggleWorkerSection = function(name){
       const r = _tw.apply(this, arguments);
-      try{ if(name === 'me') renderMe(); if(name === 'report') renderReport(); }catch(e){}
+      try{ if(name === 'report') renderReport(); }catch(e){}
       return r;
     };
   }
@@ -8009,7 +7978,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     const _lw = loadWorkerData;
     loadWorkerData = async function(){
       const r = await _lw.apply(this, arguments);
-      try{ me = await computeMe(); updateBanner(); saveSnap(); }catch(e){}
+      try{ me = await computeMe(); updateBanner(); saveSnap(); renderRankLine(); }catch(e){}
       return r;
     };
   }
@@ -8128,7 +8097,6 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     box.innerHTML = '<h3>⚙️ إعدادات تجربة الموظف</h3><div class="v9-sub">التغييرات دي بتأثر على شاشة الموظف فقط، ومفيش بيانات بتتمسح.</div>' +
       '<label class="v9-row">مراجعة الإجابات بعد الاختبار<select id="v9-set-review" class="input-field"><option value="on">مفعّلة (يشوف الصح والغلط)</option><option value="off">مقفولة</option></select></label>' +
       '<label class="v9-row">لوحة ترتيب الوحدة<select id="v9-set-board" class="input-field"><option value="on">مفعّلة</option><option value="off">مقفولة</option></select></label>' +
-      '<label class="v9-row">أسماء الموظفين في الترتيب<select id="v9-set-names" class="input-field"><option value="first">الاسم الأول</option><option value="anon">مخفية (أرقام فقط)</option></select></label>' +
       '<label class="v9-row">اعتبار التدريب متأخر بعد (أيام)<input id="v9-set-days" type="number" min="1" class="input-field" value="14"></label>' +
       '<label class="v9-row">إبلاغ الموظفين عن الملاحظات<select id="v9-set-rep" class="input-field"><option value="on">مفعّل</option><option value="off">مقفول</option></select></label>' +
       '<button class="btn-primary" onclick="V9A.saveSettings()">حفظ الإعدادات</button><div id="v9-set-msg" class="v9-sm"></div>';
@@ -8138,13 +8106,12 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
       const m = {}; (data || []).forEach(r => m[r.key] = r.value);
       if(m.worker_quiz_review) $q('v9-set-review').value = m.worker_quiz_review;
       if(m.worker_leaderboard) $q('v9-set-board').value = m.worker_leaderboard;
-      if(m.worker_leaderboard_names) $q('v9-set-names').value = m.worker_leaderboard_names;
       if(m.worker_overdue_days) $q('v9-set-days').value = m.worker_overdue_days;
       if(m.worker_reports) $q('v9-set-rep').value = m.worker_reports;
     }catch(e){}
   }
   V9A.saveSettings = async function(){
-    const rows = [['worker_quiz_review', $q('v9-set-review').value], ['worker_leaderboard', $q('v9-set-board').value], ['worker_leaderboard_names', $q('v9-set-names').value],
+    const rows = [['worker_quiz_review', $q('v9-set-review').value], ['worker_leaderboard', $q('v9-set-board').value],
       ['worker_overdue_days', String(Math.max(1, parseInt($q('v9-set-days').value) || 14))], ['worker_reports', $q('v9-set-rep').value]];
     let bad = null;
     for(const [key, value] of rows){ const {error} = await sb.from('app_settings').upsert({ key, value }); if(error) bad = error; }
