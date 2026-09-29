@@ -365,6 +365,93 @@ button,.tab-btn,.os-chip{-webkit-tap-highlight-color:transparent;touch-action:ma
 body.v4d-open{overflow:hidden}
 @media (max-width:640px){.v4-3{grid-template-columns:1fr}.v4d-panel{width:100vw}.dx-tiles{grid-template-columns:repeat(2,1fr)}}
 
+/* ===== V6: مركز المحتوى ===== */
+.v6-hero{background:linear-gradient(135deg,#0f4d30,#176b43);color:#fff;border-radius:18px;padding:20px 22px;margin-bottom:16px;box-shadow:var(--shadow)}
+.v6-hero h2{font-size:21px;font-weight:900;margin:0 0 4px}.v6-hero p{margin:0;font-size:13px;opacity:.9}
+.v6-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px}
+.v6-tile{font-family:inherit;text-align:center;background:#fff;border:1px solid var(--border);border-radius:20px;padding:26px 16px 20px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;box-shadow:var(--shadow);transition:all .16s;position:relative;overflow:hidden}
+.v6-tile::before{content:"";position:absolute;inset:0 0 auto 0;height:5px;background:var(--tc,#176b43)}
+.v6-tile:hover{transform:translateY(-4px);border-color:var(--tc,#176b43);box-shadow:0 16px 34px rgba(15,77,48,.16)}
+.v6-t-card{--tc:#176b43}.v6-t-quiz{--tc:#2563eb}.v6-t-video{--tc:#dc2626}
+.v6-tile-ic{width:74px;height:74px;border-radius:22px;display:flex;align-items:center;justify-content:center;font-size:38px;background:color-mix(in srgb,var(--tc) 12%,#fff);margin-bottom:4px}
+.v6-tile b{font-size:17px;font-weight:900;color:var(--text)}.v6-tile small{color:var(--muted);font-size:11px;font-weight:700}
+.v6-tile-cnt{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:10px;font-size:11.5px;font-weight:800}
+.v6-tile-cnt span{background:#f1f5f9;border-radius:999px;padding:4px 10px;color:#334155}
+.v6-tile-cnt .pub{background:#dcfce7;color:#166534}.v6-tile-cnt .hid{background:#fef3c7;color:#92400e}
+.v6-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.v6-bar h3{margin:0;flex:1;font-size:18px;font-weight:900;min-width:140px}.v6-bar h3 small{font-size:11px;color:var(--muted);font-weight:700;margin-right:6px}
+.v6-back{font-family:inherit;font-weight:800;font-size:12.5px;border:1px solid var(--border);background:#fff;border-radius:12px;padding:9px 14px;cursor:pointer}
+.v6-back:hover{background:#f1f5f9}
+.v6-add{font-family:inherit;font-weight:800;font-size:13.5px;color:#fff;background:var(--primary);border:0;border-radius:12px;padding:10px 18px;cursor:pointer;box-shadow:0 6px 16px rgba(23,107,67,.25)}
+.v6-add:hover{background:var(--primary-dark)}
+.v6-tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.v6-tabs{display:flex;gap:6px;background:#fff;border:1px solid var(--border);border-radius:14px;padding:5px}
+.v6-tabs button{font-family:inherit;font-size:12.5px;font-weight:800;border:0;background:transparent;color:var(--muted);padding:8px 14px;border-radius:10px;cursor:pointer}
+.v6-tabs button b{background:#eef2f6;border-radius:999px;padding:1px 8px;margin-right:4px;font-size:11px;color:#334155}
+.v6-tabs button.active{background:var(--primary);color:#fff}.v6-tabs button.active b{background:rgba(255,255,255,.25);color:#fff}
+.v6-search{flex:1;min-width:170px;max-width:340px;padding:10px 12px;font-size:13px}
+.v6-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.v6-empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:44px 10px;font-size:14px;background:#fff;border:1px dashed var(--border);border-radius:16px}
+.v6-card{background:#fff;border:1px solid var(--border);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--shadow);transition:all .14s}
+.v6-card:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(15,23,42,.12)}
+.v6-card.is-off .v6-cover img,.v6-card.is-off .v6-ph{filter:grayscale(.7);opacity:.75}
+.v6-cover{position:relative;height:140px;background:#e2e8f0;overflow:hidden}
+.v6-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.v6-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:40px;background:linear-gradient(135deg,#e2e8f0,#f1f5f9)}
+.v6-ph-quiz{background:linear-gradient(135deg,#dbeafe,#eff6ff)}
+.v6-badge{position:absolute;top:10px;right:10px;font-size:11px;font-weight:900;border-radius:999px;padding:4px 10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.v6-badge.on{color:#166534}.v6-badge.off{color:#92400e}
+.v6-body{padding:12px 14px 6px;flex:1}
+.v6-title{font-weight:900;font-size:14.5px;line-height:1.4}
+.v6-desc{font-size:12px;color:#475569;margin-top:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.v6-aud-line{font-size:11px;color:var(--muted);margin-top:8px;font-weight:700;line-height:1.6}
+.v6-pills{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px}
+.v6-pill{font-size:10px;font-weight:800;border-radius:999px;padding:3px 8px;background:#eff6ff;color:#1d4ed8}
+.v6-pill.ok{background:#dcfce7;color:#166534}.v6-pill.no{background:#f1f5f9;color:#94a3b8}
+.v6-act{display:flex;align-items:center;gap:8px;padding:10px 12px 12px;border-top:1px solid #f1f5f9;margin-top:6px}
+.v6-btn{font-family:inherit;font-size:11.5px;font-weight:800;border:1px solid var(--border);background:#fff;border-radius:10px;padding:7px 11px;cursor:pointer}
+.v6-btn:hover{background:#f1f5f9}.v6-btn.danger{color:#b91c1c;border-color:#fecaca;background:#fff5f5;padding:7px 10px;margin-right:auto}
+.v6-sw{display:flex;align-items:center;gap:7px;cursor:pointer;font-size:11.5px;font-weight:800}
+.v6-sw input{display:none}
+.v6-sw i{width:38px;height:22px;background:#cbd5e1;border-radius:99px;position:relative;transition:.15s;flex-shrink:0}
+.v6-sw i::after{content:"";position:absolute;top:3px;right:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:.15s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.v6-sw input:checked+i{background:var(--primary)}.v6-sw input:checked+i::after{right:19px}
+.v6-foot{margin-top:18px;text-align:center}
+.v6-legacy{font-family:inherit;font-size:12px;font-weight:700;color:var(--muted);background:transparent;border:1px dashed var(--border);border-radius:12px;padding:9px 16px;cursor:pointer}
+.v6-legacy:hover{background:#f8fafc;color:var(--text)}
+.v6-legacy-bar{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:12px;color:var(--muted);font-weight:700}
+.v6-legacy-bar button{font-family:inherit;font-weight:800;font-size:12.5px;border:1px solid var(--border);background:#fff;border-radius:12px;padding:8px 14px;cursor:pointer;color:var(--text)}
+/* نموذج الإضافة/التعديل */
+.v6-ov{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:100003;display:flex;align-items:center;justify-content:center;padding:14px;backdrop-filter:blur(2px)}
+.v6-modal{background:#fff;border-radius:20px;width:min(640px,100%);max-height:94vh;display:flex;flex-direction:column;box-shadow:0 30px 80px rgba(0,0,0,.35)}
+.v6-mh{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border);font-size:16px}
+.v6-x{border:0;background:#f1f5f9;width:34px;height:34px;border-radius:10px;cursor:pointer;font-size:15px}
+.v6-mb{padding:16px 20px;overflow:auto;flex:1}
+.v6-mf{display:flex;gap:10px;padding:14px 20px;border-top:1px solid var(--border);background:#f8fafc;border-radius:0 0 20px 20px}
+.v6-save{padding:11px 26px;font-size:14px}
+.v6-row{margin-bottom:11px}.v6-2{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}
+.v6-thumb{display:block;max-width:150px;max-height:90px;border-radius:10px;margin-top:8px;object-fit:cover}
+.v6-more{margin:0 0 11px;background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:9px 12px}
+.v6-more summary{cursor:pointer;font-size:12px;font-weight:800;color:#334155}
+.v6-hint{font-size:11.5px;color:var(--muted);background:#f8fafc;border-radius:10px;padding:8px 11px;margin-bottom:11px}
+.v6-note{font-size:11.5px;color:#1e40af;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:8px 11px;margin-bottom:11px}
+.v6-warn{font-size:12px;color:#92400e;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:9px 12px;margin-bottom:11px}
+.v6-sec-t{font-weight:900;font-size:13.5px;margin:16px 0 9px;padding-top:14px;border-top:1px solid var(--border)}
+.v6-modes{display:flex;gap:8px;margin-bottom:12px}
+.v6-mode{flex:1;cursor:pointer}.v6-mode input{display:none}
+.v6-mode span{display:block;text-align:center;font-size:13px;font-weight:800;border:2px solid var(--border);border-radius:12px;padding:11px 8px;background:#fff}
+.v6-mode input:checked+span{border-color:var(--primary);background:#f0faf4;color:var(--primary-dark)}
+.v6-aud-h{font-size:12.5px;font-weight:800;margin:12px 0 7px}.v6-aud-h small{color:var(--muted);font-weight:600;font-size:10.5px;margin-right:4px}
+.v6-chips{display:flex;flex-wrap:wrap;gap:7px}
+.v6-chip{font-family:inherit;font-size:12.5px;font-weight:800;border:1.5px solid var(--border);background:#fff;color:#334155;border-radius:999px;padding:7px 14px;cursor:pointer;transition:all .1s}
+.v6-chip:hover{border-color:var(--primary-light)}
+.v6-chip.on{background:var(--primary);border-color:var(--primary);color:#fff;box-shadow:0 3px 10px rgba(23,107,67,.25)}
+.v6-aud-sum{margin-top:12px;font-size:12px;background:#f0faf4;border:1px solid #bbf7d0;border-radius:10px;padding:9px 12px;color:#14532d;min-height:20px}
+.v6-aud-sum:empty{display:none}
+.v6-vis{display:flex;align-items:center;gap:9px;margin-top:14px;font-size:13px;font-weight:800;background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:11px 14px;cursor:pointer}
+@media (max-width:640px){.v6-grid{grid-template-columns:1fr 1fr;gap:10px}.v6-cover{height:110px}.v6-act{flex-wrap:wrap}.v6-tiles{grid-template-columns:1fr}.v6-tile{flex-direction:row;text-align:right;padding:16px;gap:12px;flex-wrap:wrap}.v6-tile-ic{width:56px;height:56px;font-size:28px}.v6-search{max-width:none;width:100%}.v6-2{grid-template-columns:1fr}.v6-modal{max-height:100vh;border-radius:16px}}
+@media (max-width:420px){.v6-grid{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -5770,12 +5857,13 @@ try{(function(){
     const totalW = (W.training + W.quiz + W.violations + W.onsite) || 1;
     const workers = await fetchAll(() => { let q = sb.from('workers_evaluations').select('id,worker_name,section_id,job_role_id,kpi_score').order('id'); if(!adminUser?.isSuper && ids.length) q = q.in('section_id', ids); return q; });
     const [topics, progress, attempts, onsite, roles] = await Promise.all([
-      fetchAll(() => sb.from('training_topics').select('id,section_id,target_department_id,is_visible').order('id')),
+      fetchAll(() => sb.from('training_topics').select('*').order('id')),
       fetchAll(() => sb.from('training_progress').select('worker_id,topic_id,completed').order('id')),
       fetchAll(() => sb.from('quiz_attempts').select('worker_id,score,is_current').order('id')),
       safe(() => fetchAll(() => sb.from('onsite_training_participants').select('worker_id,admin_evaluation').order('id')), []),
       safe(() => fetchAll(() => sb.from('job_roles').select('id,target_department_id').order('id')), [])
     ]);
+    try{ if(window.V6) await window.V6.loadAud(true); }catch(e){}
     const roleDept = {}; roles.forEach(r => roleDept[r.id] = r.target_department_id);
     const done = {}; progress.forEach(p => { if(p.completed) (done[p.worker_id] ||= new Set()).add(p.topic_id); });
     const sc = {}; attempts.forEach(a => { if(a.is_current === false) return; (sc[a.worker_id] ||= []).push(Number(a.score) || 0); });
@@ -5785,7 +5873,9 @@ try{(function(){
     const mean = a => a.reduce((x, y) => x + y, 0) / a.length;
     return workers.map(w => {
       const d = roleDept[w.job_role_id];
-      const rel = vis.filter(t => (!t.section_id || Number(t.section_id) === Number(w.section_id)) && (!t.target_department_id || Number(t.target_department_id) === Number(d)));
+      const cx = window.V6 ? window.V6.workerCtx(w, d) : null;
+      const rel = vis.filter(t => t.audience_restricted && cx ? window.V6.audAllowed('video', t, cx)
+        : (!t.section_id || Number(t.section_id) === Number(w.section_id)) && (!t.target_department_id || Number(t.target_department_id) === Number(d)));
       const trainingPct = rel.length ? rel.filter(t => done[w.id]?.has(t.id)).length / rel.length * 100 : 100;
       const quizPct = (sc[w.id] || []).length ? mean(sc[w.id]) : 100;
       const violPct = Number(w.kpi_score ?? 100);
@@ -6039,6 +6129,567 @@ try{(function(){
       }catch(e){ console.error('dash v4', e); }
     };
   }
+})();
+/* =====================================================================
+   V6 — مركز المحتوى: أيقونة واحدة ← (كروت / اختبارات / فيديوهات) + جمهور متعدد (مناطق × إدارات × وحدات)
+   إضافات فقط. المحتوى القديم (بدون جمهور محدد) بيفضل شغال بنفس قواعده بالظبط.
+   ===================================================================== */
+(function(){
+  const $q = id => document.getElementById(id);
+  const isSuper = () => !!(typeof adminUser !== 'undefined' && adminUser && adminUser.isSuper);
+  const secs = () => (typeof sections !== 'undefined' ? sections : []);
+  const N = v => (v === '' || v == null) ? null : Number(v);
+  const scopeIds = () => (typeof getAdminScopeIds === 'function' ? getAdminScopeIds() : []).map(Number);
+  const toast = m => { try{ showToast(m); }catch(e){} };
+
+  /* ---------- جلب كل الصفوف (سقف سوبابيز 1000) ---------- */
+  async function fetchAll(mk){
+    const out = []; let from = 0;
+    for(;;){
+      const r = await mk().range(from, from + 999);
+      if(r.error) throw r.error;
+      const d = r.data || []; out.push(...d);
+      if(d.length < 1000) break; from += 1000;
+    }
+    return out;
+  }
+
+  /* =====================  الجمهور: التخزين والمطابقة  ===================== */
+  let AUD = {}, audLoaded = false, audReady = null;     // audReady: هل phase2.sql اتشغّل؟
+  const akey = (t, id) => t + ':' + id;
+  async function loadAud(force){
+    if(audLoaded && !force) return AUD;
+    try{
+      const rows = await fetchAll(() => sb.from('content_audience').select('item_type,item_id,kind,ref_id').order('id'));
+      const m = {}; rows.forEach(r => (m[akey(r.item_type, r.item_id)] ||= []).push({kind:r.kind, ref_id:Number(r.ref_id)}));
+      AUD = m; audReady = true;
+    }catch(e){ AUD = {}; audReady = false; }
+    audLoaded = true; return AUD;
+  }
+  const setsOf = rows => {
+    const S = {R:new Set(), D:new Set(), U:new Set()};
+    (rows || []).forEach(r => (r.kind === 'region' ? S.R : r.kind === 'department' ? S.D : S.U).add(Number(r.ref_id)));
+    return S;
+  };
+  /* هل الموظف (ctx) داخل جمهور الصفوف؟ وحدة محددة = تكفي، أو (منطقة ∧ إدارة) لما يتحددوا */
+  function audMatch(rows, ctx){
+    const S = setsOf(rows);
+    if(ctx.section_id != null && S.U.has(Number(ctx.section_id))) return true;
+    if(!S.R.size && !S.D.size) return false;
+    return (!S.R.size || S.R.has(Number(ctx.region_id))) && (!S.D.size || S.D.has(Number(ctx.dept)));
+  }
+  /* الوحدات اللي يوصلها الجمهور (للأدمن: تحقق النطاق + التقدير) */
+  function unitsOf(S){
+    return secs().filter(s => S.U.has(Number(s.id)) ||
+      ((S.R.size || S.D.size) && (!S.R.size || S.R.has(Number(s.region_id))) && (!S.D.size || S.D.has(Number(s.department_id)))));
+  }
+  function workerCtx(w, roleDept){
+    const u = secs().find(s => Number(s.id) === Number(w.section_id));
+    return {section_id: w.section_id, region_id: u ? u.region_id : null, dept: (u && u.department_id != null) ? u.department_id : (roleDept != null ? roleDept : null)};
+  }
+  const curCtx = () => workerCtx(currentUser, currentUser && currentUser.target_department_id);
+  /* لو المحتوى مقيّد (audience_restricted) يبقى الجمهور هو الحكم، وإلا (قديم) يعدّي هنا وقواعده القديمة بتحكم */
+  function audAllowed(type, item, ctx){
+    if(!item || !item.audience_restricted) return true;
+    return audMatch(AUD[akey(type, item.id)] || [], ctx || curCtx());
+  }
+  function legacyMatch(item){
+    if(item.section_id && Number(item.section_id) !== Number(currentUser.section_id)) return false;
+    if(!item.target_department_id) return true;
+    return !!currentUser.target_department_id && Number(item.target_department_id) === Number(currentUser.target_department_id);
+  }
+  window.V6 = {back(){ hub.keep = true; adminTab('content'); }, loadAud, audAllowed, audMatch, workerCtx, unitsOf, setsOf, get aud(){ return AUD; }, get ready(){ return audReady; }};
+
+  /* =====================  جهة الموظف: فلترة الظهور  ===================== */
+  try{
+    const _lc = loadWorkerCards;
+    const runCards = async function(){ await loadAud(); await _lc.apply(this, arguments); try{ updateWorkerIconBadges(); }catch(e){} };
+    loadWorkerCards = runCards; window.loadWorkerCards = runCards;
+    const _rc = window.renderWorkerCards;
+    window.renderWorkerCards = function(){ try{ workerCards = workerCards.filter(c => audAllowed('card', c)); }catch(e){} return _rc.apply(this, arguments); };
+
+    const _lv = loadWorkerVideos;
+    const runVideos = async function(){ await loadAud(); await _lv.apply(this, arguments); try{ updateWorkerIconBadges(); }catch(e){} };
+    loadWorkerVideos = runVideos; window.loadWorkerVideos = runVideos;
+    const _rv = window.renderWorkerVideosV22;
+    window.renderWorkerVideosV22 = function(){ try{ workerTopics = workerTopics.filter(t => audAllowed('video', t)); }catch(e){} return _rv.apply(this, arguments); };
+    renderWorkerVideos = window.renderWorkerVideosV22;
+
+      window.loadWorkerQuizzes = async function(){
+    if(!currentUser) return;
+    const box=$('worker-quizzes'); if(!box) return;
+    await loadAud();
+    const {data:quizzes,error}=await sb.from('quizzes').select('*').eq('is_visible',true).order('id');
+    if(error){console.error(error);box.innerHTML='<div class="muted" style="font-size:12px;text-align:center;">تعذر تحميل الاختبارات</div>';return;}
+    const visible=(quizzes||[]).filter(q=>legacyMatch(q) && audAllowed('quiz',q));
+    if(!visible.length){box.innerHTML='<div class="muted" style="font-size:12px;text-align:center;padding:12px;">لا توجد اختبارات حالياً</div>';workerQuizStats={total:0,completed:0};if(typeof updateWorkerProgressSummary==='function')updateWorkerProgressSummary();if(typeof updateWorkerIconBadges==='function')updateWorkerIconBadges();return;}
+
+    const quizIds = visible.map(q=>q.id);
+    const [{data:attempts},{data:unlocks},{data:allQuestions}]=await Promise.all([
+      sb.from('quiz_attempts').select('quiz_id,score,created_at').eq('worker_id',currentUser.id).order('created_at',{ascending:false}),
+      sb.from('quiz_unlocks').select('quiz_id,unlocked_at').eq('worker_id',currentUser.id).order('unlocked_at',{ascending:false}),
+      sb.from('quiz_questions').select('id,quiz_id,created_at').in('quiz_id', quizIds.length?quizIds:[-1])
+    ]);
+    const lastAttempt={}; (attempts||[]).forEach(a=>{ if(!lastAttempt[a.quiz_id]) lastAttempt[a.quiz_id]=a; });
+    // وجود إذن إعادة (لسه ما اتستخدمش) كافي إن الاختبار يفضل ظاهر — الإذن بيتقفل تلقائيًا في submitQuiz أول ما الموظف يحل ويبعت
+    const hasUnlock={}; (unlocks||[]).forEach(u=>{ hasUnlock[u.quiz_id]=true; });
+    const questionsByQuiz={}; (allQuestions||[]).forEach(qs=>{ (questionsByQuiz[qs.quiz_id]=questionsByQuiz[qs.quiz_id]||[]).push(qs); });
+
+    const toShow = visible.filter(q=>{
+      const att=lastAttempt[q.id];
+      if(!att) return true; // لم يختبر بعد
+      if(hasUnlock[q.id]) return true; // الأدمن سمح له بإعادة الاختبار ولسه ما استخدمش الإذن
+      // لو الأدمن ضاف سؤال جديد على نفس الاختبار بعد آخر محاولة للموظف، يظهر له الاختبار تلقائيًا بكل أسئلته الحالية
+      const qs=questionsByQuiz[q.id]||[];
+      const hasNewQuestion = qs.some(x=>x.created_at && new Date(x.created_at) > new Date(att.created_at));
+      if(hasNewQuestion) return true;
+      return false; // اختبره ومفيش سؤال جديد ولا إذن إعادة — يختفي من القائمة
+    });
+    workerQuizStats = {total: visible.length, completed: visible.length - toShow.length};
+    if(typeof updateWorkerProgressSummary==='function') updateWorkerProgressSummary();
+    if(typeof updateWorkerIconBadges==='function') updateWorkerIconBadges();
+
+    box.innerHTML='';
+    if(!toShow.length){ box.innerHTML='<div class="muted" style="font-size:12px;text-align:center;padding:12px;">لا توجد اختبارات متاحة لك حاليًا — أحسنت! 🎉</div>'; return; }
+
+    for(const q of toShow){
+      const {data:questions}=await sb.from('quiz_questions').select('*').eq('quiz_id',q.id).order('id');
+      const card=document.createElement('div'); card.className='card'; card.style.cssText='padding:16px;margin-bottom:14px;border:2px solid var(--primary-light);';
+      const title=tr(q,'title')||('اختبار '+q.id);
+      card.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><div style="font-weight:800;font-size:15px;">'+esc(title)+'</div><span class="badge badge-red">جديد!</span></div>';
+      const form=document.createElement('div'); form.dataset.quizId=q.id;
+      (questions||[]).forEach((qst,qi)=>{ form.innerHTML+='<div style="background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;"><div style="font-weight:700;font-size:13px;margin-bottom:8px;">'+(qi+1)+'. '+esc(tr(qst,'question')||qst.question_ar)+'</div><div id="qopts-'+qst.id+'" style="display:flex;flex-direction:column;gap:6px;"></div></div>'; });
+      box.appendChild(card); card.appendChild(form);
+      (questions||[]).forEach(async qst=>{
+        const {data:opts}=await sb.from('quiz_options').select('*').eq('question_id',qst.id).order('id');
+        const w=$('qopts-'+qst.id); if(w) w.innerHTML=(opts||[]).map(o=>'<label style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--border);border-radius:8px;padding:8px 10px;cursor:pointer;font-size:13px;"><input type="radio" name="qz-'+qst.id+'" value="'+o.id+'"/> '+esc(tr(o,'option'))+'</label>').join('');
+      });
+      const btn=document.createElement('button'); btn.className='btn-primary'; btn.style.cssText='width:100%;padding:11px;font-size:13px;margin-top:4px;'; btn.textContent='إرسال إجابات هذا الاختبار'; btn.onclick=()=>submitQuiz(q.id,questions); form.appendChild(btn);
+    }
+  };
+
+    loadWorkerQuizzes = window.loadWorkerQuizzes;
+  }catch(e){ console.error('V6 worker filters', e); }
+
+  /* =====================  بيانات الهيكل  ===================== */
+  let regions = [], depts = [];
+  async function loadMeta(){
+    const [r, d] = await Promise.all([
+      sb.from('regions').select('*').order('sort_order').order('id'),
+      sb.from('target_departments').select('*').order('id')
+    ]);
+    regions = (r.data || []).filter(x => x.is_active !== false);
+    depts = (d.data || []).filter(x => x.is_active !== false);
+  }
+  const nm = (list, id) => { const x = list.find(o => Number(o.id) === Number(id)); return x ? x.name_ar : ''; };
+
+  /* =====================  الأنواع  ===================== */
+  const TYPES = {
+    card:  {k:'card',  table:'safety_cards',    label:'كروت السلامة', en:'Safety Cards',    icon:'🖼️', one:'كارت',   add:'إضافة كارت',   legacy:'cards'},
+    quiz:  {k:'quiz',  table:'quizzes',         label:'الاختبارات',    en:'Quizzes',         icon:'📝', one:'اختبار', add:'إضافة اختبار', legacy:'quizzes'},
+    video: {k:'video', table:'training_topics', label:'الفيديوهات',    en:'Training Videos', icon:'🎬', one:'تدريب',  add:'إضافة تدريب',  legacy:'videos'}
+  };
+  const ORDER = ['card', 'quiz', 'video'];
+  const titleOf = it => it.title_ar || it.title_en || ('#' + it.id);
+
+  /* هل الأدمن (المقيّد) يشوف العنصر؟ */
+  function adminSees(type, it){
+    if(isSuper()) return true;
+    const ids = scopeIds();
+    if(it.audience_restricted){
+      const S = setsOf(AUD[akey(type, it.id)] || []);
+      return unitsOf(S).some(u => ids.includes(Number(u.id)));
+    }
+    return !it.section_id || ids.includes(Number(it.section_id));
+  }
+  function audienceText(type, it){
+    if(it.audience_restricted){
+      const S = setsOf(AUD[akey(type, it.id)] || []);
+      const parts = [];
+      if(S.R.size) parts.push('🌍 ' + [...S.R].map(i => nm(regions, i) || '؟').join('، '));
+      if(S.D.size) parts.push('🏢 ' + [...S.D].map(i => nm(depts, i) || '؟').join('، '));
+      if(S.U.size) parts.push('🏭 ' + [...S.U].map(i => { const u = secs().find(s => Number(s.id) === i); return u ? u.name_ar : '؟'; }).join('، '));
+      return parts.length ? parts.join(' · ') : '⚠️ بدون جمهور (مخفي عن الكل)';
+    }
+    const parts = [];
+    if(it.section_id){ const u = secs().find(s => Number(s.id) === Number(it.section_id)); parts.push('🏭 ' + (u ? u.name_ar : 'وحدة')); }
+    if(it.target_department_id) parts.push('🏢 ' + (nm(depts, it.target_department_id) || 'إدارة'));
+    return parts.length ? parts.join(' · ') : '🌐 كل الموظفين';
+  }
+
+  /* =====================  تحميل عناصر نوع معيّن  ===================== */
+  const hub = {type:null, tab:'all', q:'', data:{}};
+  async function loadType(type){
+    const T = TYPES[type];
+    const items = await fetchAll(() => sb.from(T.table).select('*').order('id'));
+    const ex = {};
+    if(type === 'video'){
+      const vids = await fetchAll(() => sb.from('training_videos').select('id,topic_id,video_lang,video_url').order('id'));
+      vids.forEach(v => { if(v.topic_id) (ex[v.topic_id] ||= []).push(v); });
+    } else if(type === 'quiz'){
+      const qs = await fetchAll(() => sb.from('quiz_questions').select('id,quiz_id').order('id'));
+      qs.forEach(q => ex[q.quiz_id] = (ex[q.quiz_id] || 0) + 1);
+    }
+    const list = items.filter(it => adminSees(type, it));
+    list.sort((a, b) => (Number(a.sort_order) || 0) - (Number(b.sort_order) || 0) || (a.id - b.id));
+    hub.data[type] = {list, ex};
+    return hub.data[type];
+  }
+
+  /* =====================  الشاشة الرئيسية للمركز  ===================== */
+  function root(){ return $q('tab-content'); }
+  function ensureTab(){
+    if(!$q('tab-content')){
+      const anchor = $q('tab-quizzes'); if(!anchor) return;
+      anchor.insertAdjacentHTML('beforebegin', '<div class="admin-tab" id="tab-content"></div>');
+    }
+  }
+  function ensureNav(){
+    ensureTab();
+    if(!$q('tabbtn-content')){
+      const ref = $q('tabbtn-quizzes'); if(!ref) return;
+      ref.insertAdjacentHTML('beforebegin',
+        '<button class="tab-btn" onclick="adminTab(\'content\')" id="tabbtn-content" data-label="المحتوى"><span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><path d="m14 17 3-3 4 4v2a1 1 0 0 1-1 1h-5a1 1 0 0 1-1-1z"/></svg></span><span class="nav-label">المحتوى<span class="nav-en">Content</span></span></button>');
+    }
+    ['quizzes', 'cards', 'videos'].forEach(k => $q('tabbtn-' + k)?.classList.add('hidden'));
+    $q('tabbtn-content')?.classList.remove('hidden');
+  }
+
+  async function hubHome(){
+    ensureTab(); hub.type = null;
+    const r = root(); if(!r) return;
+    r.innerHTML = '<div class="v6-hero"><div><h2>📚 المحتوى</h2><p>كروت السلامة والاختبارات والفيديوهات في مكان واحد — اختار النوع اللي عايز تديره.</p></div></div>' +
+      '<div class="v6-tiles">' + ORDER.map(k => {
+        const T = TYPES[k];
+        return '<button type="button" class="v6-tile v6-t-' + k + '" data-t="' + k + '"><span class="v6-tile-ic">' + T.icon + '</span><b>' + T.label + '</b><small>' + T.en + '</small>' +
+          '<div class="v6-tile-cnt" id="v6-cnt-' + k + '"><span class="v6-dots">…</span></div></button>';
+      }).join('') + '</div>';
+    r.querySelector('.v6-tiles').addEventListener('click', e => { const b = e.target.closest('.v6-tile'); if(b) openType(b.dataset.t); });
+    try{ await Promise.all([loadMeta(), loadAud(true)]); }catch(e){}
+    for(const k of ORDER){
+      try{
+        const d = await loadType(k); const pub = d.list.filter(i => i.is_visible).length;
+        const el = $q('v6-cnt-' + k); if(el) el.innerHTML = '<span>' + d.list.length + ' ' + TYPES[k].one + '</span><span class="pub">' + pub + ' منشور</span><span class="hid">' + (d.list.length - pub) + ' مخفي</span>';
+      }catch(e){ const el = $q('v6-cnt-' + k); if(el) el.textContent = '—'; }
+    }
+  }
+
+  /* =====================  شاشة نوع: شبكة الكروت  ===================== */
+  async function openType(type, keep){
+    hub.type = type; if(!keep){ hub.tab = 'all'; hub.q = ''; }
+    const T = TYPES[type], r = root(); if(!r) return;
+    r.innerHTML = '<div class="v6-bar"><button type="button" class="v6-back" id="v6-back">→ المحتوى</button><h3>' + T.icon + ' ' + T.label + ' <small>' + T.en + '</small></h3>' +
+      '<button type="button" class="v6-add" id="v6-add">＋ ' + T.add + '</button></div>' +
+      '<div class="v6-tools"><div class="v6-tabs" id="v6-tabs"></div><input id="v6-q" class="input-field v6-search" placeholder="🔍 ابحث بالعنوان…" value="' + esc(hub.q) + '"/></div>' +
+      '<div id="v6-grid" class="v6-grid"><div class="v6-empty">جاري التحميل…</div></div>' +
+      '<div class="v6-foot"><button type="button" class="v6-legacy" id="v6-legacy">⚙️ الإدارة المتقدمة (' + (type === 'quiz' ? 'الأسئلة والتقارير' : type === 'video' ? 'أسئلة الفيديو، من شاهد، حذف نسخة لغة' : 'الأسئلة تحت الصورة') + ')</button></div>';
+    $q('v6-back').onclick = hubHome;
+    $q('v6-add').onclick = () => openForm(type, null);
+    $q('v6-legacy').onclick = () => openLegacy(T.legacy);
+    $q('v6-q').addEventListener('input', e => { hub.q = e.target.value; paintGrid(); });
+    $q('v6-tabs').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; hub.tab = b.dataset.v; paintGrid(); });
+    $q('v6-grid').addEventListener('click', onGridClick);
+    try{ if(!regions.length && !depts.length) await loadMeta(); await loadAud(); await loadType(type); }
+    catch(e){ $q('v6-grid').innerHTML = '<div class="v6-empty">تعذر تحميل البيانات: ' + esc(e.message || '') + '</div>'; return; }
+    paintGrid();
+  }
+
+  function coverOf(type, it, ex){
+    if(type === 'card') return it.image ? '<img loading="lazy" alt="" src="' + esc(it.image) + '" onerror="this.style.display=\'none\'"/>' : '<div class="v6-ph">📸</div>';
+    if(type === 'video'){
+      const rows = ex[it.id] || [];
+      const y = rows.map(v => typeof extractYTVideoId === 'function' ? extractYTVideoId(v.video_url) : '').find(Boolean);
+      return y ? '<img loading="lazy" alt="" src="https://img.youtube.com/vi/' + y + '/hqdefault.jpg"/>' : '<div class="v6-ph">🎬</div>';
+    }
+    return '<div class="v6-ph v6-ph-quiz">📝</div>';
+  }
+  function extraOf(type, it, ex){
+    if(type === 'quiz') return '<span class="v6-pill">' + (ex[it.id] || 0) + ' سؤال</span>';
+    if(type === 'video'){
+      const rows = ex[it.id] || [];
+      return (typeof VIDEO_LANGS !== 'undefined' ? VIDEO_LANGS : ['ar', 'en', 'bn', 'ne', 'hi']).map(l => {
+        const has = rows.some(v => (v.video_lang || 'ar') === l && v.video_url);
+        return '<span class="v6-pill ' + (has ? 'ok' : 'no') + '">' + l.toUpperCase() + (has ? ' ✓' : '') + '</span>';
+      }).join('');
+    }
+    return '';
+  }
+  function paintGrid(){
+    const type = hub.type, d = hub.data[type]; if(!d) return;
+    const all = d.list, pub = all.filter(i => i.is_visible).length;
+    const t = $q('v6-tabs');
+    t.innerHTML = [['all', 'الكل', all.length], ['pub', 'منشور', pub], ['hid', 'مخفي', all.length - pub]].map(([v, l, n]) =>
+      '<button type="button" data-v="' + v + '" class="' + (hub.tab === v ? 'active' : '') + '">' + l + ' <b>' + n + '</b></button>').join('');
+    const q = hub.q.trim().toLowerCase();
+    const rows = all.filter(it => (hub.tab === 'all' || (hub.tab === 'pub' ? it.is_visible : !it.is_visible)) &&
+      (!q || [it.title_ar, it.title_en, it.description_ar].some(x => (x || '').toLowerCase().includes(q))));
+    const g = $q('v6-grid');
+    if(!rows.length){ g.innerHTML = '<div class="v6-empty">' + (all.length ? 'مفيش نتائج مطابقة' : 'لسه مفيش ' + TYPES[type].label + ' — اضغط "＋ ' + TYPES[type].add + '"') + '</div>'; return; }
+    g.innerHTML = rows.map(it =>
+      '<div class="v6-card ' + (it.is_visible ? '' : 'is-off') + '" data-id="' + it.id + '">' +
+        '<div class="v6-cover">' + coverOf(type, it, d.ex) + '<span class="v6-badge ' + (it.is_visible ? 'on' : 'off') + '">' + (it.is_visible ? '● منشور' : '○ مخفي') + '</span></div>' +
+        '<div class="v6-body"><div class="v6-title">' + esc(titleOf(it)) + '</div>' +
+          (type === 'card' && it.description_ar ? '<div class="v6-desc">' + esc(it.description_ar) + '</div>' : '') +
+          '<div class="v6-aud-line">' + esc(audienceText(type, it)) + '</div>' +
+          '<div class="v6-pills">' + extraOf(type, it, d.ex) + '</div></div>' +
+        '<div class="v6-act"><label class="v6-sw" title="نشر / إخفاء"><input type="checkbox" data-a="toggle" ' + (it.is_visible ? 'checked' : '') + '/><i></i><span>' + (it.is_visible ? 'منشور' : 'مخفي') + '</span></label>' +
+          '<button type="button" data-a="edit" class="v6-btn">✏️ تعديل</button><button type="button" data-a="del" class="v6-btn danger" title="حذف">🗑️</button></div>' +
+      '</div>').join('');
+  }
+
+  async function onGridClick(e){
+    const card = e.target.closest('.v6-card'); if(!card) return;
+    const id = Number(card.dataset.id), type = hub.type;
+    const a = e.target.closest('[data-a]')?.dataset.a;
+    if(a === 'edit') return openForm(type, id);
+    if(a === 'del') return doDelete(type, id);
+    if(a === 'toggle') return doToggle(type, id, e.target.checked);
+  }
+
+  async function doToggle(type, id, want){
+    const T = TYPES[type];
+    try{
+      if(type === 'video'){
+        const upd = want ? {is_visible:true, republished_at:new Date().toISOString()} : {is_visible:false};
+        let r = await sb.from('training_topics').update(upd).eq('id', id);
+        if(r.error && /republished_at/i.test(r.error.message || '')) r = await sb.from('training_topics').update({is_visible:want}).eq('id', id);
+        if(r.error) throw r.error;
+        await sb.from('training_videos').update({is_visible:want}).eq('topic_id', id);
+      } else {
+        const r = await sb.from(T.table).update({is_visible:want}).eq('id', id); if(r.error) throw r.error;
+      }
+      const it = hub.data[type].list.find(x => x.id === id); if(it) it.is_visible = want;
+      if(typeof logActivityV22 === 'function' && adminUser) logActivityV22('admin', adminUser.id, (want ? 'نشر ' : 'إخفاء ') + T.one, type, id);
+      toast(want ? 'تم النشر ✅' : 'تم الإخفاء');
+    }catch(err){ toast('تعذر التحديث: ' + (err.message || '')); }
+    paintGrid();
+  }
+
+  async function doDelete(type, id){
+    const T = TYPES[type];
+    const fn = {card:'deleteCard', quiz:'deleteQuiz', video:'deleteTrainingTopic'}[type];
+    const f = window[fn]; if(typeof f !== 'function') return toast('الحذف غير متاح');
+    try{ await f(id); }catch(e){ return toast('تعذر الحذف: ' + (e.message || '')); }
+    const {data} = await sb.from(T.table).select('id').eq('id', id).maybeSingle();
+    if(!data){ try{ await sb.from('content_audience').delete().eq('item_type', type).eq('item_id', id); }catch(e){} delete AUD[akey(type, id)]; }
+    await loadType(type); paintGrid();
+  }
+
+  /* =====================  منتقي الجمهور  ===================== */
+  function chipsHtml(list, sel, allowed){
+    return list.filter(o => !allowed || allowed.has(Number(o.id))).map(o =>
+      '<button type="button" class="v6-chip ' + (sel.has(Number(o.id)) ? 'on' : '') + '" data-id="' + o.id + '">' + esc(o.name_ar) + '</button>').join('') || '<span class="muted" style="font-size:11px">لا يوجد</span>';
+  }
+  function audPicker(host, init, note){
+    const sup = isSuper(), ids = scopeIds();
+    const myUnits = sup ? secs() : secs().filter(s => ids.includes(Number(s.id)));
+    const allowR = sup ? null : new Set(myUnits.map(u => Number(u.region_id)).filter(Boolean));
+    const allowD = sup ? null : new Set(myUnits.map(u => Number(u.department_id)).filter(Boolean));
+    const st = {mode: init.restricted || !sup ? 'custom' : 'all', R:new Set(init.R), D:new Set(init.D), U:new Set(init.U)};
+    if(!audReady){   // phase2.sql لسه ما اتشغّلش → نفس النظام القديم (وحدة + إدارة واحدة)
+      host.innerHTML = '<div class="v6-warn">⚠️ ميزة تعدد الجمهور محتاجة تشغيل <b>phase2.sql</b> مرة واحدة في Supabase. لحد ما تشغّله بيشتغل التوجيه القديم (وحدة واحدة + إدارة واحدة).</div>' +
+        '<div class="v6-row"><label class="field-label">الوحدة</label><select id="v6-old-sec" class="input-field"><option value="">كل الوحدات</option>' + myUnits.map(u => '<option value="' + u.id + '" ' + (init.legacySec === Number(u.id) ? 'selected' : '') + '>' + esc(u.name_ar) + '</option>').join('') + '</select></div>' +
+        '<div class="v6-row"><label class="field-label">الإدارة المستهدفة</label><select id="v6-old-dept" class="input-field"><option value="">— بدون تحديد —</option>' + depts.map(d => '<option value="' + d.id + '" ' + (init.legacyDept === Number(d.id) ? 'selected' : '') + '>' + esc(d.name_ar) + '</option>').join('') + '</select></div>';
+      return {legacy:true, get(){ return {legacy:true, section_id:N($q('v6-old-sec').value), target_department_id:N($q('v6-old-dept').value)}; },
+        validate(){ if(!sup && !ids.includes(N($q('v6-old-sec').value))) return 'اختار وحدة من نطاقك'; return ''; }};
+    }
+    host.innerHTML =
+      (sup ? '<div class="v6-modes"><label class="v6-mode"><input type="radio" name="v6m" value="all"/><span>🌐 كل الموظفين</span></label><label class="v6-mode"><input type="radio" name="v6m" value="custom"/><span>🎯 جمهور محدد</span></label></div>' : '<div class="v6-hint">🎯 اختار الجمهور من نطاقك (مطلوب).</div>') +
+      (note ? '<div class="v6-note">' + note + '</div>' : '') +
+      '<div id="v6-aud-body">' +
+        '<div class="v6-aud-h">🌍 المناطق <small>اختار واحدة أو أكتر — لو ما اخترتش = كل المناطق</small></div><div class="v6-chips" data-k="R">' + chipsHtml(regions, st.R, allowR) + '</div>' +
+        '<div class="v6-aud-h">🏢 الإدارات <small>اختار واحدة أو أكتر — لو ما اخترتش = كل الإدارات</small></div><div class="v6-chips" data-k="D">' + chipsHtml(depts, st.D, allowD) + '</div>' +
+        '<details class="v6-more"' + (st.U.size ? ' open' : '') + '><summary>🏭 وحدات محددة بالاسم (اختياري)</summary><div class="v6-chips" data-k="U">' + chipsHtml(myUnits, st.U, null) + '</div></details>' +
+        '<div class="v6-aud-sum" id="v6-sum"></div>' +
+      '</div>';
+    const body = host.querySelector('#v6-aud-body');
+    const setMode = m => { st.mode = m; body.classList.toggle('hidden', m === 'all'); host.querySelectorAll('input[name="v6m"]').forEach(r => r.checked = r.value === m); sum(); };
+    let tmr;
+    function sum(){
+      const el = host.querySelector('#v6-sum'); if(!el) return;
+      if(st.mode === 'all'){ el.textContent = ''; return; }
+      const S = {R:st.R, D:st.D, U:st.U}, us = unitsOf(S);
+      if(!st.R.size && !st.D.size && !st.U.size){ el.innerHTML = '⚠️ لسه ما اخترتش أي منطقة/إدارة/وحدة.'; return; }
+      el.innerHTML = '➜ هيوصل لـ <b>' + us.length + '</b> وحدة' + (us.length ? ': ' + esc(us.slice(0, 6).map(u => u.name_ar).join('، ')) + (us.length > 6 ? '…' : '') : ' — <span style="color:#b91c1c">مفيش وحدة مطابقة!</span>') + ' <span id="v6-wc"></span>';
+      clearTimeout(tmr);
+      tmr = setTimeout(async () => {
+        try{
+          if(!us.length) return;
+          const r = await sb.from('workers_evaluations').select('id', {count:'exact', head:true}).in('section_id', us.map(u => u.id));
+          const w = host.querySelector('#v6-wc'); if(w && r.count != null) w.textContent = '(≈ ' + r.count + ' موظف)';
+        }catch(e){}
+      }, 250);
+    }
+    host.addEventListener('click', e => {
+      const c = e.target.closest('.v6-chip'); if(!c) return;
+      const k = c.parentElement.dataset.k, id = Number(c.dataset.id);
+      if(st[k].has(id)) st[k].delete(id); else st[k].add(id);
+      c.classList.toggle('on', st[k].has(id)); sum();
+    });
+    host.addEventListener('change', e => { if(e.target.name === 'v6m') setMode(e.target.value); });
+    setMode(st.mode);
+    return {legacy:false,
+      get(){ return st.mode === 'all' ? {restricted:false, R:[], D:[], U:[]} : {restricted:true, R:[...st.R], D:[...st.D], U:[...st.U]}; },
+      validate(){
+        if(st.mode === 'all') return '';
+        if(!st.R.size && !st.D.size && !st.U.size) return 'اختار الجمهور: منطقة أو إدارة أو وحدة على الأقل (أو "كل الموظفين")';
+        const us = unitsOf({R:st.R, D:st.D, U:st.U});
+        if(!us.length) return 'الاختيار ده مفيهوش أي وحدة مطابقة — راجع المنطقة/الإدارة';
+        if(!sup){ const out = us.filter(u => !ids.includes(Number(u.id))); if(out.length) return 'الجمهور المختار بيتعدى نطاقك (مثلاً: ' + out[0].name_ar + ') — ضيّق الاختيار'; }
+        return '';
+      }};
+  }
+  /* الجمهور الابتدائي لعنصر موجود (للتعديل) */
+  function initAud(type, it){
+    if(!it) return {restricted:false, R:[], D:[], U:[]};
+    if(it.audience_restricted){ const S = setsOf(AUD[akey(type, it.id)] || []); return {restricted:true, R:[...S.R], D:[...S.D], U:[...S.U]}; }
+    const U = it.section_id ? [Number(it.section_id)] : [], D = it.target_department_id ? [Number(it.target_department_id)] : [];
+    return {restricted:!!(U.length || D.length), R:[], D, U, legacySec:it.section_id ? Number(it.section_id) : null, legacyDept:it.target_department_id ? Number(it.target_department_id) : null,
+      converted:!!(U.length || D.length)};
+  }
+  async function writeAud(type, id, a){
+    await sb.from('content_audience').delete().eq('item_type', type).eq('item_id', id);
+    delete AUD[akey(type, id)];
+    if(!a.restricted) return;
+    const rows = [].concat(a.R.map(x => ({kind:'region', ref_id:x})), a.D.map(x => ({kind:'department', ref_id:x})), a.U.map(x => ({kind:'section', ref_id:x})))
+      .map(r => ({item_type:type, item_id:id, kind:r.kind, ref_id:r.ref_id}));
+    if(rows.length){ const r = await sb.from('content_audience').insert(rows); if(r.error) throw r.error; }
+    AUD[akey(type, id)] = rows.map(r => ({kind:r.kind, ref_id:r.ref_id}));
+  }
+  /* الأعمدة القديمة (section/target) بتتفضّى لما الجمهور بيتحدد من الجديد، عشان الفلاتر القديمة ما تتعارضش */
+  function audCols(a){
+    if(a.legacy) return {section_id:a.section_id, target_department_id:a.target_department_id};
+    return {audience_restricted:a.restricted, section_id:null, target_department_id:null};
+  }
+
+  /* =====================  نموذج الإضافة / التعديل  ===================== */
+  function modal(html){
+    const ov = document.createElement('div'); ov.className = 'v6-ov';
+    ov.innerHTML = '<div class="v6-modal">' + html + '</div>';
+    ov.addEventListener('mousedown', e => { if(e.target === ov) ov.remove(); });
+    document.body.appendChild(ov); return ov;
+  }
+  const LG = ['ar', 'en', 'bn', 'ne', 'hi'];
+  const inp = (id, label, val, ph, type) => '<div class="v6-row"><label class="field-label">' + label + '</label><input id="v6f-' + id + '" type="' + (type || 'text') + '" class="input-field" value="' + esc(String(val == null ? '' : val)) + '" placeholder="' + esc(ph || '') + '"/></div>';
+  function langsBlock(base, it, label){
+    return '<details class="v6-more"><summary>🌐 لغات أخرى (' + label + ')</summary><div class="v6-2">' +
+      ['en', 'bn', 'ne', 'hi'].map(l => '<input id="v6f-' + base + '_' + l + '" class="input-field" placeholder="' + base + ' (' + l.toUpperCase() + ')" value="' + esc(it ? (it[base + '_' + l] || '') : '') + '"/>').join('') + '</div></details>';
+  }
+  function hookTranslate(base){
+    const src = $q('v6f-' + base + '_ar'); if(!src || typeof autoTranslateGroup !== 'function') return;
+    src.addEventListener('blur', () => { try{ autoTranslateGroup('v6f-' + base + '_ar', {en:'v6f-' + base + '_en', bn:'v6f-' + base + '_bn', ne:'v6f-' + base + '_ne', hi:'v6f-' + base + '_hi'}); }catch(e){} });
+  }
+  const val = id => ($q('v6f-' + id)?.value || '').trim();
+
+  async function openForm(type, id){
+    const T = TYPES[type];
+    let it = null, vids = [];
+    if(id != null){
+      it = hub.data[type].list.find(x => x.id === id);
+      if(!it) return toast('العنصر غير موجود');
+      if(type === 'video') vids = (hub.data.video.ex[id] || []);
+    }
+    const ini = initAud(type, it);
+    let body = '';
+    if(type === 'card'){
+      body += '<div class="v6-row"><label class="field-label">صورة الكارت' + (it ? ' (اختياري — لتغييرها)' : '') + '</label><input id="v6f-image" type="file" accept="image/*" style="font-size:12px"/>' + (it && it.image ? '<img class="v6-thumb" src="' + esc(it.image) + '" alt=""/>' : '') + '</div>' +
+        inp('title_ar', 'العنوان (عربي) *', it && it.title_ar, 'مثال: غسل اليدين') + langsBlock('title', it, 'العنوان') +
+        inp('description_ar', 'الوصف (عربي)', it && it.description_ar, 'وصف مختصر') + langsBlock('description', it, 'الوصف') +
+        inp('sort', 'أولوية الترتيب (رقم أصغر = يظهر أول عند الموظف)', it ? (it.sort_order || 0) : 0, '', 'number');
+    } else if(type === 'quiz'){
+      body += inp('title_ar', 'عنوان الاختبار (عربي) *', it && it.title_ar, 'مثال: اختبار التلوث المتبادل') + langsBlock('title', it, 'العنوان') +
+        (it ? '' : '<div class="v6-hint">بعد الإنشاء تقدر تضيف الأسئلة من "⚙️ الإدارة المتقدمة" أسفل الشاشة.</div>');
+    } else {
+      const u = {}; vids.forEach(v => { u[v.video_lang || 'ar'] = v.video_url; });
+      body += inp('title_ar', 'اسم التدريب (عربي) *', it && it.title_ar, 'مثال: النظافة الشخصية') + langsBlock('title', it, 'الاسم') +
+        '<div class="v6-hint">أضف رابط لغة واحدة أو أكتر — الموظف يشاهد نسخة واحدة، وأي نسخة توصل 60% تكمّل التدريب.</div>' +
+        [['ar', 'العربي'], ['en', 'الإنجليزي'], ['bn', 'البنغالي'], ['ne', 'النيبالي'], ['hi', 'الهندي']].map(([l, n]) => inp('url_' + l, 'الفيديو ' + n, u[l] || '', 'https://youtu.be/...')).join('') +
+        inp('sort', 'أولوية الترتيب (رقم أصغر = يظهر أول)', it ? (it.sort_order || 0) : 0, '', 'number');
+    }
+    const ov = modal(
+      '<div class="v6-mh"><b>' + (it ? '✏️ تعديل ' : '➕ ') + T.one + '</b><button type="button" class="v6-x" id="v6-x">✕</button></div>' +
+      '<div class="v6-mb">' + body +
+        '<div class="v6-sec-t">🎯 الجمهور المستهدف</div><div id="v6-aud-host"></div>' +
+        '<label class="v6-vis"><input id="v6f-vis" type="checkbox" ' + ((it ? it.is_visible : false) ? 'checked' : '') + '/> <span>منشور (ظاهر للموظفين)</span></label>' +
+      '</div><div class="v6-mf"><button type="button" class="btn-primary v6-save" id="v6-save">💾 حفظ</button><button type="button" class="btn-secondary" id="v6-cancel">إلغاء</button></div>');
+    ov.querySelector('#v6-x').onclick = ov.querySelector('#v6-cancel').onclick = () => ov.remove();
+    ['title', 'description'].forEach(hookTranslate);
+    const picker = audPicker(ov.querySelector('#v6-aud-host'), ini, ini.converted && !ini.legacy ? 'ℹ️ العنصر ده كان موجّه بالنظام القديم (وحدة/إدارة واحدة) — لما تحفظ هيتحوّل للنظام الجديد بنفس الاختيار الحالي.' : '');
+    const btn = ov.querySelector('#v6-save');
+    btn.onclick = async () => {
+      const bad = picker.validate(); if(bad) return toast(bad);
+      if(!val('title_ar')) return toast('اكتب العنوان بالعربية');
+      if(type === 'video' && !LG.some(l => val('url_' + l)) && !vids.length) return toast('أضف رابط فيديو واحد على الأقل');
+      btn.disabled = true; btn.textContent = '… جاري الحفظ';
+      try{ await saveForm(type, it, picker.get()); ov.remove(); toast('تم الحفظ ✅'); await loadType(type); paintGrid(); }
+      catch(err){ btn.disabled = false; btn.textContent = '💾 حفظ'; toast('خطأ: ' + (err.message || err)); }
+    };
+  }
+
+  async function writeRow(table, id, payload, sortVal){
+    const withSort = sortVal == null ? payload : {...payload, sort_order:Number(sortVal) || 0};
+    for(const p of (sortVal == null ? [payload] : [withSort, payload])){
+      const r = id == null ? await sb.from(table).insert(p).select().single() : await sb.from(table).update(p).eq('id', id).select().maybeSingle();
+      if(!r.error) return r.data || {id};
+      if(!(/sort_order/i.test(r.error.message || '')) || p === payload) throw r.error;
+    }
+  }
+
+  async function saveForm(type, it, a){
+    const T = TYPES[type], vis = $q('v6f-vis').checked;
+    const ac = audCols(a);
+    if(!a.legacy && !isSuper() && !a.restricted) throw new Error('لازم تحدد جمهور من نطاقك');
+    if(a.legacy && !isSuper() && !scopeIds().includes(Number(ac.section_id))) throw new Error('اختار وحدة من نطاقك');
+    let payload, sort = null, row;
+    const tl = {}; LG.forEach(l => tl['title_' + l] = val('title_' + l));
+    if(type === 'card'){
+      const dl = {}; LG.forEach(l => dl['description_' + l] = val('description_' + l));
+      payload = {...tl, ...dl, is_visible:vis, ...ac}; sort = val('sort');
+      const f = $q('v6f-image')?.files[0];
+      if(f) payload.image = await uploadSafetyCardImage(f);
+      else if(!it) payload.image = null;
+    } else if(type === 'quiz'){
+      payload = {...tl, is_visible:vis, ...ac};
+    } else {
+      payload = {...tl, is_visible:vis, ...ac}; sort = val('sort');
+    }
+    row = await writeRow(T.table, it ? it.id : null, payload, sort);
+    const rid = it ? it.id : row.id;
+    if(!a.legacy) await writeAud(type, rid, a);
+    if(type === 'video'){
+      const old = await sb.from('training_videos').select('*').eq('topic_id', rid);
+      const cur = old.data || [];
+      for(const l of LG){
+        const u = val('url_' + l); if(!u) continue;
+        const found = cur.find(v => (v.video_lang || 'ar') === l);
+        const base = {video_url:u, title_ar:val('title_ar'), title_en:val('title_en'), section_id:ac.section_id ?? null, is_visible:vis};
+        const r = found ? await sb.from('training_videos').update(base).eq('id', found.id) : await sb.from('training_videos').insert({topic_id:rid, video_lang:l, ...base});
+        if(r.error) throw new Error('نسخة ' + l + ': ' + r.error.message);
+      }
+      await sb.from('training_videos').update({is_visible:vis, section_id:ac.section_id ?? null}).eq('topic_id', rid);
+    }
+    if(typeof logActivityV22 === 'function' && adminUser) logActivityV22('admin', adminUser.id, (it ? 'تعديل ' : 'إضافة ') + T.one, type, rid);
+  }
+
+  /* =====================  الإدارة المتقدمة (الشاشات القديمة كما هي)  ===================== */
+  const LEG = ['quizzes', 'cards', 'videos'];
+  function openLegacy(tab){ adminTab(tab); }
+  function injectBack(tab){
+    const t = $q('tab-' + tab); if(!t || t.querySelector('.v6-legacy-bar')) return;
+    t.insertAdjacentHTML('afterbegin', '<div class="v6-legacy-bar"><button type="button" onclick="V6.back()">→ رجوع لمركز المحتوى</button><span>الإدارة المتقدمة</span></div>');
+  }
+  const baseTab = adminTab;
+  adminTab = function(tab){
+    baseTab.apply(this, arguments);
+    try{
+      ensureNav();
+      if(tab === 'content'){ $q('tabbtn-content')?.classList.add('active'); if(hub.keep && hub.type){ hub.keep = false; openType(hub.type, true); } else hubHome(); }
+      else if(LEG.includes(tab)){ $q('tabbtn-' + tab)?.classList.remove('active'); $q('tabbtn-content')?.classList.add('active'); injectBack(tab); }
+    }catch(e){ console.error(e); }
+  };
+  const baseScope = applyAdminScope;
+  applyAdminScope = function(){ baseScope.apply(this, arguments); try{ ensureNav(); }catch(e){} };
+  ensureNav();
 })();
 
 </script>
