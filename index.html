@@ -285,6 +285,86 @@ button,.tab-btn,.os-chip{-webkit-tap-highlight-color:transparent;touch-action:ma
 .v4-tag{background:#eef2ff;color:#3730a3;border-radius:999px;padding:3px 10px;font-size:11px;font-weight:700}
 @media (max-width:640px){.v4-stats{grid-template-columns:repeat(2,1fr)}.v4-addrule{grid-template-columns:1fr 1fr}.v4-addrule .sc-add{grid-column:1/-1}}
 
+/* ===== V4: التنقل + مسح البيانات + الداشبورد التفاعلية ===== */
+#dashboard-kpis{display:none!important}
+.v4-subnav{display:flex;gap:6px;flex-wrap:wrap;background:#fff;border:1px solid var(--border);border-radius:14px;padding:6px;margin-bottom:14px;box-shadow:var(--shadow);position:sticky;top:0;z-index:5}
+.v4-sub{font-family:inherit;font-size:12.5px;font-weight:800;border:0;background:transparent;color:var(--muted);padding:9px 14px;border-radius:10px;cursor:pointer;transition:all .12s;flex:1;min-width:110px}
+.v4-sub:hover{background:#f1f5f9}
+.v4-sub.active{background:var(--primary);color:#fff;box-shadow:0 4px 12px rgba(23,107,67,.25)}
+.v4-seg{display:flex;gap:8px;margin-bottom:14px}
+.v4-seg button{font-family:inherit;font-size:12.5px;font-weight:800;padding:9px 16px;border-radius:999px;border:1px solid var(--border);background:#fff;color:var(--text);cursor:pointer}
+.v4-seg button.active{background:var(--primary-dark);border-color:var(--primary-dark);color:#fff}
+.v4-seg button.v4-danger{color:#991b1b;border-color:#fecaca;background:#fff5f5}
+.v4-seg button.v4-danger.active{background:#b91c1c;border-color:#b91c1c;color:#fff}
+
+.v4-purge{padding:18px;border:1px solid #fecaca!important}
+.v4-purge-head{display:flex;gap:12px;align-items:center;margin-bottom:14px}
+.v4-purge-ico{width:44px;height:44px;border-radius:12px;background:#fee2e2;display:flex;align-items:center;justify-content:center;font-size:22px}
+.v4-step{border-top:1px solid var(--border);padding:14px 0}
+.v4-step-t{font-weight:800;font-size:13.5px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.v4-step-t span{width:22px;height:22px;border-radius:50%;background:var(--primary);color:#fff;font-size:12px;display:inline-flex;align-items:center;justify-content:center}
+.v4-radio{display:flex;align-items:center;gap:8px;font-size:13px;padding:6px 2px;cursor:pointer}
+.v4-3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.v4-cats{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px}
+.v4-cat{display:flex;align-items:center;gap:10px;background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:10px 12px;cursor:pointer}
+.v4-cat:has(input:checked){background:#fef2f2;border-color:#fca5a5}
+.v4-cat b{font-size:13px;display:block}.v4-cat small{color:var(--muted);font-size:11px;display:block;margin-top:2px}
+.v4-cat>div{flex:1}
+.v4-cnt{font-weight:900;color:#b91c1c;font-size:15px}
+.v4-sum{background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:12px;margin-top:10px}
+.v4-sum-h{font-size:13px;margin-bottom:8px}
+.v4-confirm{background:#fff5f5;border:1px solid #fecaca;border-radius:14px;padding:14px;margin-top:6px}
+.v4-warn-red{font-weight:800;color:#991b1b;font-size:13px;margin-bottom:10px}
+.v4-btn-danger{margin-top:10px;font-family:inherit;font-weight:800;font-size:14px;color:#fff;background:#b91c1c;border:0;border-radius:12px;padding:12px 22px;cursor:pointer;display:block}
+.v4-btn-danger:disabled{background:#e5e7eb;color:#9ca3af;cursor:not-allowed}
+.v4-progress{height:10px;background:#fee2e2;border-radius:99px;overflow:hidden;margin-top:12px}
+.v4-progress>div{height:100%;width:0;background:#b91c1c;transition:width .25s}
+
+/* الداشبورد التفاعلية */
+.dx-hero-stats button{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);border-radius:12px;padding:8px 14px;text-align:center;min-width:76px;color:#fff;font-family:inherit;cursor:pointer;transition:all .12s}
+.dx-hero-stats button:hover{background:rgba(255,255,255,.26);transform:translateY(-1px)}
+.dx-hero-stats button b{display:block;font-size:20px;font-weight:900;line-height:1.2}
+.dx-hero-stats button span{font-size:10.5px;opacity:.9}
+.dx-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:14px}
+.dx-tile{font-family:inherit;text-align:right;background:#fff;border:1px solid var(--border);border-radius:16px;padding:14px;cursor:pointer;display:flex;flex-direction:column;gap:6px;box-shadow:var(--shadow);transition:all .14s}
+.dx-tile:hover{transform:translateY(-3px);border-color:var(--primary-light);box-shadow:0 12px 26px rgba(23,107,67,.16)}
+.dx-tile-i{font-size:20px}.dx-tile-l{font-size:12px;font-weight:700;color:var(--muted)}
+.dx-tile b{font-size:28px;font-weight:900;line-height:1.1}
+.dx-tile small{font-size:11px;color:var(--primary);font-weight:700}
+.dx-tile-red{background:#fff5f5;border-color:#fecaca}
+.dx-row{display:flex;width:100%;justify-content:space-between;align-items:center;padding:9px 6px;border:0;border-bottom:1px solid #f1f5f9;background:transparent;font-family:inherit;font-size:12.5px;gap:8px;cursor:pointer;text-align:right;border-radius:8px}
+.dx-row:hover{background:#f0faf4}
+.dx-stack button{border:0;height:100%;cursor:pointer;padding:0}
+.dx-stack{display:flex;height:18px;border-radius:99px;overflow:hidden;background:#eef2f6;margin-bottom:12px}
+.dx-legend button{display:block;width:100%;text-align:right;background:transparent;border:0;font-family:inherit;font-size:12px;padding:6px 4px;cursor:pointer;border-radius:8px}
+.dx-legend button:hover{background:#f8fafc}
+
+.v4d-ov{position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:100002;display:flex;justify-content:flex-start;backdrop-filter:blur(2px)}
+.v4d-panel{background:#fff;width:min(560px,100vw);height:100%;display:flex;flex-direction:column;box-shadow:0 0 50px rgba(0,0,0,.3);animation:v4dIn .22s ease}
+@keyframes v4dIn{from{transform:translateX(-30px);opacity:0}to{transform:none;opacity:1}}
+.v4d-panel header{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:16px 18px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,#0f4d30,#176b43);color:#fff}
+.v4d-panel header .muted{color:rgba(255,255,255,.8)}
+.v4d-title{font-size:17px;font-weight:800}
+.v4d-x{background:rgba(255,255,255,.18);border:0;color:#fff;width:34px;height:34px;border-radius:10px;font-size:16px;cursor:pointer}
+.v4d-crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:10px 18px;background:#f8fafc;border-bottom:1px solid var(--border);font-size:12.5px}
+.v4d-crumbs button{font-family:inherit;border:0;background:transparent;color:var(--primary);font-weight:700;cursor:pointer;padding:3px 6px;border-radius:6px}
+.v4d-crumbs button:hover{background:#e7f6ee}.v4d-sep{color:var(--muted)}
+.v4d-tools{display:flex;gap:8px;padding:10px 18px;border-bottom:1px solid var(--border);flex-wrap:wrap;align-items:center}
+.v4d-tools .input-field{flex:1;min-width:150px;padding:8px 10px;font-size:12.5px}
+.v4d-body{flex:1;overflow:auto;padding:10px 14px 24px}
+.v4d-n{display:block;width:100%;font-family:inherit;text-align:right;background:#fff;border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:all .12s}
+.v4d-n:hover{border-color:var(--primary-light);box-shadow:0 6px 16px rgba(23,107,67,.12);transform:translateY(-1px)}
+.v4d-n-top{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:13.5px}
+.v4d-n-top span{color:var(--muted);font-size:11.5px;flex:1}
+.v4d-n-top i{color:var(--muted);font-style:normal;font-size:18px}
+.v4d-w{display:flex;width:100%;justify-content:space-between;align-items:center;gap:10px;font-family:inherit;text-align:right;background:#fff;border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:7px;cursor:pointer}
+.v4d-w:hover{border-color:var(--primary-light);background:#f0faf4}
+.v4d-w b{font-size:13px;display:block}.v4d-w small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+.v4d-chip{font-weight:900;font-size:13px;border-radius:999px;padding:5px 12px;white-space:nowrap}
+.v4d-empty{text-align:center;color:var(--muted);padding:30px 10px;font-size:13px}
+body.v4d-open{overflow:hidden}
+@media (max-width:640px){.v4-3{grid-template-columns:1fr}.v4d-panel{width:100vw}.dx-tiles{grid-template-columns:repeat(2,1fr)}}
+
 </style>
 </head>
 <body>
@@ -4861,61 +4941,6 @@ try{(function(){
   };
 })();
 
-/* ===== V3: إضافات لوحة التحكم (فوق اللوحة الحالية بدون استبدالها) ===== */
-(function(){
-  const col = p => p >= 80 ? '#16a34a' : p >= 50 ? '#d97706' : '#dc2626';
-  const avg = (a, k) => a.length ? a.reduce((s, r) => s + (Number(r[k]) || 0), 0) / a.length : 0;
-
-  function render(){
-    const tab = document.getElementById('tab-dashboard'); if(!tab) return;
-    let box = document.getElementById('dash-extra');
-    if(!box){ box = document.createElement('div'); box.id = 'dash-extra'; tab.insertBefore(box, tab.firstChild); }
-    const rows = window._dashPerWorker || [];
-    if(!rows.length){ box.innerHTML = ''; return; }
-
-    const overall = avg(rows, 'compliance');
-    const hi = rows.filter(r => r.compliance >= 80).length;
-    const mid = rows.filter(r => r.compliance >= 50 && r.compliance < 80).length;
-    const lo = rows.length - hi - mid;
-    const pc = n => rows.length ? Math.round(n / rows.length * 100) : 0;
-    const today = new Date().toLocaleDateString('ar-EG', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
-
-    const comps = [
-      ['🎬 إكمال التدريبات', avg(rows, 'trainingPct')],
-      ['📝 نتائج الاختبارات', avg(rows, 'quizPct')],
-      ['⚠️ الخلو من المخالفات', avg(rows, 'violPct')],
-      ['🎓 التدريبات الميدانية', avg(rows, 'onsitePct')]
-    ];
-    const compHtml = comps.map(c => '<div class="dx-comp"><div class="dx-comp-top"><span>'+c[0]+'</span><b style="color:'+col(c[1])+'">'+Math.round(c[1])+'%</b></div>'+
-      '<div class="dx-track"><div class="dx-fill" style="width:'+Math.min(100, c[1])+'%;background:'+col(c[1])+'"></div></div></div>').join('');
-
-    const secName = r => { const s = sections.find(x => String(x.id) === String(r.worker.section_id)); return s ? tr(s, 'name') : '—'; };
-    const rowHtml = r => '<div class="dx-row"><span><b>#'+r.worker.id+'</b> '+esc(r.worker.worker_name)+' <small class="muted">'+esc(secName(r))+'</small></span><b style="color:'+col(r.compliance)+'">'+Math.round(r.compliance)+'%</b></div>';
-    const sorted = rows.slice().sort((a, b) => b.compliance - a.compliance);
-    const top = sorted.slice(0, 5), low = sorted.slice(-5).reverse().filter(r => r.compliance < 80);
-
-    box.innerHTML =
-      '<div class="dx-hero"><div><div class="dx-hero-title">ملخص الأداء</div><div class="dx-hero-sub">'+esc(today)+'</div></div>'+
-        '<div class="dx-hero-stats"><div><b>'+rows.length+'</b><span>موظف</span></div><div><b>'+Math.round(overall)+'%</b><span>الالتزام العام</span></div><div><b>'+hi+'</b><span>متميز ≥80%</span></div><div><b>'+lo+'</b><span>يحتاج متابعة</span></div></div></div>'+
-      '<div class="dx-grid">'+
-        '<div class="card dx-card"><div class="section-title" style="margin-bottom:12px;">📈 مكوّنات الالتزام (المتوسط)</div>'+compHtml+'</div>'+
-        '<div class="card dx-card"><div class="section-title" style="margin-bottom:12px;">🎯 توزيع الموظفين</div>'+
-          '<div class="dx-stack"><div style="width:'+pc(hi)+'%;background:#16a34a" title="متميز"></div><div style="width:'+pc(mid)+'%;background:#d97706" title="متوسط"></div><div style="width:'+pc(lo)+'%;background:#dc2626" title="ضعيف"></div></div>'+
-          '<div class="dx-legend"><span><i style="background:#16a34a"></i>متميز (≥80%) — <b>'+hi+'</b></span><span><i style="background:#d97706"></i>متوسط (50–79%) — <b>'+mid+'</b></span><span><i style="background:#dc2626"></i>ضعيف (&lt;50%) — <b>'+lo+'</b></span></div></div>'+
-        '<div class="card dx-card"><div class="section-title" style="margin-bottom:10px;">🏆 الأعلى التزامًا</div>'+top.map(rowHtml).join('')+'</div>'+
-        '<div class="card dx-card"><div class="section-title" style="margin-bottom:10px;">🔔 يحتاجون متابعة</div>'+(low.map(rowHtml).join('') || '<div class="muted" style="font-size:12px;">الكل فوق 80% ✅</div>')+'</div>'+
-      '</div>';
-  }
-
-  const orig = window.loadAdminDashboard;
-  if(typeof orig === 'function'){
-    window.loadAdminDashboard = async function(){
-      await orig.apply(this, arguments);
-      try{ render(); }catch(e){ console.error('dash extras', e); }
-    };
-  }
-})();
-
 /* ===== V3: تثبيت الموقع كتطبيق (PWA) ===== */
 (function(){
   const head = document.head;
@@ -5399,6 +5424,621 @@ try{(function(){
   };
   const basePop = populateSectionDropdowns;
   populateSectionDropdowns = function(){ basePop.apply(this, arguments); try{ refreshNwUnits(); }catch(e){} };
+})();
+
+/* =====================================================================
+   V4 — دمج الموظفين داخل الهيكل + أداة مسح البيانات (للأدمن الرئيسي فقط)
+   ===================================================================== */
+(function(){
+  const $q = id => document.getElementById(id);
+  const isSuper = () => !!(adminUser && adminUser.isSuper);
+  const secs = () => (typeof sections !== 'undefined' ? sections : []);
+  const nz = v => (v === '' || v == null) ? null : Number(v);
+
+  /* ---------------- الشريط الفرعي (الهيكل ← الموظفين) ---------------- */
+  const SUB = [['units','🏢 المناطق والوحدات'],['workers','👥 الموظفين'],['roles','👷 الوظائف'],['targets','🏬 الإدارات']];
+  function ensureSubnav(){
+    ['tab-org','tab-workers'].forEach(id => {
+      const t = $q(id); if(!t || t.querySelector('.v4-subnav')) return;
+      t.insertAdjacentHTML('afterbegin', '<div class="v4-subnav">' + SUB.map(([k,l]) => '<button type="button" class="v4-sub" data-k="' + k + '">' + l + '</button>').join('') + '</div>');
+      t.querySelector('.v4-subnav').addEventListener('click', e => { const b = e.target.closest('.v4-sub'); if(b) goSub(b.dataset.k); });
+    });
+    $q('orgtabbtn-sections')?.closest('.card')?.classList.add('hidden');   // الكارت القديم اتحل محله الشريط الجديد
+  }
+  function goSub(k){
+    if(k === 'workers'){ adminTab('workers'); return; }
+    adminTab('org'); toggleOrgTab(k === 'units' ? 'sections' : k);
+  }
+  function markSub(){
+    const inWorkers = $q('tab-workers')?.classList.contains('active');
+    const p = ['sections','roles','targets'].find(s => $q('orgpanel-' + s)?.classList.contains('active')) || 'sections';
+    const key = inWorkers ? 'workers' : (p === 'sections' ? 'units' : p);
+    document.querySelectorAll('.v4-subnav').forEach(n => {
+      n.classList.toggle('hidden', !isSuper());
+      n.querySelectorAll('.v4-sub').forEach(b => b.classList.toggle('active', b.dataset.k === key));
+    });
+  }
+  function applyNav(){
+    const w = $q('tabbtn-workers'), o = $q('tabbtn-org'); if(!w || !o) return;
+    w.classList.add('hidden');                              // أيقونة الموظفين اتشالت من الشريط الجانبي
+    o.classList.remove('hidden');
+    const lab = o.querySelector('.nav-label');
+    if(isSuper()){
+      o.onclick = () => adminTab('org');
+      if(lab) lab.innerHTML = 'الهيكل والموظفين<span class="nav-en">Organization &amp; Staff</span>';
+      o.dataset.label = 'الهيكل والموظفين';
+    } else {                                                // الأدمن المقيّد: أيقونة واحدة للموظفين التابعين له
+      o.onclick = () => adminTab('workers');
+      if(lab) lab.innerHTML = 'الموظفين<span class="nav-en">Workers</span>';
+      o.dataset.label = 'الموظفين';
+    }
+  }
+  const baseScope = applyAdminScope;
+  applyAdminScope = function(){ baseScope.apply(this, arguments); try{ applyNav(); }catch(e){ console.error(e); } };
+  const baseOrgTab = toggleOrgTab;
+  toggleOrgTab = function(){ baseOrgTab.apply(this, arguments); markSub(); };
+
+  /* ---------------- تبويب الموظفين: قائمة ↔ مسح البيانات ---------------- */
+  function ensureWorkersExtras(){
+    const t = $q('tab-workers'); if(!t) return;
+    Array.from(t.children).forEach(c => { if(c.classList.contains('card') && c.id !== 'v4-purge') c.classList.add('v4-wk-card'); });
+    if(!$q('v4-wk-seg')){
+      t.querySelector('.v4-subnav').insertAdjacentHTML('afterend',
+        '<div id="v4-wk-seg" class="v4-seg"><button type="button" data-v="list" class="active">👥 قائمة الموظفين</button><button type="button" data-v="purge" class="v4-danger">🧹 مسح البيانات</button></div>');
+      $q('v4-wk-seg').addEventListener('click', e => { const b = e.target.closest('button'); if(b) showWk(b.dataset.v); });
+    }
+    $q('v4-wk-seg').classList.toggle('hidden', !isSuper());
+    if(!isSuper()) showWk('list');
+  }
+  function showWk(v){
+    if(v === 'purge' && !isSuper()) return;
+    const t = $q('tab-workers');
+    t.querySelectorAll('.v4-wk-card').forEach(c => c.classList.toggle('hidden', v === 'purge'));
+    if(v === 'purge') buildPurge();
+    $q('v4-purge')?.classList.toggle('hidden', v !== 'purge');
+    $q('v4-wk-seg')?.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.v === v));
+  }
+
+  const baseTab = adminTab;
+  adminTab = function(tab){
+    baseTab.apply(this, arguments);
+    try{
+      ensureSubnav(); ensureWorkersExtras(); applyNav();
+      if(tab === 'workers'){ document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); $q('tabbtn-org')?.classList.add('active'); showWk('list'); }
+      markSub();
+    }catch(e){ console.error('v4 nav', e); }
+  };
+
+  /* =====================  أداة مسح البيانات  ===================== */
+  const CATS = [
+    {k:'progress',  icon:'🎬', label:'مشاهدة الفيديوهات وتقدّم التدريب', desc:'تقدّم كل تدريب وسجل المشاهدة', tables:[['training_progress','worker_id'],['video_views','worker_id']]},
+    {k:'quiz',      icon:'📝', label:'الاختبارات', desc:'كل المحاولات والنتايج وأذونات إعادة الاختبار', tables:[['quiz_attempts','worker_id'],['quiz_unlocks','worker_id']]},
+    {k:'answers',   icon:'❓', label:'إجابات أسئلة المحتوى', desc:'إجابات الموظفين تحت الفيديوهات والكروت', tables:[['content_answers','worker_id']]},
+    {k:'comments',  icon:'💬', label:'التعليقات والأسئلة', desc:'تعليقات الموظفين على المحتوى', tables:[['content_comments','worker_id']]},
+    {k:'violations',icon:'⚠️', label:'المخالفات', desc:'بتتمسح المخالفات وبتترجّع درجة الموظف 100 وعدد المخالفات 0', tables:[['worker_violations','worker_id']], reset:true},
+    {k:'onsite',    icon:'🎓', label:'مشاركات التدريبات الميدانية وتقييماتها', desc:'الجلسات نفسها بتفضل، والمشاركين بس هما اللي بيتشالوا', tables:[['onsite_training_participants','worker_id']]},
+    {k:'activity',  icon:'📜', label:'سجل نشاط الموظفين', desc:'سجل الأحداث اللي عملها الموظفين', tables:[['activity_logs','actor_id',{actor_type:'worker'}]]}
+  ];
+  const CONFIRM_WORD = 'مسح';
+  let preview = null;
+
+  const chunk = (a, n) => { const o = []; for(let i = 0; i < a.length; i += n) o.push(a.slice(i, i + n)); return o; };
+  async function fetchAllRows(build){                       // بيجيب كل الصفوف بالتقسيم (Supabase بيرجّع 1000 بس في الطلب)
+    let out = [], from = 0;
+    for(;;){
+      const {data, error} = await build().range(from, from + 999);
+      if(error) throw error;
+      out = out.concat(data || []);
+      if(!data || data.length < 1000) break;
+      from += 1000;
+    }
+    return out;
+  }
+  const withExtra = (q, extra) => { Object.keys(extra || {}).forEach(k => { q = q.eq(k, extra[k]); }); return q; };
+
+  function buildPurge(){
+    const t = $q('tab-workers');
+    if($q('v4-purge')) return;
+    const card = document.createElement('div');
+    card.id = 'v4-purge'; card.className = 'card v4-purge hidden';
+    card.innerHTML =
+      '<div class="v4-purge-head"><div class="v4-purge-ico">🧹</div><div><div class="section-title" style="margin:0;">مسح بيانات نشاط الموظفين</div>' +
+      '<div class="muted" style="font-size:12px;">للأدمن الرئيسي فقط • الموظفين نفسهم (الأسماء والأرقام) <b>مش بيتمسحوا</b>، بس اللي عملوه في النظام.</div></div></div>' +
+      '<div class="v4-step"><div class="v4-step-t"><span>1</span> النطاق: مين هيتمسح له؟</div>' +
+        '<label class="v4-radio"><input type="radio" name="v4p-scope" value="all" checked/> كل الموظفين</label>' +
+        '<label class="v4-radio"><input type="radio" name="v4p-scope" value="unit"/> نطاق محدد (منطقة / إدارة / وحدة)</label>' +
+        '<div id="v4p-unit" class="v4-box hidden"><div class="v4-3">' +
+          '<select id="v4p-reg" class="input-field"></select><select id="v4p-dep" class="input-field"></select><select id="v4p-sec" class="input-field"></select></div></div>' +
+        '<label class="v4-radio"><input type="radio" name="v4p-scope" value="ids"/> موظفين محددين (بالأرقام)</label>' +
+        '<div id="v4p-ids" class="v4-box hidden"><textarea id="v4p-idlist" class="input-field" rows="2" placeholder="اكتب أرقام الموظفين مفصولة بمسافة أو فاصلة، مثال: 12 15 20"></textarea></div></div>' +
+      '<div class="v4-step"><div class="v4-step-t"><span>2</span> إيه اللي يتمسح؟</div><div class="v4-cats">' +
+        CATS.map(c => '<label class="v4-cat"><input type="checkbox" class="v4p-cat" value="' + c.k + '"/><div><b>' + c.icon + ' ' + c.label + '</b><small>' + c.desc + '</small></div><span class="v4-cnt" id="v4p-cnt-' + c.k + '"></span></label>').join('') +
+      '</div><button type="button" class="btn-secondary btn-sm" id="v4p-all" style="margin-top:8px;">تحديد الكل</button></div>' +
+      '<div class="v4-step"><div class="v4-step-t"><span>3</span> راجع قبل التنفيذ</div>' +
+        '<label class="v4-radio"><input type="checkbox" id="v4p-backup" checked/> 💾 نزّل نسخة احتياطية (ملف JSON) قبل المسح — <b>موصى بيه</b></label>' +
+        '<button type="button" class="btn-primary" id="v4p-preview" style="margin-top:8px;padding:10px 22px;font-size:13px;">🔍 معاينة اللي هيتمسح</button><div id="v4p-msg" style="font-size:12.5px;margin-top:8px;"></div>' +
+        '<div id="v4p-summary"></div></div>' +
+      '<div id="v4p-confirm" class="v4-confirm hidden"><div class="v4-warn-red">⛔ الإجراء ده نهائي ومينفعش يتراجع عنه (غير بالنسخة الاحتياطية).</div>' +
+        '<label class="field-label">للتأكيد، اكتب كلمة <b>«' + CONFIRM_WORD + '»</b>:</label><input id="v4p-word" class="input-field" autocomplete="off" placeholder="' + CONFIRM_WORD + '"/>' +
+        '<button type="button" class="v4-btn-danger" id="v4p-run" disabled>🗑️ تنفيذ المسح</button>' +
+        '<div class="v4-progress hidden" id="v4p-prog"><div id="v4p-bar"></div></div><div id="v4p-log" style="font-size:12.5px;margin-top:8px;"></div></div>';
+    t.appendChild(card);
+
+    const reg = $q('v4p-reg'), dep = $q('v4p-dep'), sec = $q('v4p-sec');
+    const fillSec = () => {
+      const r = nz(reg.value), d = nz(dep.value);
+      sec.innerHTML = '<option value="">كل الوحدات</option>' + secs().filter(s => (!r || Number(s.region_id) === r) && (!d || Number(s.department_id) === d)).map(s => '<option value="' + s.id + '">' + esc(s.name_ar) + '</option>').join('');
+    };
+    Promise.all([sb.from('regions').select('*').order('id'), sb.from('target_departments').select('*').order('id')]).then(([r, d]) => {
+      reg.innerHTML = '<option value="">كل المناطق</option>' + (r.data || []).map(x => '<option value="' + x.id + '">' + esc(x.name_ar) + '</option>').join('');
+      dep.innerHTML = '<option value="">كل الإدارات</option>' + (d.data || []).filter(x => x.is_active !== false).map(x => '<option value="' + x.id + '">' + esc(x.name_ar) + '</option>').join('');
+      fillSec();
+    });
+    reg.onchange = () => { fillSec(); invalidate(); }; dep.onchange = () => { fillSec(); invalidate(); }; sec.onchange = invalidate;
+    card.querySelectorAll('input[name="v4p-scope"]').forEach(r => r.onchange = () => {
+      const v = card.querySelector('input[name="v4p-scope"]:checked').value;
+      $q('v4p-unit').classList.toggle('hidden', v !== 'unit'); $q('v4p-ids').classList.toggle('hidden', v !== 'ids'); invalidate();
+    });
+    card.querySelectorAll('.v4p-cat').forEach(c => c.onchange = invalidate);
+    $q('v4p-idlist').oninput = invalidate;
+    $q('v4p-all').onclick = () => { const cs = card.querySelectorAll('.v4p-cat'); const all = Array.from(cs).every(c => c.checked); cs.forEach(c => c.checked = !all); invalidate(); };
+    $q('v4p-preview').onclick = runPreview;
+    $q('v4p-word').oninput = syncRun;
+    $q('v4p-run').onclick = runPurge;
+  }
+  function invalidate(){
+    preview = null;
+    $q('v4p-summary').innerHTML = ''; $q('v4p-confirm')?.classList.add('hidden'); $q('v4p-msg').innerHTML = '';
+    CATS.forEach(c => { const e = $q('v4p-cnt-' + c.k); if(e) e.textContent = ''; });
+    if($q('v4p-word')) $q('v4p-word').value = '';
+    syncRun();
+  }
+  function syncRun(){
+    const b = $q('v4p-run'); if(!b) return;
+    b.disabled = !(preview && preview.total + preview.resetCount > 0 && ($q('v4p-word').value || '').trim() === CONFIRM_WORD);
+  }
+  const selCats = () => Array.from(document.querySelectorAll('.v4p-cat:checked')).map(c => CATS.find(x => x.k === c.value));
+
+  async function resolveWorkers(){
+    const mode = document.querySelector('input[name="v4p-scope"]:checked').value;
+    if(mode === 'all'){
+      const rows = await fetchAllRows(() => sb.from('workers_evaluations').select('id').order('id'));
+      return {ids:rows.map(r => Number(r.id)), label:'كل الموظفين'};
+    }
+    if(mode === 'unit'){
+      const r = nz($q('v4p-reg').value), d = nz($q('v4p-dep').value), s = nz($q('v4p-sec').value);
+      if(!r && !d && !s) return {error:'اختار منطقة أو إدارة أو وحدة، أو غيّر النطاق لـ«كل الموظفين».'};
+      const units = secs().filter(x => (!r || Number(x.region_id) === r) && (!d || Number(x.department_id) === d) && (!s || Number(x.id) === s)).map(x => Number(x.id));
+      if(!units.length) return {error:'مفيش وحدات مطابقة للنطاق ده.'};
+      const rows = await fetchAllRows(() => sb.from('workers_evaluations').select('id').in('section_id', units).order('id'));
+      return {ids:rows.map(x => Number(x.id)), label:'نطاق محدد (' + units.length + ' وحدة)'};
+    }
+    const raw = ($q('v4p-idlist').value || '').split(/[^0-9]+/).filter(Boolean).map(Number);
+    const wanted = [...new Set(raw)];
+    if(!wanted.length) return {error:'اكتب رقم موظف واحد على الأقل.'};
+    let found = [];
+    for(const c of chunk(wanted, 150)){ const {data} = await sb.from('workers_evaluations').select('id').in('id', c); found = found.concat((data || []).map(x => Number(x.id))); }
+    const missing = wanted.filter(x => !found.includes(x));
+    if(!found.length) return {error:'مفيش موظف بالأرقام دي.'};
+    return {ids:found, label:found.length + ' موظف محدد', missing};
+  }
+  async function countTable(table, col, extra, ids){
+    let total = 0;
+    for(const c of chunk(ids, 150)){
+      const {count, error} = await withExtra(sb.from(table).select('id', {count:'exact', head:true}).in(col, c), extra);
+      if(error) return {error:error.message};
+      total += count || 0;
+    }
+    return {total};
+  }
+
+  async function runPreview(){
+    const msg = $q('v4p-msg'), cats = selCats();
+    if(!isSuper()) return;
+    if(!cats.length){ msg.innerHTML = '<span style="color:#991b1b;">اختار نوع بيانات واحد على الأقل.</span>'; return; }
+    msg.innerHTML = '<span class="muted">جاري الحساب...</span>'; $q('v4p-confirm').classList.add('hidden');
+    try{
+      const w = await resolveWorkers();
+      if(w.error){ msg.innerHTML = '<span style="color:#991b1b;">' + esc(w.error) + '</span>'; return; }
+      const per = {}; let total = 0, resetCount = 0;
+      for(const c of cats){
+        per[c.k] = {tables:{}, total:0};
+        for(const [t, col, extra] of c.tables){
+          const r = await countTable(t, col, extra, w.ids);
+          per[c.k].tables[t] = r;
+          if(!r.error){ per[c.k].total += r.total; }
+          const e = $q('v4p-cnt-' + c.k); if(e) e.textContent = per[c.k].total;
+        }
+        total += per[c.k].total;
+        if(c.reset) resetCount = w.ids.length;
+      }
+      preview = {workers:w, cats, per, total, resetCount};
+      $q('v4p-summary').innerHTML =
+        '<div class="v4-sum"><div class="v4-sum-h">النطاق: <b>' + esc(w.label) + '</b> • <b>' + w.ids.length + '</b> موظف' + (w.missing && w.missing.length ? ' <span style="color:#92400e;">(أرقام مش موجودة: ' + esc(w.missing.join('، ')) + ')</span>' : '') + '</div>' +
+        '<table class="data"><thead><tr><th>النوع</th><th>عدد السجلات</th></tr></thead><tbody>' +
+        cats.map(c => '<tr><td>' + c.icon + ' ' + c.label + '</td><td><b>' + per[c.k].total + '</b>' +
+          (Object.values(per[c.k].tables).some(x => x.error) ? ' <small style="color:#92400e;">(جدول غير متاح)</small>' : '') + '</td></tr>').join('') +
+        '</tbody></table>' + (resetCount ? '<div class="muted" style="font-size:12px;margin-top:6px;">+ إعادة درجة ' + resetCount + ' موظف لـ100 وعدد المخالفات لـ0.</div>' : '') + '</div>';
+      if(total + resetCount === 0){ msg.innerHTML = '<span style="color:#166534;">مفيش بيانات مطابقة تتمسح ✅</span>'; return; }
+      msg.innerHTML = '';
+      $q('v4p-confirm').classList.remove('hidden'); syncRun();
+    }catch(e){ console.error(e); msg.innerHTML = '<span style="color:#991b1b;">حصل خطأ: ' + esc(e.message || e) + '</span>'; }
+  }
+
+  function download(name, text){
+    const blob = new Blob([text], {type:'application/json;charset=utf-8'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  }
+
+  async function runPurge(){
+    if(!isSuper()) return showToast('العملية دي للأدمن الرئيسي فقط');
+    if(!preview || ($q('v4p-word').value || '').trim() !== CONFIRM_WORD) return;
+    const run = $q('v4p-run'), log = $q('v4p-log'), bar = $q('v4p-bar');
+    run.disabled = true; $q('v4p-prog').classList.remove('hidden'); log.innerHTML = '';
+    const {workers, cats} = preview, ids = workers.ids;
+    const steps = cats.reduce((a, c) => a + c.tables.length, 0) + (cats.some(c => c.reset) ? 1 : 0) + 1;
+    let done = 0; const tick = () => { bar.style.width = Math.round(++done / steps * 100) + '%'; };
+    const result = {}; const line = t => { log.innerHTML += '<div>' + t + '</div>'; };
+    try{
+      if($q('v4p-backup').checked){                          // 1) نسخة احتياطية الأول — لو فشلت مفيش أي مسح
+        line('💾 جاري تجهيز النسخة الاحتياطية...');
+        const dump = {meta:{createdAt:new Date().toISOString(), by:adminUser.name, scope:workers.label, workers:ids.length, categories:cats.map(c => c.k)}, tables:{}};
+        for(const c of cats){
+          for(const [t, col, extra] of c.tables){
+            let rows = [];
+            for(const ch of chunk(ids, 150)) rows = rows.concat(await fetchAllRows(() => withExtra(sb.from(t).select('*').in(col, ch), extra)));
+            dump.tables[t] = rows;
+          }
+          if(c.reset){
+            let ws = [];
+            for(const ch of chunk(ids, 150)) ws = ws.concat(await fetchAllRows(() => sb.from('workers_evaluations').select('id,worker_name,kpi_score,violations_count').in('id', ch)));
+            dump.tables['workers_scores_before'] = ws;
+          }
+        }
+        const d = new Date(), p = n => String(n).padStart(2, '0');
+        download('backup-before-purge-' + d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + '-' + p(d.getHours()) + p(d.getMinutes()) + '.json', JSON.stringify(dump));
+        line('✅ اتنزّلت النسخة الاحتياطية');
+      }
+      for(const c of cats){                                  // 2) المسح
+        for(const [t, col, extra] of c.tables){
+          let n = 0;
+          for(const ch of chunk(ids, 150)){
+            const {error, count} = await withExtra(sb.from(t).delete({count:'exact'}).in(col, ch), extra);
+            if(error) throw new Error(t + ': ' + error.message);
+            n += count || 0;
+          }
+          result[t] = n; tick(); line('🗑️ ' + t + ': اتمسح ' + n);
+        }
+        if(c.reset){
+          for(const ch of chunk(ids, 150)){
+            const {error} = await sb.from('workers_evaluations').update({kpi_score:100, violations_count:0}).in('id', ch);
+            if(error) throw new Error('reset: ' + error.message);
+          }
+          tick(); line('↩️ اترجّعت درجة ' + ids.length + ' موظف لـ100');
+        }
+      }
+      // 3) تحقق: عدّ اللي فضل
+      let left = 0;
+      for(const c of cats) for(const [t, col, extra] of c.tables){ const r = await countTable(t, col, extra, ids); left += r.total || 0; }
+      tick(); bar.style.width = '100%';
+      line('<b style="color:' + (left ? '#991b1b' : '#166534') + ';">' + (left ? '⚠️ فضل ' + left + ' سجل (جرّب تنفّذ تاني)' : '✅ تم المسح بنجاح، ومفيش سجلات متبقية') + '</b>');
+      if(adminUser.id){ try{ await sb.from('activity_logs').insert({actor_type:'admin', actor_id:adminUser.id, action:'مسح بيانات موظفين', item_type:'purge', metadata:{scope:workers.label, workers:ids.length, deleted:result}}); }catch(e){} }
+      showToast('تم مسح البيانات ✅');
+      preview = null; syncRun();
+      try{ loadWorkers(); if(typeof loadAdminDashboard === 'function') loadAdminDashboard(); }catch(e){}
+    }catch(e){
+      console.error(e);
+      line('<b style="color:#991b1b;">⛔ توقف التنفيذ: ' + esc(e.message || e) + '</b><div class="muted">اللي اتمسح قبل الخطأ فضل ممسوح، وتقدر تكمّل تاني (النسخة الاحتياطية اتنزّلت قبل البدء).</div>');
+      run.disabled = false;
+    }
+  }
+})();
+
+/* =====================================================================
+   V4 — الداشبورد التفاعلية: أي رقم تدوس عليه يفتح لوحة جانبية بالتفاصيل
+   منطقة ← إدارة ← وحدة ← موظف، والأرقام بتتحسب بجلب كل الصفوف (مش أول 1000 بس)
+   ===================================================================== */
+(function(){
+  const $q = id => document.getElementById(id);
+  const secs = () => (typeof sections !== 'undefined' ? sections : []);
+  const col = p => p >= 80 ? '#16a34a' : p >= 50 ? '#d97706' : '#dc2626';
+  const avg = (a, k) => a.length ? a.reduce((s, r) => s + (Number(r[k]) || 0), 0) / a.length : 0;
+  const METRICS = {compliance:'الالتزام العام', trainingPct:'إكمال التدريبات', quizPct:'نتائج الاختبارات', violPct:'الخلو من المخالفات', onsitePct:'التدريبات الميدانية'};
+  const ICONS = {compliance:'🎯', trainingPct:'🎬', quizPct:'📝', violPct:'⚠️', onsitePct:'🎓'};
+  let rows = [], openViol = [], regions = [], depts = [];
+
+  async function fetchAll(build){
+    let out = [], from = 0;
+    for(;;){
+      const {data, error} = await build().range(from, from + 999);
+      if(error) throw error;
+      out = out.concat(data || []);
+      if(!data || data.length < 1000) break;
+      from += 1000;
+    }
+    return out;
+  }
+  const safe = async (fn, dflt) => { try{ return await fn(); }catch(e){ return dflt; } };
+
+  /* ---------- حساب الالتزام (نفس معادلة النظام الحالية، لكن بجلب كل الصفوف) ---------- */
+  async function compute(){
+    const ids = getAdminScopeIds();
+    const st = await safe(async () => (await sb.from('app_settings').select('key,value').in('key', ['compliance_weight_training','compliance_weight_quiz','compliance_weight_violations','compliance_weight_onsite'])).data, []);
+    const m = {}; (st || []).forEach(x => m[x.key] = Number(x.value));
+    const W = {training:m.compliance_weight_training ?? 40, quiz:m.compliance_weight_quiz ?? 25, violations:m.compliance_weight_violations ?? 15, onsite:m.compliance_weight_onsite ?? 20};
+    const totalW = (W.training + W.quiz + W.violations + W.onsite) || 1;
+    const workers = await fetchAll(() => { let q = sb.from('workers_evaluations').select('id,worker_name,section_id,job_role_id,kpi_score').order('id'); if(!adminUser?.isSuper && ids.length) q = q.in('section_id', ids); return q; });
+    const [topics, progress, attempts, onsite, roles] = await Promise.all([
+      fetchAll(() => sb.from('training_topics').select('id,section_id,target_department_id,is_visible').order('id')),
+      fetchAll(() => sb.from('training_progress').select('worker_id,topic_id,completed').order('id')),
+      fetchAll(() => sb.from('quiz_attempts').select('worker_id,score,is_current').order('id')),
+      safe(() => fetchAll(() => sb.from('onsite_training_participants').select('worker_id,admin_evaluation').order('id')), []),
+      safe(() => fetchAll(() => sb.from('job_roles').select('id,target_department_id').order('id')), [])
+    ]);
+    const roleDept = {}; roles.forEach(r => roleDept[r.id] = r.target_department_id);
+    const done = {}; progress.forEach(p => { if(p.completed) (done[p.worker_id] ||= new Set()).add(p.topic_id); });
+    const sc = {}; attempts.forEach(a => { if(a.is_current === false) return; (sc[a.worker_id] ||= []).push(Number(a.score) || 0); });
+    const OS = {excellent:100, good:75, acceptable:50, weak:25}, on = {};
+    onsite.forEach(p => { const v = OS[p.admin_evaluation]; if(v != null) (on[p.worker_id] ||= []).push(v); });
+    const vis = topics.filter(t => t.is_visible);
+    const mean = a => a.reduce((x, y) => x + y, 0) / a.length;
+    return workers.map(w => {
+      const d = roleDept[w.job_role_id];
+      const rel = vis.filter(t => (!t.section_id || Number(t.section_id) === Number(w.section_id)) && (!t.target_department_id || Number(t.target_department_id) === Number(d)));
+      const trainingPct = rel.length ? rel.filter(t => done[w.id]?.has(t.id)).length / rel.length * 100 : 100;
+      const quizPct = (sc[w.id] || []).length ? mean(sc[w.id]) : 100;
+      const violPct = Number(w.kpi_score ?? 100);
+      const onsitePct = (on[w.id] || []).length ? mean(on[w.id]) : 100;
+      const compliance = (trainingPct * W.training + quizPct * W.quiz + violPct * W.violations + onsitePct * W.onsite) / totalW;
+      return {worker:w, trainingPct, quizPct, violPct, onsitePct, compliance};
+    });
+  }
+
+  /* ---------- مساعدات الهيكل ---------- */
+  const unitOf = w => secs().find(s => Number(s.id) === Number(w.section_id));
+  const regionName = id => id ? (regions.find(r => Number(r.id) === Number(id))?.name_ar || 'منطقة') : 'غير مربوط بمنطقة';
+  const deptName = id => id ? (depts.find(d => Number(d.id) === Number(id))?.name_ar || 'إدارة') : 'غير مربوط بإدارة';
+  const unitName = id => id ? (secs().find(s => Number(s.id) === Number(id))?.name_ar || 'وحدة') : 'بدون وحدة';
+  const pathText = r => { const u = unitOf(r.worker); return u ? [u.region_id ? regionName(u.region_id) : '', u.department_id ? deptName(u.department_id) : '', u.name_ar].filter(Boolean).join(' › ') : 'بدون وحدة'; };
+
+  /* ---------- لوحة الداشبورد ---------- */
+  function paintDash(){
+    const tab = $q('tab-dashboard'); if(!tab) return;
+    let box = $q('dash-extra');
+    if(!box){ box = document.createElement('div'); box.id = 'dash-extra'; tab.insertBefore(box, tab.firstChild); box.addEventListener('click', onDashClick); }
+    if(!rows.length){ box.innerHTML = '<div class="card muted" style="padding:18px;text-align:center;">مفيش موظفين في نطاقك لسه.</div>'; return; }
+    const overall = avg(rows, 'compliance');
+    const hi = rows.filter(r => r.compliance >= 80).length, lo = rows.filter(r => r.compliance < 50).length, mid = rows.length - hi - lo;
+    const pc = n => Math.round(n / rows.length * 100);
+    const today = new Date().toLocaleDateString('ar-EG', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+    const tile = (k, v, hint) => '<button type="button" class="dx-tile" data-act="drill" data-m="' + k + '"><span class="dx-tile-i">' + ICONS[k] + '</span><span class="dx-tile-l">' + METRICS[k] + '</span><b style="color:' + col(v) + '">' + Math.round(v) + '%</b><div class="dx-track"><div class="dx-fill" style="width:' + Math.min(100, v) + '%;background:' + col(v) + '"></div></div><small>' + hint + ' ›</small></button>';
+    const sorted = rows.slice().sort((a, b) => b.compliance - a.compliance);
+    const rowHtml = r => '<button type="button" class="dx-row" data-act="worker" data-id="' + r.worker.id + '"><span><b>#' + r.worker.id + '</b> ' + esc(r.worker.worker_name) + ' <small class="muted">' + esc(unitOf(r.worker)?.name_ar || '—') + '</small></span><b style="color:' + col(r.compliance) + '">' + Math.round(r.compliance) + '%</b></button>';
+    const low = sorted.slice(-5).reverse().filter(r => r.compliance < 80);
+
+    box.innerHTML =
+      '<div class="dx-hero"><div><div class="dx-hero-title">ملخص الأداء</div><div class="dx-hero-sub">' + esc(today) + ' • دوس على أي رقم للتفاصيل</div></div>' +
+      '<div class="dx-hero-stats">' +
+        '<button type="button" data-act="list" data-k="all"><b>' + rows.length + '</b><span>موظف</span></button>' +
+        '<button type="button" data-act="drill" data-m="compliance"><b>' + Math.round(overall) + '%</b><span>الالتزام العام</span></button>' +
+        '<button type="button" data-act="list" data-k="hi"><b>' + hi + '</b><span>متميز ≥80%</span></button>' +
+        '<button type="button" data-act="list" data-k="lo"><b>' + lo + '</b><span>يحتاج متابعة</span></button></div></div>' +
+      '<div class="dx-tiles">' + tile('trainingPct', avg(rows, 'trainingPct'), 'التفاصيل حسب الهيكل') + tile('quizPct', avg(rows, 'quizPct'), 'التفاصيل حسب الهيكل') + tile('violPct', avg(rows, 'violPct'), 'التفاصيل حسب الهيكل') + tile('onsitePct', avg(rows, 'onsitePct'), 'التفاصيل حسب الهيكل') +
+        '<button type="button" class="dx-tile dx-tile-red" data-act="viol"><span class="dx-tile-i">🚨</span><span class="dx-tile-l">مخالفات مفتوحة</span><b style="color:#dc2626">' + openViol.length + '</b><small>عرض القايمة ›</small></button></div>' +
+      '<div class="dx-grid">' +
+        '<div class="card dx-card"><div class="section-title" style="margin-bottom:12px;">🎯 توزيع الموظفين</div>' +
+          '<div class="dx-stack"><button type="button" data-act="list" data-k="hi" style="width:' + pc(hi) + '%;background:#16a34a" title="متميز"></button><button type="button" data-act="list" data-k="mid" style="width:' + pc(mid) + '%;background:#d97706" title="متوسط"></button><button type="button" data-act="list" data-k="lo" style="width:' + pc(lo) + '%;background:#dc2626" title="ضعيف"></button></div>' +
+          '<div class="dx-legend"><button type="button" data-act="list" data-k="hi"><i style="background:#16a34a"></i>متميز (≥80%) — <b>' + hi + '</b></button><button type="button" data-act="list" data-k="mid"><i style="background:#d97706"></i>متوسط (50–79%) — <b>' + mid + '</b></button><button type="button" data-act="list" data-k="lo"><i style="background:#dc2626"></i>ضعيف (&lt;50%) — <b>' + lo + '</b></button></div></div>' +
+        '<div class="card dx-card"><div class="section-title" style="margin-bottom:10px;">🏆 الأعلى التزامًا</div>' + sorted.slice(0, 5).map(rowHtml).join('') + '</div>' +
+        '<div class="card dx-card"><div class="section-title" style="margin-bottom:10px;">🔔 يحتاجون متابعة</div>' + (low.map(rowHtml).join('') || '<div class="muted" style="font-size:12px;">الكل فوق 80% ✅</div>') + '</div>' +
+      '</div>';
+  }
+  function onDashClick(e){
+    const b = e.target.closest('[data-act]'); if(!b) return;
+    const a = b.dataset.act;
+    if(a === 'drill') openDrawer({kind:'drill', metric:b.dataset.m});
+    else if(a === 'list') openDrawer({kind:'list', key:b.dataset.k});
+    else if(a === 'viol') openDrawer({kind:'viol'});
+    else if(a === 'worker'){ if(typeof openWorkerModal === 'function') openWorkerModal(Number(b.dataset.id)); }
+  }
+
+  /* ---------- اللوحة الجانبية ---------- */
+  let dr = null;
+  function ensureDrawer(){
+    if($q('v4d')) return;
+    const ov = document.createElement('div');
+    ov.id = 'v4d'; ov.className = 'v4d-ov hidden';
+    ov.innerHTML = '<aside class="v4d-panel"><header><div><div id="v4d-title" class="v4d-title"></div><div id="v4d-sub" class="muted" style="font-size:11.5px;"></div></div><button type="button" class="v4d-x" id="v4d-close" aria-label="إغلاق">✕</button></header>' +
+      '<div id="v4d-crumbs" class="v4d-crumbs"></div><div id="v4d-tools" class="v4d-tools"></div><div id="v4d-body" class="v4d-body"></div></aside>';
+    document.body.appendChild(ov);
+    ov.addEventListener('mousedown', e => { if(e.target === ov) closeDrawer(); });
+    $q('v4d-close').onclick = closeDrawer;
+    document.addEventListener('keydown', e => { if(e.key === 'Escape' && !ov.classList.contains('hidden')) closeDrawer(); });
+    $q('v4d-body').addEventListener('click', onBodyClick);
+    $q('v4d-crumbs').addEventListener('click', e => { const b = e.target.closest('[data-i]'); if(b){ dr.path = dr.path.slice(0, Number(b.dataset.i)); dr.search = ''; paint(); } });
+    $q('v4d-tools').addEventListener('click', e => {
+      const b = e.target.closest('[data-t]'); if(!b) return;
+      if(b.dataset.t === 'sort'){ dr.sort = dr.sort === 'asc' ? 'desc' : 'asc'; paint(); }
+      if(b.dataset.t === 'csv') exportCsv();
+    });
+    $q('v4d-tools').addEventListener('input', e => { if(e.target.id === 'v4d-search'){ dr.search = e.target.value; paintBody(); } });
+  }
+  function openDrawer(spec){
+    ensureDrawer();
+    dr = Object.assign({path:[], search:'', sort:'asc', metric:'compliance'}, spec);
+    $q('v4d').classList.remove('hidden'); document.body.classList.add('v4d-open');
+    paint();
+  }
+  function closeDrawer(){ $q('v4d')?.classList.add('hidden'); document.body.classList.remove('v4d-open'); }
+
+  const LISTS = {
+    all:{t:'كل الموظفين', f:() => true},
+    hi:{t:'الموظفين المتميزين (التزام ≥ 80%)', f:r => r.compliance >= 80},
+    mid:{t:'الموظفين المتوسطين (50% – 79%)', f:r => r.compliance >= 50 && r.compliance < 80},
+    lo:{t:'يحتاجون متابعة (التزام أقل من 50%)', f:r => r.compliance < 50}
+  };
+  function scopeRows(){ // الصفوف حسب المسار الحالي في التدرّج
+    const [rg, dp, sc] = dr.path;
+    return rows.filter(r => {
+      const u = unitOf(r.worker);
+      if(dr.path.length > 0 && Number(u?.region_id || 0) !== Number(rg)) return false;
+      if(dr.path.length > 1 && Number(u?.department_id || 0) !== Number(dp)) return false;
+      if(dr.path.length > 2 && Number(r.worker.section_id || 0) !== Number(sc)) return false;
+      return true;
+    });
+  }
+  function groups(){
+    const lvl = dr.path.length, by = {};
+    scopeRows().forEach(r => {
+      const u = unitOf(r.worker);
+      const key = lvl === 0 ? (u?.region_id || 0) : lvl === 1 ? (u?.department_id || 0) : (r.worker.section_id || 0);
+      (by[key] ||= []).push(r);
+    });
+    return Object.keys(by).map(k => ({key:Number(k), rows:by[k], v:avg(by[k], dr.metric),
+      name:lvl === 0 ? regionName(Number(k)) : lvl === 1 ? deptName(Number(k)) : unitName(Number(k))}));
+  }
+
+  function paint(){
+    const tools = $q('v4d-tools'), crumbs = $q('v4d-crumbs');
+    if(dr.kind === 'drill'){
+      $q('v4d-title').textContent = ICONS[dr.metric] + ' ' + METRICS[dr.metric];
+      const names = ['الكل'];
+      if(dr.path[0] != null) names.push(regionName(dr.path[0]));
+      if(dr.path[1] != null) names.push(deptName(dr.path[1]));
+      if(dr.path[2] != null) names.push(unitName(dr.path[2]));
+      crumbs.innerHTML = names.map((n, i) => (i ? '<span class="v4d-sep">›</span>' : '') + (i === names.length - 1 ? '<b>' + esc(n) + '</b>' : '<button type="button" data-i="' + i + '">' + esc(n) + '</button>')).join('');
+      crumbs.classList.remove('hidden');
+    } else {
+      $q('v4d-title').textContent = dr.kind === 'viol' ? '🚨 المخالفات المفتوحة' : LISTS[dr.key].t;
+      crumbs.classList.add('hidden');
+    }
+    const atWorkers = dr.kind !== 'drill' || dr.path.length === 3;
+    tools.innerHTML =
+      (dr.kind === 'viol' ? '' : (atWorkers ? '<input id="v4d-search" class="input-field" placeholder="🔍 ابحث بالاسم أو الرقم" value="' + esc(dr.search) + '"/>' : '') + '<button type="button" class="btn-secondary btn-sm" data-t="sort">' + (dr.sort === 'asc' ? '⬆️ الأضعف أولاً' : '⬇️ الأعلى أولاً') + '</button>') +
+      '<button type="button" class="btn-secondary btn-sm" data-t="csv">⬇️ تصدير Excel</button>';
+    paintBody();
+  }
+
+  const workerRow = (r, metric) => {
+    const v = r[metric === 'violations' ? 'compliance' : metric];
+    return '<button type="button" class="v4d-w" data-w="' + r.worker.id + '"><div><b>#' + r.worker.id + ' ' + esc(r.worker.worker_name) + '</b><small>' + esc(pathText(r)) + '</small>' +
+      (metric === 'compliance' ? '<small>🎬 ' + Math.round(r.trainingPct) + '% • 📝 ' + Math.round(r.quizPct) + '% • ⚠️ ' + Math.round(r.violPct) + '% • 🎓 ' + Math.round(r.onsitePct) + '%</small>' : '') + '</div>' +
+      '<span class="v4d-chip" style="background:' + col(v) + '1a;color:' + col(v) + '">' + Math.round(v) + '%</span></button>';
+  };
+  function currentWorkers(){
+    let list = dr.kind === 'drill' ? scopeRows() : rows.filter(LISTS[dr.key].f);
+    const s = (dr.search || '').trim().toLowerCase();
+    if(s) list = list.filter(r => String(r.worker.id).includes(s) || (r.worker.worker_name || '').toLowerCase().includes(s));
+    const m = dr.kind === 'drill' ? dr.metric : 'compliance';
+    return list.slice().sort((a, b) => dr.sort === 'asc' ? a[m] - b[m] : b[m] - a[m]);
+  }
+  function paintBody(){
+    const body = $q('v4d-body');
+    if(dr.kind === 'viol'){
+      $q('v4d-sub').textContent = openViol.length + ' مخالفة مفتوحة';
+      body.innerHTML = openViol.map(v => {
+        const r = rows.find(x => Number(x.worker.id) === Number(v.worker_id));
+        return '<button type="button" class="v4d-w" data-w="' + v.worker_id + '"><div><b>' + esc(v.violation_title || 'مخالفة') + '</b><small>#' + v.worker_id + ' ' + esc(r?.worker.worker_name || '') + ' • ' + esc(r ? pathText(r) : '') + '</small>' +
+          '<small>' + esc(v.status === 'open' || !v.status ? 'مفتوحة' : v.status) + (v.created_at ? ' • ' + new Date(v.created_at).toLocaleDateString('ar-EG') : '') + '</small></div><span class="v4d-chip" style="background:#fee2e2;color:#991b1b">-' + (Number(v.deduction_points) || 0) + '</span></button>';
+      }).join('') || '<div class="v4d-empty">مفيش مخالفات مفتوحة ✅</div>';
+      return;
+    }
+    if(dr.kind === 'drill' && dr.path.length < 3){
+      const gs = groups().sort((a, b) => dr.sort === 'asc' ? a.v - b.v : b.v - a.v);
+      const lvlName = ['المناطق', 'الإدارات', 'الوحدات'][dr.path.length];
+      $q('v4d-sub').textContent = gs.length + ' من ' + lvlName + ' • ' + scopeRows().length + ' موظف • المتوسط ' + Math.round(avg(scopeRows(), dr.metric)) + '%';
+      body.innerHTML = gs.map(g => '<button type="button" class="v4d-n" data-k="' + g.key + '"><div class="v4d-n-top"><b>' + esc(g.name) + '</b><span>' + g.rows.length + ' موظف</span><b style="color:' + col(g.v) + '">' + Math.round(g.v) + '%</b><i>‹</i></div><div class="dx-track"><div class="dx-fill" style="width:' + Math.min(100, g.v) + '%;background:' + col(g.v) + '"></div></div></button>').join('') || '<div class="v4d-empty">مفيش بيانات</div>';
+      return;
+    }
+    const list = currentWorkers(), m = dr.kind === 'drill' ? dr.metric : 'compliance';
+    $q('v4d-sub').textContent = list.length + ' موظف' + (list.length ? ' • المتوسط ' + Math.round(avg(list, m)) + '%' : '');
+    body.innerHTML = list.map(r => workerRow(r, m)).join('') || '<div class="v4d-empty">مفيش موظفين مطابقين</div>';
+  }
+  function onBodyClick(e){
+    const w = e.target.closest('[data-w]');
+    if(w){ closeDrawer(); if(typeof openWorkerModal === 'function') openWorkerModal(Number(w.dataset.w)); return; }
+    const n = e.target.closest('[data-k]');
+    if(n && dr.kind === 'drill'){ dr.path.push(Number(n.dataset.k)); dr.search = ''; paint(); }
+  }
+
+  function exportCsv(){
+    const q = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
+    let head, lines;
+    if(dr.kind === 'viol'){
+      head = ['رقم الموظف','الاسم','المخالفة','الخصم','الحالة','التاريخ'];
+      lines = openViol.map(v => { const r = rows.find(x => Number(x.worker.id) === Number(v.worker_id)); return [v.worker_id, r?.worker.worker_name, v.violation_title, v.deduction_points, v.status, v.created_at]; });
+    } else if(dr.kind === 'drill' && dr.path.length < 3){
+      head = ['الاسم','عدد الموظفين', METRICS[dr.metric] + ' (متوسط %)'];
+      lines = groups().map(g => [g.name, g.rows.length, Math.round(g.v)]);
+    } else {
+      head = ['رقم الموظف','الاسم','المنطقة › الإدارة › الوحدة','الالتزام %','التدريب %','الاختبارات %','المخالفات %','الميداني %'];
+      lines = currentWorkers().map(r => [r.worker.id, r.worker.worker_name, pathText(r), Math.round(r.compliance), Math.round(r.trainingPct), Math.round(r.quizPct), Math.round(r.violPct), Math.round(r.onsitePct)]);
+    }
+    const csv = '﻿' + [head].concat(lines).map(l => l.map(q).join(',')).join('\n');
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'}));
+    a.download = 'dashboard-' + new Date().toISOString().slice(0, 10) + '.csv'; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  }
+
+
+  /* ---------- نفس الأرقام الصحيحة في الجزء القديم من الصفحة (الدائرة وقوايم الأقسام) ---------- */
+  function patchLegacy(){
+    const overall = avg(rows, 'compliance');
+    const donut = $q('dashboard-donut');
+    if(donut){
+      const c = col(overall);
+      donut.style.background = 'conic-gradient(' + c + ' ' + (overall * 3.6) + 'deg, #e2e8f0 0deg)';
+      donut.innerHTML = '<div style="width:118px;height:118px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;color:' + c + ';">' + Math.round(overall) + '%</div>';
+    }
+    const bs = window._dashBySection || {};
+    const list = Object.keys(bs).map(sid => {
+      const sec = secs().find(x => String(x.id) === String(sid));
+      return {sid, name:sec ? sec.name_ar : 'بدون قسم', pct:avg(bs[sid], 'compliance'), count:bs[sid].length};
+    }).sort((a, b) => b.pct - a.pct);
+    const box = $q('dashboard-sections-list');
+    if(box) box.innerHTML = list.map(r =>
+      '<div style="background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:11px 13px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;flex-wrap:wrap;gap:6px;">' +
+      '<span style="font-weight:700;font-size:13px;">🏢 ' + esc(r.name) + ' <span class="muted" style="font-weight:400;font-size:11px;">(' + r.count + ' موظف)</span></span>' +
+      '<span style="display:flex;align-items:center;gap:8px;"><b style="color:' + col(r.pct) + ';font-size:14px;">' + Math.round(r.pct) + '%</b>' +
+      (r.sid !== 'none' && typeof openCertificateModal === 'function' ? '<button class="btn-secondary btn-sm" style="font-size:10px;" onclick="openCertificateModal(\'' + r.sid + '\',\'' + esc(r.name).replace(/'/g, "\\'") + '\',' + r.pct.toFixed(1) + ')">🏆 شهادة</button>' : '') + '</span></div>' +
+      '<div style="background:#e2e8f0;border-radius:20px;height:8px;overflow:hidden;"><div style="background:' + col(r.pct) + ';height:100%;width:' + Math.min(100, r.pct) + '%;"></div></div></div>'
+    ).join('') || '<div class="muted" style="text-align:center;padding:10px;">لا توجد بيانات كافية بعد</div>';
+    // الأكثر التزامًا / يحتاج متابعة (على مستوى الوحدة)
+    const ids = getAdminScopeIds().map(Number);
+    const scoped = adminUser?.isSuper ? secs() : secs().filter(x => ids.includes(Number(x.id)));
+    const full = scoped.map(x => list.find(r => String(r.sid) === String(x.id)) || {sid:String(x.id), name:x.name_ar, pct:0, count:0});
+    const top = full.filter(r => r.count > 0).sort((a, b) => b.pct - a.pct).slice(0, 3);
+    const follow = full.filter(r => r.count === 0 || r.pct < 50).sort((a, b) => a.pct - b.pct).slice(0, 5);
+    const tb = $q('dash-top-sections'), fb = $q('dash-follow-sections');
+    if(tb) tb.innerHTML = top.map(r => '<div style="background:#ecfdf5;border:1px solid #bbf7d0;border-radius:8px;padding:8px 11px;display:flex;justify-content:space-between;"><span style="font-size:12px;font-weight:700;">🏢 ' + esc(r.name) + '</span><b style="font-size:12px;color:#16a34a;">' + Math.round(r.pct) + '%</b></div>').join('') || '<div class="muted" style="font-size:12px;">لا توجد بيانات كافية بعد</div>';
+    if(fb) fb.innerHTML = follow.map(r => '<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:8px 11px;display:flex;justify-content:space-between;"><span style="font-size:12px;font-weight:700;">🏢 ' + esc(r.name) + '</span><b style="font-size:12px;color:#dc2626;">' + (r.count === 0 ? 'غير مستخدم' : Math.round(r.pct) + '%') + '</b></div>').join('') || '<div class="muted" style="font-size:12px;">كل الأقسام في حالة جيدة ✅</div>';
+  }
+
+  /* ---------- ربط بالداشبورد الحالية ---------- */
+  const base = window.loadAdminDashboard;
+  if(typeof base === 'function'){
+    window.loadAdminDashboard = async function(){
+      await base.apply(this, arguments);                       // الداشبورد القديمة زي ما هي
+      try{
+        const box = $q('dash-extra');
+        if(box) box.innerHTML = '<div class="card" style="padding:16px;text-align:center;"><span class="muted">جاري حساب الأرقام بدقة...</span></div>';
+        const [r, rg, dp, ov] = await Promise.all([
+          compute(),
+          safe(async () => (await sb.from('regions').select('*').order('id')).data, []),
+          safe(async () => (await sb.from('target_departments').select('*').order('id')).data, []),
+          safe(() => fetchAll(() => sb.from('worker_violations').select('id,worker_id,violation_title,deduction_points,status,created_at').neq('status', 'closed').order('id')), [])
+        ]);
+        rows = r; regions = rg || []; depts = dp || [];
+        const ids = new Set(rows.map(x => Number(x.worker.id)));
+        openViol = (ov || []).filter(v => ids.has(Number(v.worker_id)));
+        window._dashPerWorker = rows;                          // نفس شكل البيانات القديم، بس بأرقام كاملة
+        const bs = {}; rows.forEach(x => { const sid = x.worker.section_id || 'none'; (bs[sid] ||= []).push(x); });
+        window._dashBySection = bs;
+        paintDash(); patchLegacy();
+      }catch(e){ console.error('dash v4', e); }
+    };
+  }
 })();
 
 </script>
