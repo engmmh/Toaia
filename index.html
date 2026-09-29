@@ -490,6 +490,12 @@ body.on-login #login-section{overflow-y:auto;-webkit-overflow-scrolling:touch}
 .v7-run.red{background:#b91c1c}.v7-run:disabled{background:#e5e7eb;color:#9ca3af;cursor:not-allowed}
 .v7-ghost{font-family:inherit;font-weight:800;font-size:12.5px;border:1px solid var(--border);background:#fff;border-radius:10px;padding:9px 14px;cursor:pointer}
 @media(max-width:640px){.v7-3{grid-template-columns:1fr}}
+/* V8: تبديل اللغة */
+.v8-lang{font-family:inherit;font-weight:900;font-size:12px;width:auto;padding:0 11px;letter-spacing:.3px}
+body.v8-en .tab-btn .nav-en{display:none}
+body.v8-en #admin-section .nav-label{text-align:left}
+body.v8-en #admin-section .btn-danger .nav-en{display:none}
+body.v8-en button small.nav-en,body.v8-en .section-title .nav-en{display:none!important}
 
 </style>
 </head>
@@ -6754,8 +6760,22 @@ try{(function(){
   }
   const opts = (list, all) => '<option value="">' + all + '</option>' + list.map(o => '<option value="' + o.id + '">' + esc(o.name_ar) + '</option>').join('');
 
+  /* تبويب مستقل "كلمات السر" (أيقونة تانية جنب الأدمن) بيشيل كروت كلمة السر من تبويب الأدمن */
+  function ensurePwTab(){
+    const a = $q('tab-admins'); if(!a) return;
+    let t = $q('tab-passwords');
+    if(!t){ a.insertAdjacentHTML('afterend', '<div class="admin-tab" id="tab-passwords"></div>'); t = $q('tab-passwords'); }
+    const def = $q('ad-default-pass') && $q('ad-default-pass').closest('.card');
+    if(def && def.parentElement !== t) t.appendChild(def);
+    const ref = $q('tabbtn-admins');
+    if(ref && !$q('tabbtn-passwords')){
+      ref.insertAdjacentHTML('afterend', '<button class="tab-btn" onclick="adminTab(\'passwords\')" id="tabbtn-passwords" data-label="كلمات السر"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="m11 12 9-9M16 7l3 3M14 9l2 2"/></svg></span><span class="nav-label">كلمات السر<span class="nav-en">Passwords</span></span></button>');
+    }
+    const sup = typeof adminUser !== 'undefined' && adminUser && adminUser.isSuper;
+    $q('tabbtn-passwords')?.classList.toggle('hidden', !sup);
+  }
   function build(){
-    const tab = $q('tab-admins'); if(!tab || $q('v7-pw')) return;
+    ensurePwTab(); const tab = $q('tab-passwords'); if(!tab || $q('v7-pw')) return;
     const box = document.createElement('div');
     box.className = 'card v7-pw'; box.id = 'v7-pw';
     box.innerHTML =
@@ -6912,12 +6932,16 @@ try{(function(){
     }catch(e){ L.innerHTML = '<span style="color:#991b1b">تعذر الاسترجاع: ' + esc(e.message || String(e)) + '</span>'; }
   }
 
-  /* ---------- إظهار الكارت في تبويب الأدمن (للسوبر بس) ---------- */
+  /* ---------- إظهار الكارت في تبويب كلمات السر (للسوبر بس) ---------- */
   const baseTab = adminTab;
   adminTab = function(tab){
     baseTab.apply(this, arguments);
-    if(tab === 'admins'){ try{ build(); const on = typeof adminUser !== 'undefined' && adminUser && adminUser.isSuper; $q('v7-pw')?.classList.toggle('hidden', !on); if(on) loadMeta(); }catch(e){ console.error(e); } }
+    if(tab === 'passwords'){ try{ build(); if(typeof loadDefaultPasswordField === 'function') loadDefaultPasswordField(); const on = typeof adminUser !== 'undefined' && adminUser && adminUser.isSuper; $q('v7-pw')?.classList.toggle('hidden', !on); if(on) loadMeta(); }catch(e){ console.error(e); } }
   };
+
+  const baseScopeV7 = applyAdminScope;
+  applyAdminScope = function(){ baseScopeV7.apply(this, arguments); try{ ensurePwTab(); }catch(e){} };
+  try{ ensurePwTab(); }catch(e){}
 
   /* =====================  إجبار تغيير كلمة السر عند أول دخول  ===================== */
   let forced = false;
@@ -6953,6 +6977,307 @@ try{(function(){
     if(still){ forced = true; return; }                // فشل التحقق → الشاشة لسه مفتوحة وإجبارها مستمر
     await sb.from('workers_evaluations').update({must_change_password:false}).eq('id', wid);
     $q('pw-cancel-btn')?.classList.remove('hidden');
+  };
+})();
+/* قاموس ترجمة لوحة الإدارة (عربي → إنجليزي). exact = مطابقة كاملة للنص، frag = عبارات جزئية (تتبدّل داخل النص)، rx = تعبيرات نمطية للأرقام */
+window.V8_DICT = {
+exact: {
+'لوحة تحكم الإدارة والمعايير':'Administration & Standards Console','خروج':'Logout','لوحة التحكم':'Dashboard','الموظفين':'Employees','الهيكل التنظيمي':'Organization','المحتوى':'Content','الاختبارات':'Quizzes','كروت السلامة':'Safety Cards','الفيديوهات':'Videos','التعليقات':'Comments','الهوية':'Branding','المخالفات':'Violations','التدريبات الميدانية':'On-site Training','الأدمن':'Admins','كلمات السر':'Passwords',
+'الهيكل والموظفين':'Organization & Staff','📊 نظرة عامة على النظام':'📊 System Overview','⚙️ ضبط معادلة الالتزام':'⚙️ Compliance Formula Settings','أوزان معادلة "نسبة الالتزام" (لازم مجموعهم ١٠٠)':'"Compliance rate" formula weights (must total 100)','🎬 إكمال التدريبات':'🎬 Training Completion','📝 متوسط الاختبارات':'📝 Quiz Average','⚠️ الخلو من المخالفات':'⚠️ Violation-free Score','🎓 التدريبات الميدانية':'🎓 On-site Training','حفظ وإعادة الحساب':'Save & Recalculate','🏢 نسبة الالتزام لكل قسم':'🏢 Compliance by Unit','الالتزام العام':'Overall Compliance','🗂️ نظرة عامة على الأقسام':'🗂️ Units Overview','إجمالي الأقسام':'Total Units','مواضيع تدريب نشطة':'Active Training Topics','اضغط للعرض ›':'Click to view ›','مواضيع مخفية':'Hidden Topics','🏆 الأكثر مشاركة والتزامًا':'🏆 Most Engaged & Compliant','⚠️ يحتاج متابعة (التزام منخفض/غير مستخدم)':'⚠️ Needs Follow-up (low compliance / inactive)',
+'➕ إضافة موظف جديد':'➕ Add New Employee','الرقم الوظيفي (ID)':'Employee ID','اسم الموظف':'Employee Name','الوظيفة / الدور':'Job Role','القسم':'Unit','إضافة الموظف':'Add Employee','الموظفين ومؤشرات الأداء':'Employees & Performance Indicators','الاسم':'Name','الوظيفة':'Job','التدريب':'Training','إجراءات':'Actions',
+'🏢 الهيكل التنظيمي':'🏢 Organization Structure','📁 الأقسام':'📁 Units','👷 الوظائف/الأدوار':'👷 Job Roles','🏬 الإدارات المستهدفة':'🏬 Target Departments','➕ إضافة قسم جديد':'➕ Add New Unit','اسم القسم (عربي)':'Unit name (Arabic)','+ لغات أخرى':'+ Other languages','حفظ القسم':'Save Unit','الأقسام الحالية':'Current Units','➕ إضافة وظيفة / دور':'➕ Add Job / Role','الإدارة التابعة للوظيفة':'Department of this job','حفظ الوظيفة':'Save Job','الوظائف الحالية':'Current Jobs','➕ إضافة إدارة / جهة مستهدفة':'➕ Add Department / Target','حفظ الإدارة':'Save Department','الإدارات الحالية':'Current Departments','🏢 المناطق والوحدات':'🏢 Regions & Units',
+'➕ إنشاء اختبار جديد':'➕ Create New Quiz','عنوان الاختبار (عربي)':'Quiz title (Arabic)','القسم المستهدف':'Target unit','الإدارة المستهدفة (اختياري)':'Target department (optional)','إظهار الاختبار للموظفين بعد الحفظ':'Show the quiz to employees after saving','حفظ الاختبار':'Save Quiz',
+'➕ إضافة بطاقة سلامة (صورة + عنوان + وصف + سؤال اختياري)':'➕ Add Safety Card (image + title + description + optional question)','صورة البطاقة':'Card image','العنوان (عربي)':'Title (Arabic)','الوصف (عربي)':'Description (Arabic)','القسم (يظهر لموظفين القسم ده فقط)':'Unit (visible to this unit only)','أولوية الترتيب (رقم أصغر = يظهر أول عند الموظف)':'Sort priority (lower number = shown first)','أولوية الترتيب (رقم أصغر = يظهر أول)':'Sort priority (lower = first)','حفظ البطاقة':'Save Card','⚡ تحسين الصور القديمة':'⚡ Optimize Old Images','ينقل الصور القديمة من Base64 إلى Storage بدون حذفها قبل نجاح النقل.':'Moves old Base64 images to Storage without deleting them before the move succeeds.',
+'➕ إضافة تدريب فيديو':'➕ Add Video Training','اسم التدريب (عربي)':'Training name (Arabic)','اسم التدريب (English - اختياري)':'Training name (English - optional)','+ لغات أخرى (اسم التدريب)':'+ Other languages (training name)','الفيديو العربي (اختياري)':'Arabic video (optional)','الفيديو الإنجليزي (اختياري)':'English video (optional)','الفيديو البنغالي (اختياري)':'Bengali video (optional)','الفيديو النيبالي (اختياري)':'Nepali video (optional)','الفيديو الهندي (اختياري)':'Hindi video (optional)','إظهار التدريب للموظفين بعد الحفظ':'Show the training to employees after saving','حفظ التدريب':'Save Training',
+'تعليقات وأسئلة الموظفين':'Employee Comments & Questions','الهوية والإعدادات':'Branding & Settings','اسم المنصة':'Platform name','حفظ الهوية':'Save Branding','📝 نصوص صفحة الدخول':'📝 Login Page Texts','العنوان الرئيسي (عربي)':'Main headline (Arabic)','العنوان (إنجليزي)':'Headline (English)','الوصف (إنجليزي)':'Description (English)','حفظ نصوص صفحة الدخول':'Save Login Page Texts','جملة الثقة/الأمان (عربي)':'Trust/security line (Arabic)','جملة الثقة/الأمان (إنجليزي)':'Trust/security line (English)',
+'➕ إضافة مخالفة جاهزة للمكتبة (متعددة اللغات)':'➕ Add Ready-made Violation to Library (multilingual)','نص المخالفة (عربي)':'Violation text (Arabic)','إضافة للمكتبة':'Add to Library','مكتبة المخالفات':'Violations Library',
+'🎓 جلسات التدريب الميداني':'🎓 On-site Training Sessions','+ جلسة جديدة':'+ New Session','➕ جلسة تدريب ميداني جديدة':'➕ New On-site Training Session','→ رجوع للقايمة':'→ Back to list','عنوان/موضوع التدريب':'Training title / topic','تاريخ التدريب':'Training date','مدة التدريب (دقيقة)':'Duration (minutes)','الغرض من التدريب':'Purpose of training','جهة التدريب':'Training provider','القسم/المصنع':'Unit / Factory','👥 إضافة موظفين للجلسة':'👥 Add Employees to Session','💾 حفظ الجلسة':'💾 Save Session',
+'🔑 كلمة السر الموحّدة الافتراضية':'🔑 Default Unified Password','حفظ':'Save','➕ منح صلاحية أدمن لموظف موجود':'➕ Grant Admin Access to an Existing Employee','رقم هوية الموظف (ID)':'Employee ID','🛡️ سوبر أدمن (صلاحيات كاملة على كل الأقسام)':'🛡️ Super Admin (full access to all units)','الأقسام المسموح بها (يمكن اختيار أكثر من قسم)':'Allowed units (multiple allowed)','منح صلاحية الأدمن':'Grant Admin Access','🛡️ أدمن تلقائي (بحكم الإدارة)':'🛡️ Auto Admin (by department)','الأدمن الحاليين':'Current Admins',
+'الكل':'All','منشور':'Published','مخفي':'Hidden','● منشور':'● Published','○ مخفي':'○ Hidden','✏️ تعديل':'✏️ Edit','تعديل':'Edit','حذف':'Delete','إلغاء':'Cancel','إغلاق ✕':'Close ✕','💾 حفظ':'💾 Save','إخفاء':'Hide','إظهار':'Show','نشر':'Publish','منطقة':'Region','وحدة':'Unit','إدارة':'Department','الإدارات':'Departments','المناطق':'Regions','الوحدات':'Units','كل المناطق':'All regions','كل الإدارات':'All departments','كل الوحدات':'All units','كل الموظفين':'All employees','🌐 كل الموظفين':'🌐 All employees','🎯 جمهور محدد':'🎯 Specific audience','📚 المحتوى':'📚 Content',
+'كروت السلامة ':'Safety Cards','الأسئلة والتقارير':'Questions & Reports','الأسئلة تحت الصورة':'Questions under the image','الجمهور المستهدف':'Target Audience','🎯 الجمهور المستهدف':'🎯 Target Audience','منشور (ظاهر للموظفين)':'Published (visible to employees)','🖼️':'🖼️',
+'🔍 ابحث بالعنوان…':'🔍 Search by title…','→ المحتوى':'→ Content','＋ إضافة كارت':'＋ Add Card','＋ إضافة اختبار':'＋ Add Quiz','＋ إضافة تدريب':'＋ Add Training','إضافة كارت':'Add Card','إضافة اختبار':'Add Quiz','إضافة تدريب':'Add Training',
+'→ رجوع لمركز المحتوى':'→ Back to Content Hub','الإدارة المتقدمة':'Advanced Management','جاري التحميل…':'Loading…','جاري التحميل...':'Loading...','لا يوجد أدمن':'No admins','مفيش نتائج':'No results','مفيش نتائج مطابقة':'No matching results','مفيش بيانات':'No data',
+'🔐 تعيين كلمة سر موحدة للموظفين':'🔐 Set a Unified Password for Employees','كلمة السر الجديدة':'New password','تنطبق على مين؟':'Who does it apply to?','معاينة':'Preview','🔍 معاينة العدد':'🔍 Preview count','✅ تنفيذ':'✅ Apply','🌍 كل الموظفين':'🌍 All employees','↩️ استرجاع من نسخة احتياطية':'↩️ Restore from backup','استرجاع':'Restore',
+'🧹 مسح البيانات':'🧹 Purge Data','👥 قائمة الموظفين':'👥 Employees List','الوظائف':'Jobs','الأقسام':'Units','مسح':'Purge','الحالة':'Status','التاريخ':'Date','العنوان':'Title','الوصف':'Description','التعليقات والأسئلة':'Comments & Questions','ضعيف':'Weak','جيد':'Good','ممتاز':'Excellent','مقبول':'Acceptable','مدير فرع':'Branch Manager','مدير مصنع':'Factory Manager','مدير إنتاج':'Production Manager','مدير تشغيل':'Operations Manager','مشرف':'Supervisor','مسؤول جودة':'Quality Officer',
+'الاختبار':'Quiz','اختبار':'Quiz','تدريب':'Training','كارت':'Card','مخالفة':'Violation','رقم الموظف':'Employee ID','عدد الموظفين':'Employees','الخصم':'Deduction','متميز ≥80%':'Excellent ≥80%','يحتاج متابعة':'Needs follow-up','مفتوحة':'Open','إجمالي الموظفين':'Total Employees','التدريب %':'Training %','الاختبارات %':'Quizzes %','المخالفات %':'Violations %','الميداني %':'On-site %','الالتزام %':'Compliance %',
+'اكتب العنوان بالعربية':'Enter the title in Arabic','تم الحفظ ✅':'Saved ✅','تم النشر ✅':'Published ✅','تم الإخفاء':'Hidden','تم الحذف':'Deleted'
+},
+frag: {
+'(عربي)':'(Arabic)','(إنجليزي)':'(English)','(اختياري)':'(optional)','مثال:':'e.g.:','لغات أخرى':'Other languages','جاري الحفظ':'Saving','جاري الحساب':'Calculating','جاري التنفيذ':'Applying','هتتأثر':'Will be affected','داخل النطاق':'In scope','هيوصل لـ':'Will reach','ظاهر للموظف':'Visible to employees','مخفي عن الكل':'hidden from everyone','تم بنجاح':'Done successfully','تم الحفظ':'Saved'
+},
+rx: [
+[/(\d+)\s*موظف(?![\u0600-\u06FF])/g,'$1 employees'],[/(\d+)\s*وحدة(?![\u0600-\u06FF])/g,'$1 units'],[/(\d+)\s*سؤال(?![\u0600-\u06FF])/g,'$1 questions'],
+[/(\d+)\s*كارت(?![\u0600-\u06FF])/g,'$1 cards'],[/(\d+)\s*اختبار(?![\u0600-\u06FF])/g,'$1 quizzes'],[/(\d+)\s*تدريب(?![\u0600-\u06FF])/g,'$1 trainings'],
+[/(\d+)\s*منشور(?![\u0600-\u06FF])/g,'$1 published'],[/(\d+)\s*مخفي(?![\u0600-\u06FF])/g,'$1 hidden'],[/(\d+)\s*تعليق(?![\u0600-\u06FF])/g,'$1 comments']
+],
+ph: {
+'مثال: 1':'e.g. 1','الاسم الكامل':'Full name','🔍 ابحث بـ ID أو الاسم...':'🔍 Search by ID or name...','مثال: الرياض':'e.g. Riyadh','مثال: موظف إنتاج':'e.g. Production worker','مثال: إدارة الجودة':'e.g. Quality Department','مثال: اختبار التلوث المتبادل':'e.g. Cross-contamination quiz','مثال: غسل اليدين':'e.g. Hand washing','وصف مختصر':'Short description','مثال: النظافة الشخصية':'e.g. Personal hygiene','اسم المنصة':'Platform name','مثال: عدم ارتداء القفازات':'e.g. Not wearing gloves','مثال: محمود حجازي':'e.g. Mahmoud Hegazi','دوّر برقم الهوية أو الاسم...':'Search by ID or name...','كلمة السر الموحّدة':'Unified password','مثال: 5':'e.g. 5','القائمة':'Menu','تغيير كلمة السر':'Change password','تحديث':'Refresh','طي القائمة':'Collapse menu','🔍 ابحث بالعنوان…':'🔍 Search by title…','اكتب كلمة السر (4 حروف/أرقام على الأقل)':'Enter password (at least 4 characters)','اكتب أرقام الموظفين مفصولة بمسافة أو فاصلة':'Enter employee IDs separated by spaces or commas'
+}
+};
+/* توسعة القاموس: باقي شاشات لوحة الإدارة + الرسائل */
+(function(){
+const D = window.V8_DICT, E = D.exact, F = D.frag;
+Object.assign(E, {
+'صورة الكارت':'Card image','صورة الكارت (اختياري — لتغييرها)':'Card image (optional — to replace it)','🔑 تغيير كلمة السر':'🔑 Change Password','لوحة تحكم: المدير الرئيسي':'Console: Main Administrator','صلاحيات كاملة • جميع الأقسام':'Full access • All units','ملخص الأداء':'Performance Summary','موظف':'Employees','إكمال التدريبات':'Training Completion','التفاصيل حسب الهيكل ›':'Details by structure ›','نتائج الاختبارات':'Quiz Results','الخلو من المخالفات':'Violation-free','مخالفات مفتوحة':'Open Violations','عرض القايمة ›':'View list ›','🎯 توزيع الموظفين':'🎯 Employee Distribution','متميز (≥80%) —':'Excellent (≥80%) —','متوسط (50–79%) —':'Average (50–79%) —','ضعيف (<50%) —':'Weak (<50%) —','🏆 الأعلى التزامًا':'🏆 Most Compliant','موظف بدون وحدة':'Employee without a unit','🔔 يحتاجون متابعة':'🔔 Need Follow-up','اضغط لعرض القائمة ›':'Click to view list ›','متوسط الإنجاز (نسبة الالتزام)':'Average completion (compliance rate)','اضغط لعرض الإدارات ›':'Click to view departments ›','متوسط نتائج الاختبارات':'Average quiz results','🏆 شهادة':'🏆 Certificate','🏢 بدون قسم':'🏢 No unit','غير مستخدم':'Inactive','👥 الموظفين':'👥 Employees','👷 الوظائف':'👷 Jobs','🏬 الإدارات':'🏬 Departments','— اختر الوظيفة / الدور —':'— Select job / role —','— بدون قسم —':'— No unit —','كل الأقسام':'All units','— بدون تحديد —':'— Not specified —','الإنتاج':'Production','التشغيل':'Operations','لا توجد وظائف بعد':'No jobs yet','اجعلها إدارة إدارية':'Make it an administrative department','الكل (يظهر للجميع)':'All (visible to everyone)',
+'الأقسام (المصانع/الفروع) ← الوظائف التابعة لكل قسم ← الإدارات المستهدفة (زي الجودة) اللي بتحكم الوظائف. الثلاثة مرتبطين ببعض.':'Units (factories/branches) → jobs under each unit → target departments (e.g. Quality) that govern jobs. All three are linked.',
+'🛡️ إدارة إدارية (أي موظف تابع لها يتحول أدمن فرعي تلقائيًا مقيد بقسمه)':'🛡️ Administrative department (any employee under it automatically becomes a sub-admin limited to their unit)',
+'التدريب الواحد موضوع واحد. أضف نسخة لغة واحدة أو أكثر من الخمس لغات — مش شرط تكتبهم كلهم. الموظف يشاهد نسخة واحدة فقط، وأي نسخة تصل إلى 60% تُكمل التدريب.':'One training = one topic. Add one or more of the five language versions — no need to fill them all. The employee watches one version only, and any version reaching 60% completes the training.',
+'اكتب بالعربي والترجمة الإنجليزية بتتعمل تلقائيًا (تقدر تعدّلها براحتك بعدين).':'Write in Arabic and the English translation is generated automatically (you can edit it later).',
+'مربع مميزة ١ (Arabic)':'Feature box 1 (Arabic)','مربع مميزة ١ (English)':'Feature box 1 (English)','مربع مميزة ٢ (Arabic)':'Feature box 2 (Arabic)','مربع مميزة ٢ (English)':'Feature box 2 (English)','مربع مميزة ٣ (Arabic)':'Feature box 3 (Arabic)','مربع مميزة ٣ (English)':'Feature box 3 (English)',
+'لما تسجل مخالفة على موظف، تقدر تختار من المكتبة دي أو تكتب جديدة. المخالفة هتظهر للموظف بلغته.':'When recording a violation you can pick from this library or write a new one. The violation is shown to the employee in their language.',
+'اكتب رقم هوية (ID) موظف مسجل بالفعل في النظام، وهيدخل بنفس ID وكلمة السر بتاعته — وهيختار وقت الدخول يدخل كمشرف أو كموظف.':'Enter the ID of an employee already in the system. They sign in with the same ID and password, and choose at login whether to enter as admin or employee.',
+'موظفين تابعين لإدارة معلّمة كـ"إدارية" وأصبحوا أدمن فرعي تلقائيًا. تقدر تستثني أي حد منهم فيرجع موظف عادي.':'Employees under a department marked "administrative" who became sub-admins automatically. You can exclude anyone to return them to a regular employee.',
+'تُستخدم لأي موظف لسه معملش تغيير لكلمة سره بنفسه. تقدر تغيّرها في أي وقت.':'Used for any employee who has not changed their own password yet. You can change it at any time.',
+'© 2026 شركة آفق الحروف التجارية UFUQ | جميع الحقوق محفوظة':'© 2026 Ufuq Al-Huroof Trading Company UFUQ | All rights reserved','✕ إغلاق':'✕ Close','التدريبات المكتملة':'Completed trainings','📋 البيانات':'📋 Details','🎬 التدريبات':'🎬 Trainings','📝 الاختبارات':'📝 Quizzes','❓ الأسئلة والتعليقات':'❓ Questions & Comments','⚠️ المخالفات':'⚠️ Violations','📊 النشاط':'📊 Activity','✏️ تعديل بيانات الموظف':'✏️ Edit Employee Details','حفظ التعديلات':'Save Changes','مكتمل':'Completed','لسه شغال فيه':'In progress','لم يبدأ':'Not started','❓ إجابات أسئلة الكروت والفيديوهات':'❓ Answers to Card & Video Questions','💬 تعليقات الموظف':'💬 Employee Comments','مغلقة':'Closed','تسجيل مخالفة جديدة:':'Record a new violation:','— اختر من المكتبة أو اكتب مخالفة جديدة —':'— Pick from library or write a new violation —','+ لغات للمخالفة':'+ Violation languages','خصم نقاط:':'Points deducted:','تسجيل الخصم (يخصم فوراً)':'Record deduction (applies immediately)','📲 تثبيت التطبيق':'📲 Install App',
+'المنطقة':'Region','الرياض':'Riyadh','القصيم':'Qassim','الإدارة':'Department','الوحدة (مصنع / فرع)':'Unit (factory / branch)','— اختر الوحدة —':'— Select unit —','الصلاحية':'Permission','موظف فقط':'Employee only','موظف + أدمن (يتابع عمال ويضيف محتوى)':'Employee + Admin (follows staff and adds content)','المسمى':'Title','النطاق (لو سيبته فاضي = وحدته بس)':'Scope (empty = own unit only)','تفاصيل':'Details','◀ السابق':'◀ Previous','التالي ▶':'Next ▶',
+'المنطقة ← الإدارة ← الوحدة (مصنع / فرع). الوظائف والإدارات ليها تابات منفصلة.':'Region → Department → Unit (factory / branch). Jobs and departments have separate tabs.','المنطقة ← الإدارة ← الوحدة (مصنع / فرع) ← الموظفين':'Region → Department → Unit (factory / branch) → Employees','+ منطقة':'+ Region','+ وحدة (مصنع / فرع)':'+ Unit (factory / branch)','🏬 إدارة قائمة الإدارات':'🏬 Manage Departments List','📍 الرياض':'📍 Riyadh','📍 القصيم':'📍 Qassim','+ وحدة هنا':'+ Unit here','🏬 الإنتاج':'🏬 Production','🏬 التشغيل':'🏬 Operations','📦 وحدات بدون منطقة':'📦 Units without a region','غير مربوط بمنطقة':'Not linked to a region',
+'وحدة لسه مش مربوطة بمنطقة وإدارة. دوس على الوحدة وحدّد مكانها في الهيكل (الموظفين اللي جواها ما بيتأثروش).':'A unit is not yet linked to a region and department. Click the unit and set its place in the structure (its employees are not affected).',
+'كروت السلامة والاختبارات والفيديوهات في مكان واحد — اختار النوع اللي عايز تديره.':'Safety cards, quizzes and videos in one place — pick the type you want to manage.','تدريب فيديو':'Video training','من الموظف: ?':'From employee: ?','المكتبة فارغة':'The library is empty','لا توجد جلسات بعد':'No sessions yet','➕ منح صلاحية أدمن لموظف':'➕ Grant Admin Access to an Employee',
+'الموظف بيدخل بنفس رقمه وكلمة سره، ولو ليه صلاحية أدمن بيختار يدخل كموظف أو كأدمن. النطاق بيتحدد بالمنطقة والإدارة والوحدة.':'The employee signs in with the same ID and password; if they have admin access they choose to enter as employee or admin. Scope is set by region, department and unit.',
+'الموظف (رقم أو اسم)':'Employee (ID or name)','🛡️ سوبر أدمن (صلاحيات كاملة على كل الهيكل)':'🛡️ Super Admin (full access to the whole structure)','المسمى (optional)':'Title (optional)','النطاق (يقدر يتابع موظفين ويضيف محتوى في الوحدات دي بس)':'Scope (can follow employees and add content in these units only)','لسه مفيش نطاق. ضيف واحد على الأقل.':'No scope yet. Add at least one.','+ إضافة نطاق':'+ Add scope',
+'e.g.: «الرياض + كل الإدارات» = كل وحدات الرياض • «كل المناطق + الإنتاج» = كل مصانع الإنتاج • «القصيم + التشغيل» = فروع القصيم • أو وحدة بعينها.':'e.g.: «Riyadh + all departments» = all Riyadh units • «all regions + Production» = all production factories • «Qassim + Operations» = Qassim branches • or a specific unit.',
+'منح الصلاحية':'Grant access','لا توجد إدارات إدارية معلّمة حاليًا (من تاب "الإدارات المستهدفة")':'No administrative departments are marked (from the "Target Departments" tab)',
+'اختار مين تنطبق عليه الكلمة الجديدة. المعاينة بتوريك العدد قبل أي تنفيذ، ومفيش حاجة بتتغير قبل التأكيد.':'Choose who the new password applies to. The preview shows the count before anything runs, and nothing changes before you confirm.',
+'إجبار الموظف يغيّر كلمة السر عند أول دخول':'Force the employee to change the password at first login','هيظهر له شاشة تغيير كلمة السر ومايقدرش يكمل قبلها. لو سبت خانة الكلمة فاضية هيتفعل الإجبار بس من غير تغيير الكلمة.':'A change-password screen appears and they cannot continue before it. If you leave the password field empty, only the forced change is enabled without changing the password.',
+'🏭 نطاق محدد (منطقة / إدارة / وحدة)':'🏭 Specific scope (region / department / unit)','🔢 موظفين محددين بالأرقام':'🔢 Specific employees by ID','طبّقها بس على اللي لسه على كلمة السر الافتراضية':'Apply only to those still on the default password','الموظفين اللي غيّروا كلمة سرهم بنفسهم مايتأثروش.':'Employees who changed their own password are not affected.','نزّل نسخة احتياطية قبل التنفيذ':'Download a backup before applying','ملف فيه كلمات السر القديمة للمتأثرين — تقدر ترجّعها من زر الاسترجاع تحت. احفظه في مكان آمن.':'A file containing the old passwords of affected employees — you can restore them with the restore button below. Keep it somewhere safe.','اكتب كلمة "':'Type the word "','تطبيق':'Apply','" للتأكيد':'" to confirm',
+'+ سؤال':'+ Question','📊 من اختبر؟':'📊 Who took it?','إضافة سؤال':'Add question','السؤال (Arabic)':'Question (Arabic)','+ لغات':'+ Languages','+لغات':'+Languages','+ خيار':'+ Option','حفظ السؤال':'Save question','العربية —':'Arabic —','👁️ من شاهد؟':'👁️ Who watched?','حذف التدريب':'Delete training','🖼️ كروت السلامة':'🖼️ Safety Cards','➕ كارت':'➕ Card','العنوان (Arabic) *':'Title (Arabic) *','🌐 Other languages (العنوان)':'🌐 Other languages (title)','🌐 Other languages (الوصف)':'🌐 Other languages (description)','🌍 المناطق':'🌍 Regions','اختار واحدة أو أكتر — لو ما اخترتش = كل المناطق':'Pick one or more — none = all regions','🏢 الإدارات':'🏢 Departments','اختار واحدة أو أكتر — لو ما اخترتش = كل الإدارات':'Pick one or more — none = all departments','🏭 وحدات محددة بالاسم (optional)':'🏭 Specific units by name (optional)',
+'⚙️ الإدارة المتقدمة (الأسئلة والتقارير)':'⚙️ Advanced management (questions & reports)','⚙️ الإدارة المتقدمة (الأسئلة تحت الصورة)':'⚙️ Advanced management (questions under the image)','⚙️ الإدارة المتقدمة (أسئلة الفيديو، من شاهد، حذف نسخة لغة)':'⚙️ Advanced management (video questions, who watched, delete a language version)','➕ اختبار':'➕ Quiz','عنوان الاختبار (Arabic) *':'Quiz title (Arabic) *','بعد الإنشاء تقدر تضيف الأسئلة من "⚙️ الإدارة المتقدمة" أسفل الشاشة.':'After creating, you can add questions from "⚙️ Advanced management" at the bottom.','🎬 الفيديوهات':'🎬 Videos','➕ تدريب':'➕ Training','اسم التدريب (Arabic) *':'Training name (Arabic) *','🌐 Other languages (الاسم)':'🌐 Other languages (name)','أضف رابط لغة واحدة أو أكتر — الموظف يشاهد نسخة واحدة، وأي نسخة توصل 60% تكمّل التدريب.':'Add one or more language links — the employee watches one version, and any version reaching 60% completes the training.','الفيديو العربي':'Arabic video','الفيديو الإنجليزي':'English video','الفيديو البنغالي':'Bengali video','الفيديو النيبالي':'Nepali video','الفيديو الهندي':'Hindi video',
+'مسح بيانات نشاط الموظفين':'Purge Employee Activity Data','للأدمن الرئيسي فقط • الموظفين نفسهم (الأسماء والأرقام)':'Main admin only • The employees themselves (names and IDs)','مش بيتمسحوا':'are NOT deleted','، بس اللي عملوه في النظام.':', only what they did in the system.','النطاق: مين هيتمسح له؟':'Scope: whose data will be deleted?','نطاق محدد (منطقة / إدارة / وحدة)':'Specific scope (region / department / unit)','موظفين محددين (بالأرقام)':'Specific employees (by ID)','إيه اللي يتمسح؟':'What will be deleted?','🎬 مشاهدة الفيديوهات وتقدّم التدريب':'🎬 Video views & training progress','تقدّم كل تدريب وسجل المشاهدة':'Progress of every training and view history','كل المحاولات والنتايج وأذونات إعادة الاختبار':'All attempts, results and quiz retake permissions','❓ إجابات أسئلة المحتوى':'❓ Content question answers','إجابات الموظفين تحت الفيديوهات والكروت':'Employee answers under videos and cards','💬 التعليقات والأسئلة':'💬 Comments & questions','تعليقات الموظفين على المحتوى':'Employee comments on content','بتتمسح المخالفات وبتترجّع درجة الموظف 100 وعدد المخالفات 0':'Violations are deleted and the employee score resets to 100 with 0 violations','🎓 مشاركات التدريبات الميدانية وتقييماتها':'🎓 On-site training participation & ratings','الجلسات نفسها بتفضل، والمشاركين بس هما اللي بيتشالوا':'The sessions remain; only participants are removed','📜 سجل نشاط الموظفين':'📜 Employee activity log','سجل الأحداث اللي عملها الموظفين':'Log of events performed by employees','تحديد الكل':'Select all','راجع قبل التنفيذ':'Review before applying','💾 نزّل نسخة احتياطية (ملف JSON) قبل المسح —':'💾 Download a backup (JSON file) before purging —','موصى بيه':'recommended','🔍 معاينة اللي هيتمسح':'🔍 Preview what will be deleted','⛔ الإجراء ده نهائي ومينفعش يتراجع عنه (غير بالنسخة الاحتياطية).':'⛔ This action is final and cannot be undone (except via the backup).','للتأكيد، اكتب كلمة':'To confirm, type the word','«مسح»':'«Purge»','🗑️ تنفيذ المسح':'🗑️ Run purge','⬆️ الأضعف أولاً':'⬆️ Weakest first','⬇️ تصدير Excel':'⬇️ Export Excel','⬇️ الأعلى أولاً':'⬇️ Highest first',
+'الأدمن الحاليين':'Current admins','🛡️ أدمن تلقائي (بحكم الإدارة)':'🛡️ Auto admin (by department)','ع':'ع','التحويل إلى العربية':'Switch to Arabic','التاريخ':'Date','الاسم':'Name'
+});
+Object.assign(F, {
+'دوس على أي رقم للتفاصيل':'click any number for details','كل الأقسام':'All units','كل الإدارات':'All departments','↕️ ترتيب':'↕️ order','المتوسط':'Average','تأكيد كلمة السر':'Confirm password','أو اكتب مخالفة جديدة هنا':'or write a new violation here','إجمالي':'Total','من المناطق':'regions',
+'السبت':'Saturday','الأحد':'Sunday','الاثنين':'Monday','الإثنين':'Monday','الثلاثاء':'Tuesday','الأربعاء':'Wednesday','الخميس':'Thursday','الجمعة':'Friday',
+'يناير':'January','فبراير':'February','مارس':'March','أبريل':'April','مايو':'May','يونيو':'June','يوليو':'July','أغسطس':'August','سبتمبر':'September','أكتوبر':'October','نوفمبر':'November','ديسمبر':'December'
+});
+E['مثال: فرع، مصنع، موظف كوفي، مشرف، الرياض، ... — القسم ده هيلاقيه الموظف في قايمة منسدلة، والفيديوهات والكروت بتتربط بيه، وبتعزل بيه الأدمن.']='e.g.: branch, factory, coffee worker, supervisor, Riyadh, ... — employees will find this unit in a dropdown; videos and cards are linked to it, and admins are scoped by it.';
+E['مثال: «الرياض + كل الإدارات» = كل وحدات الرياض • «كل المناطق + الإنتاج» = كل مصانع الإنتاج • «القصيم + التشغيل» = فروع القصيم • أو وحدة بعينها.']='e.g.: «Riyadh + all departments» = all Riyadh units • «all regions + Production» = all production factories • «Qassim + Operations» = Qassim branches • or a specific unit.';
+D.ph['مثال: أهمية نظافة السكن والغرفة']='e.g. Importance of clean housing and rooms'; D.ph['مثال: أهمية نظافة السكن والغرفة وتأثيرها على بيئة المصنع']='e.g. Importance of clean housing and rooms and their effect on the factory environment'; D.ph['اكتب أرقام الموظفين مفصولة بمسافة أو فاصلة، مثال: 12 15 20']='Type employee IDs separated by spaces or commas, e.g.: 12 15 20'; D.ph['الخيار 1 (عربي)']='Option 1 (Arabic)'; D.ph['الخيار 2 (عربي)']='Option 2 (Arabic)';
+D.ph['تأكيد كلمة السر']='Confirm password'; D.ph['أو اكتب مخالفة جديدة هنا']='Or write a new violation here'; D.ph['🔍 اكتب رقم الموظف أو اسمه']='🔍 Type employee ID or name'; D.ph['السؤال بالعربية']='Question in Arabic'; D.ph['نشر / إخفاء']='Publish / Hide'; D.ph['متميز']='Excellent'; D.ph['متوسط']='Average'; D.ph['مثال: مدير فرع']='e.g. Branch manager';
+D.rx.push([/صفحة (\d+) من (\d+) — إجمالي/g,'Page $1 of $2 — Total'],[/([٠-٩]+)/g,m=>m.replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d))]);
+})();
+/* =====================================================================
+   V8 — (1) تبديل لغة لوحة الإدارة عربي/English  (2) شهادة القسم: لما تختار English يبقى كله إنجليزي حتى اسم الفرع
+   ===================================================================== */
+(function(){
+  const $q = id => document.getElementById(id);
+  const AR = /[؀-ۿ]/;
+  const KEY = 'admin_ui_lang';
+  let lang = 'ar';
+  try{ lang = localStorage.getItem(KEY) === 'en' ? 'en' : 'ar'; }catch(e){}
+  const D = window.V8_DICT || {exact:{}, frag:{}, rx:[], ph:{}};
+  /* بعض مفاتيح القاموس اتكتبت بصيغة "بعد التحويل" — نضيف لها الصيغة الأصلية عشان تتطابق مع النص الفعلي */
+  (function(){
+    const E = D.exact, dig = '٠١٢٣٤٥٦٧٨٩';
+    Object.keys(E).forEach(k => {
+      const a = k.replace(/\(Arabic\)/g, '(عربي)').replace(/\(English\)/g, '(إنجليزي)').replace(/\(optional\)/g, '(اختياري)').replace(/^e\.g\.:/, 'مثال:').replace(/Other languages/g, 'لغات أخرى');
+      [a, a.replace(/[0-9]/g, d => dig[d])].forEach(v => { if(!(v in E)) E[v] = E[k]; });
+    });
+  })();
+  const FR = Object.keys(D.frag || {}).sort((a, b) => b.length - a.length);
+  const SKIP = 'script,style,#certificate-print-area,[data-no-tr],#login-section,#worker-section';
+
+  /* أسماء الوحدات/الإدارات/الوظائف/المناطق: بتتعرض بالإنجليزي لو اتحط لها name_en في الهيكل */
+  let DYN = [], DYNMAP = {}, dynAt = 0, regionsEn = [];
+  function buildDyn(){
+    const m = {};
+    const add = list => (list || []).forEach(x => { if(x && x.name_ar && x.name_en && x.name_ar.trim().length >= 3 && AR.test(x.name_ar)) m[x.name_ar.trim()] = x.name_en.trim(); });
+    try{ add(typeof sections !== 'undefined' ? sections : []); }catch(e){}
+    try{ add(typeof targetDepartmentsV22 !== 'undefined' ? targetDepartmentsV22 : []); }catch(e){}
+    try{ add(typeof jobRolesV22 !== 'undefined' ? jobRolesV22 : []); }catch(e){}
+    add(regionsEn);
+    DYNMAP = m; DYN = Object.keys(m).sort((a, b) => b.length - a.length); dynAt = Date.now();
+  }
+  async function loadRegionsEn(){ try{ const r = await sb.from('regions').select('name_ar,name_en'); regionsEn = r.data || []; dynAt = 0; }catch(e){} }
+  function tx(str, isAttr){
+    if(!str || !AR.test(str)) return str;
+    const m = str.match(/^(\s*)([\s\S]*?)(\s*)$/), lead = m[1], core = m[2], trail = m[3];
+    if(isAttr && D.ph[core]) return lead + D.ph[core] + trail;
+    if(D.exact[core]) return lead + D.exact[core] + trail;
+    const pm = core.match(/^([^\u0600-\u06FF]*?)([\u0600-\u06FF][\s\S]*)$/);          // رمز/إيموجي في الأول + نص عربي
+    if(pm && pm[1] && !/[0-9A-Za-z]/.test(pm[1]) && D.exact[pm[2]]) return lead + pm[1] + D.exact[pm[2]] + trail;
+    if(Date.now() - dynAt > 1500) buildDyn();
+    let out = core;
+    for(const n of DYN) if(out.includes(n)) out = out.split(n).join(DYNMAP[n]);
+    for(const [r, v] of (D.rx || [])) out = out.replace(r, v);
+    for(const f of FR) if(out.includes(f)) out = out.split(f).join(D.frag[f]);
+    return lead + out + trail;
+  }
+
+  const nodes = new Map();      // textNode → {o: الأصلي, t: المترجم}
+  const attrs = new Map();      // element → {attr: {o, t}}
+  const ATTRS = ['placeholder', 'title', 'data-label', 'aria-label'];
+
+  function doText(n){
+    if(n.parentElement && n.parentElement.closest(SKIP)) return;
+    const v = n.nodeValue; if(!AR.test(v)) return;
+    const t = tx(v); if(t !== v){ nodes.set(n, {o:v, t}); n.nodeValue = t; }
+  }
+  function doAttrs(e){
+    if(e.closest && e.closest(SKIP)) return;
+    for(const a of ATTRS){
+      const v = e.getAttribute && e.getAttribute(a); if(!v || !AR.test(v)) continue;
+      const t = tx(v, true); if(t !== v){ const rec = attrs.get(e) || {}; rec[a] = {o:v, t}; attrs.set(e, rec); e.setAttribute(a, t); }
+    }
+  }
+  function walk(root){
+    if(root.nodeType === 3){ doText(root); return; }
+    if(root.nodeType !== 1 || root.matches(SKIP)) return;
+    doAttrs(root);
+    const tw = document.createTreeWalker(root, 1 | 4, {acceptNode: n => (n.nodeType === 1 && n.matches(SKIP)) ? 2 : 1});
+    let n; while((n = tw.nextNode())){ if(n.nodeType === 3) doText(n); else doAttrs(n); }
+  }
+  function revert(){
+    nodes.forEach((r, n) => { if(n.isConnected && n.nodeValue === r.t) n.nodeValue = r.o; });
+    attrs.forEach((rec, e) => { for(const a in rec) if(e.isConnected && e.getAttribute(a) === rec[a].t) e.setAttribute(a, rec[a].o); });
+    nodes.clear(); attrs.clear();
+  }
+
+  const inAdmin = () => document.body.classList.contains('on-admin');
+  let obs = null;
+  function startObs(){
+    if(obs) return;
+    obs = new MutationObserver(recs => {
+      if(lang !== 'en' || !inAdmin()) return;
+      obs.disconnect();
+      try{
+        for(const r of recs){
+          if(r.type === 'childList') r.addedNodes.forEach(walk);
+          else if(r.type === 'characterData') doText(r.target);
+          else if(r.type === 'attributes') doAttrs(r.target);
+        }
+      }finally{ obs.observe(document.body, {childList:true, subtree:true, characterData:true, attributes:true, attributeFilter:ATTRS}); }
+    });
+    obs.observe(document.body, {childList:true, subtree:true, characterData:true, attributes:true, attributeFilter:ATTRS});
+  }
+  function stopObs(){ if(obs){ obs.disconnect(); obs = null; } }
+
+  function render(){
+    const en = lang === 'en' && inAdmin();
+    document.body.classList.toggle('v8-en', en);
+    const h = document.documentElement;
+    h.dir = en ? 'ltr' : 'rtl'; h.lang = en ? 'en' : 'ar';
+    const b = $q('v8-lang'); if(b){ b.textContent = lang === 'en' ? 'ع' : 'EN'; b.title = lang === 'en' ? 'التحويل إلى العربية' : 'Switch to English'; b.setAttribute('data-no-tr', '1'); }
+    stopObs();
+    if(en){ dynAt = 0; loadRegionsEn().then(() => { if(lang === 'en' && inAdmin()){ stopObs(); revert(); walk(document.body); startObs(); } }); walk(document.body); startObs(); } else revert();
+  }
+  function setLang(l){
+    lang = l; try{ localStorage.setItem(KEY, l); }catch(e){}
+    render();
+  }
+  window.V8 = {setLang, get lang(){ return lang; }, tx};
+
+  function ensureBtn(){
+    if($q('v8-lang')) return;
+    const logout = document.querySelector('#admin-section .btn-danger[onclick="logout()"]'); if(!logout) return;
+    logout.insertAdjacentHTML('beforebegin', '<button type="button" class="icon-btn v8-lang" id="v8-lang" data-no-tr="1">EN</button>');
+    $q('v8-lang').onclick = () => setLang(lang === 'en' ? 'ar' : 'en');
+  }
+  /* لما بنخرج: نرجّع كلاسات الصفحة لوضع الدخول (النسخة القديمة من logout كانت بتسيب on-admin فيظهر الفوتر مرتين) */
+  const _logout = window.logout;
+  window.logout = function(){ const r = _logout.apply(this, arguments); document.body.classList.remove('on-admin'); document.body.classList.add('on-login'); return r; };
+  logout = window.logout;
+  ensureBtn(); render();
+  new MutationObserver(() => { ensureBtn(); render(); }).observe(document.body, {attributes:true, attributeFilter:['class']});
+
+  /* =====================  الشهادة  ===================== */
+  const CT = {
+    ar: {title:'شكر وتقدير', subtitle:'تُمنح هذه الشهادة بكل فخر إلى',
+      body:(n, p) => 'تتقدّم إدارة الجودة بجزيل الشكر والتقدير إلى «' + n + '» لتحقيقه نسبة التزام متميزة بلغت ' + p + '% في معايير السلامة والجودة، ونتمنى له دوام التميز والريادة.',
+      grant:'مُنحت بكل حب وتقدير', sig:'التوقيع', date:'التاريخ', print:'شهادة', site:'منصة تدريبات سلامة الغذاء'},
+    en: {title:'Certificate of Appreciation', subtitle:'This certificate is proudly presented to',
+      body:(n, p) => 'The Quality Management extends its sincere appreciation to "' + n + '" for achieving an outstanding compliance rate of ' + p + '% in safety and quality standards, wishing continued excellence and leadership.',
+      grant:'Presented with pride and appreciation', sig:'Signature', date:'Date', print:'Certificate', site:'Food Safety Training Platform'}
+  };
+  let cs = {};
+  const secOf = id => (typeof sections !== 'undefined' ? sections : []).find(s => String(s.id) === String(id));
+  async function siteNameEn(){
+    try{ const r = await sb.from('app_settings').select('value').eq('key', 'app_name_en').maybeSingle(); if(r.data && r.data.value) return r.data.value; }catch(e){}
+    return CT.en.site;
+  }
+  window.openCertificateModal = function(sectionId, sectionName, pct){
+    const sec = secOf(sectionId);
+    cs = {sid:sectionId, nameAr:sectionName, nameEn:(sec && (sec.name_en || '')) || '', pct:Number(pct).toFixed(1), lang:'ar', date:new Date().toISOString().slice(0, 10), sig:'', note:'', siteEn:CT.en.site};
+    siteNameEn().then(n => { cs.siteEn = n; renderCert(); });
+    document.getElementById('certificate-modal')?.remove();
+    document.body.insertAdjacentHTML('beforeend',
+      '<div class="preview-modal" id="certificate-modal"><div class="preview-panel" style="max-width:680px;">' +
+        '<div class="preview-top" style="margin-bottom:10px;"><b>🏆 <span data-cert-t="title">شهادة القسم</span></b><button class="btn-secondary btn-sm" data-cert-t="close" onclick="document.getElementById(\'certificate-modal\').remove()">إغلاق ✕</button></div>' +
+        '<div style="background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
+          '<div><label class="field-label">لغة محتوى الشهادة / Certificate language</label><div style="display:flex;gap:6px;"><button class="btn-secondary btn-sm" id="cert-lang-ar" style="flex:1;" onclick="setCertLang(\'ar\')">🇸🇦 عربي</button><button class="btn-secondary btn-sm" id="cert-lang-en" style="flex:1;" onclick="setCertLang(\'en\')">🇬🇧 English</button></div></div>' +
+          '<div><label class="field-label" id="cert-l-date">التاريخ</label><input id="cert-date" type="date" class="input-field" value="' + cs.date + '" onchange="renderCertificatePreview()"/></div>' +
+          '<div><label class="field-label" id="cert-l-name">اسم القسم / الفرع</label><input id="cert-name" type="text" class="input-field" oninput="renderCertificatePreview()"/><div id="cert-name-hint" class="muted" style="font-size:10.5px;margin-top:3px;"></div></div>' +
+          '<div><label class="field-label" id="cert-l-sig">اسم الموقّع / التوقيع</label><input id="cert-sig" type="text" class="input-field" oninput="renderCertificatePreview()"/></div>' +
+          '<div style="grid-column:1/-1"><label class="field-label" id="cert-l-note">جملة إضافية (اختياري)</label><input id="cert-note" type="text" class="input-field" oninput="renderCertificatePreview()"/></div>' +
+        '</div>' +
+        '<div style="text-align:center;margin-bottom:12px;"><button class="btn-primary btn-sm" id="cert-print-btn" onclick="printCertificate()">🖨️ طباعة / تحميل PDF</button></div>' +
+        '<div id="certificate-print-area"></div>' +
+      '</div></div>');
+    setCertLang('ar');
+  };
+  window.setCertLang = function(l){
+    cs.lang = l;
+    const nameEl = $q('cert-name');
+    if(nameEl){
+      // كل لغة ليها اسمها: عربي من الهيكل، وإنجليزي من name_en (وتقدر تعدّله قبل الطباعة)
+      nameEl.value = l === 'en' ? (cs.nameEn || '') : cs.nameAr;
+      nameEl.dir = l === 'en' ? 'ltr' : 'rtl';
+      nameEl.placeholder = l === 'en' ? 'Unit / branch name in English' : 'اسم القسم / الفرع';
+    }
+    $q('cert-lang-ar')?.classList.toggle('btn-primary', l === 'ar'); $q('cert-lang-ar')?.classList.toggle('btn-secondary', l !== 'ar');
+    $q('cert-lang-en')?.classList.toggle('btn-primary', l === 'en'); $q('cert-lang-en')?.classList.toggle('btn-secondary', l !== 'en');
+    const isEn = l === 'en';
+    const set = (id, t) => { const e = $q(id); if(e) e.textContent = t; };
+    set('cert-l-date', isEn ? 'Date' : 'التاريخ'); set('cert-l-name', isEn ? 'Unit / branch name' : 'اسم القسم / الفرع');
+    set('cert-l-sig', isEn ? 'Signatory name' : 'اسم الموقّع / التوقيع'); set('cert-l-note', isEn ? 'Additional sentence (optional)' : 'جملة إضافية (اختياري)');
+    set('cert-print-btn', isEn ? '🖨️ Print / Save as PDF' : '🖨️ طباعة / تحميل PDF');
+    const sg = $q('cert-sig'); if(sg) sg.placeholder = isEn ? 'e.g. Quality Manager' : 'مثال: مدير الجودة';
+    const nt = $q('cert-note'); if(nt) nt.placeholder = isEn ? 'Any sentence you would like to add' : 'أي جملة حابب تضيفها';
+    renderCert();
+  };
+  function renderCert(){
+    const area = $q('certificate-print-area'); if(!area) return;
+    cs.date = $q('cert-date')?.value || cs.date; cs.sig = $q('cert-sig')?.value || ''; cs.note = $q('cert-note')?.value || '';
+    const nm = ($q('cert-name')?.value || '').trim();
+    if(cs.lang === 'en') cs.nameEn = nm; else cs.nameAr = nm || cs.nameAr;
+    const hint = $q('cert-name-hint');
+    if(hint){
+      const needEn = cs.lang === 'en' && (!nm || AR.test(nm)) && String(cs.sid).indexOf('w') !== 0;
+      hint.style.color = needEn ? '#b91c1c' : ''; hint.textContent = needEn ? 'اكتب اسم الفرع بالإنجليزي عشان الشهادة تطلع إنجليزي بالكامل (أو ضيفه في الهيكل > الاسم الإنجليزي).' : '';
+    }
+    const T = CT[cs.lang] || CT.ar, en = cs.lang === 'en';
+    const name = en ? (cs.nameEn || cs.nameAr) : cs.nameAr;
+    const dObj = new Date(cs.date + 'T00:00:00');
+    const dateStr = isNaN(dObj) ? cs.date : dObj.toLocaleDateString(en ? 'en-GB' : 'ar-EG', {year:'numeric', month:'long', day:'numeric'});
+    const dir = en ? 'ltr' : 'rtl';
+    const site = en ? cs.siteEn : (document.title || T.site);
+    area.innerHTML =
+      '<div style="border-radius:16px;overflow:hidden;border:1px solid #e2e8f0;font-family:inherit;direction:' + dir + ';" dir="' + dir + '" lang="' + (en ? 'en' : 'ar') + '">' +
+        '<div style="position:relative;background:linear-gradient(135deg,#0f172a,#1e293b);padding:26px 30px;overflow:hidden;">' +
+          '<div style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,rgba(255,255,255,.04) 0 10px,transparent 10px 20px);"></div>' +
+          '<div style="position:relative;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;">' +
+            '<div style="width:64px;height:64px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#e2e8f0,#94a3b8 60%,#64748b);display:flex;align-items:center;justify-content:center;font-size:28px;box-shadow:0 3px 10px rgba(0,0,0,.3);flex-shrink:0;">🏅</div>' +
+            '<div style="text-align:' + (en ? 'left' : 'right') + ';"><div style="font-size:24px;font-weight:900;color:#fff;">' + esc(T.title) + '</div><div style="font-size:12px;color:#cbd5e1;margin-top:3px;">' + esc(T.subtitle) + '</div></div>' +
+          '</div></div>' +
+        '<div style="background:#fff;padding:34px 26px;text-align:center;">' +
+          '<div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:20px;"><div style="flex:1;max-width:80px;border-top:1px dashed #cbd5e1;"></div><div style="font-size:28px;font-weight:900;color:#0f172a;">' + esc(name) + '</div><div style="flex:1;max-width:80px;border-top:1px dashed #cbd5e1;"></div></div>' +
+          '<div style="font-size:14px;color:#475569;line-height:1.9;max-width:480px;margin:0 auto 10px;">' + esc(T.body(name, cs.pct)) + '</div>' +
+          (cs.note ? '<div style="font-size:13px;color:#334155;font-style:italic;margin-bottom:10px;">' + esc(cs.note) + '</div>' : '') +
+          '<div style="font-size:14px;font-weight:700;color:#0f172a;margin:14px 0 26px;">' + esc(T.grant) + '</div>' +
+          '<div style="display:flex;justify-content:space-between;align-items:flex-end;max-width:420px;margin:0 auto;gap:14px;flex-wrap:wrap;">' +
+            '<div style="text-align:center;"><div style="font-size:11px;font-weight:700;color:#94a3b8;margin-bottom:4px;">' + esc(T.sig) + '</div>' +
+              (cs.sig ? '<div style="font-family:cursive;font-size:16px;color:#0f172a;border-bottom:1px dotted #cbd5e1;padding-bottom:4px;min-width:120px;">' + esc(cs.sig) + '</div>' : '<div style="border-bottom:1px dotted #cbd5e1;min-width:120px;height:20px;"></div>') + '</div>' +
+            '<div style="text-align:center;"><div style="font-size:11px;font-weight:700;color:#94a3b8;margin-bottom:4px;">' + esc(T.date) + '</div><div style="font-size:13px;font-weight:700;color:#0f172a;border-bottom:1px dotted #cbd5e1;padding-bottom:4px;min-width:120px;">' + esc(dateStr) + '</div></div>' +
+          '</div>' +
+          '<div style="font-size:10px;letter-spacing:2px;color:#cbd5e1;margin-top:26px;">' + esc(site) + '</div>' +
+        '</div></div>';
+  }
+  window.renderCertificatePreview = renderCert;
+  window.printCertificate = function(){
+    const area = $q('certificate-print-area'); if(!area) return;
+    const en = cs.lang === 'en', w = window.open('', '_blank'); if(!w) return;
+    w.document.write('<html lang="' + (en ? 'en' : 'ar') + '" dir="' + (en ? 'ltr' : 'rtl') + '"><head><meta charset="utf-8"><title>' + (en ? CT.en.print : CT.ar.print) + '</title><style>body{font-family:sans-serif;padding:20px;}</style></head><body>' + area.innerHTML + '</body></html>');
+    w.document.close(); w.focus(); setTimeout(() => w.print(), 300);
   };
 })();
 
