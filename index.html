@@ -8472,6 +8472,66 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   loadBranding = async function(){ const r = await _lb.apply(this, arguments); try{ apply(); }catch(e){} return r; };
   setTimeout(apply, 1200);
 })();
+/* =====================================================================
+   V9.5 — أي حد سوبر أدمن (مربوط بحساب موظف) يتشال من بيانات الموظفين:
+   القوائم، الإحصائيات، الترتيب، الاختبارات، التقارير، التعليقات… زي المدير الرئيسي بالظبط.
+   ===================================================================== */
+(function(){
+  if(typeof sb === 'undefined' || !sb || typeof sb.from !== 'function' || sb.__v9hide) return;
+  sb.__v9hide = true;
+  const COLS = { workers_evaluations:'id', worker_violations:'worker_id', quiz_unlocks:'worker_id', quiz_attempts:'worker_id',
+    training_progress:'worker_id', onsite_training_participants:'worker_id', content_answers:'worker_id', content_comments:'worker_id',
+    worker_reports:'worker_id', video_views:'worker_id' };
+  const orig = sb.from.bind(sb);
+  let ids = null, loading = null;
+  window.V9H = { reset(){ ids = null; loading = null; }, get ids(){ return ids || []; } };
+  function load(){
+    if(ids) return Promise.resolve(ids);
+    if(!loading) loading = Promise.resolve(orig('admins').select('worker_id').eq('is_super', true)).then(r => {
+      ids = ((r && r.data) || []).map(a => a.worker_id).filter(x => x != null && x !== '').map(Number).filter(n => !isNaN(n));
+      return ids;
+    }).catch(() => { ids = []; return ids; });
+    return loading;
+  }
+  function wrap(b, col, st){
+    if(!b || typeof b.then !== 'function' || typeof b.not !== 'function') return b;
+    return new Proxy(b, {
+      get(t, p){
+        if(p === 'then'){
+          return function(res, rej){
+            return load().then(list => {
+              if(list.length && !st.skip) t.not(col, 'in', '(' + list.join(',') + ')');
+              return t;
+            }).then(res, rej);
+          };
+        }
+        const v = t[p];
+        if(typeof v !== 'function') return v;
+        return function(){
+          if((p === 'eq' || p === 'in') && (arguments[0] === col || arguments[0] === 'id' || arguments[0] === 'worker_id')) st.skip = true;
+          const r = v.apply(t, arguments);
+          return r === t ? wrap(t, col, st) : (r && typeof r.then === 'function' && typeof r.not === 'function' ? wrap(r, col, st) : r);
+        };
+      }
+    });
+  }
+  const prev = sb.from;
+  sb.from = function(table){
+    const qb = prev.call(sb, table);
+    const col = COLS[table];
+    if(!col) return qb;
+    return new Proxy(qb, {
+      get(t, p){
+        const v = t[p];
+        if(typeof v !== 'function') return v;
+        if(p === 'select') return function(){ return wrap(v.apply(t, arguments), col, { skip:false }); };
+        return v.bind(t);
+      }
+    });
+  };
+  /* عند الخروج نعيد تحميل القائمة */
+  if(typeof logout === 'function'){ const _lo = logout; logout = function(){ try{ window.V9H.reset(); }catch(e){} return _lo.apply(this, arguments); }; }
+})();
 
 </script>
 </body>
