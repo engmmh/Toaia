@@ -8086,7 +8086,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
         '<div class="v9-ph" id="v9-ph-' + x.id + '"><button class="btn-secondary btn-sm" onclick="V9A.photo(' + x.id + ')">🖼️ عرض الصورة</button></div>' +
         (own ? '<div class="v9-warn">ده بلاغ بتاعك — مينفعش تتعامل معاه وإنت داخل بصفة أدمن.</div>' :
         '<div class="v9-arep-f"><select id="v9-s-' + x.id + '" class="input-field">' + ST.map(s => '<option value="' + s + '"' + (s === x.status ? ' selected' : '') + '>' + E(NA()['s_' + s]) + '</option>').join('') + '</select>' +
-        '<textarea id="v9-r-' + x.id + '" class="input-field" rows="2" placeholder="رد الإدارة (بيظهر للموظف)">' + E(x.admin_reply || '') + '</textarea><button class="btn-primary btn-sm" onclick="V9A.save(' + x.id + ')">حفظ</button></div>') + '</div>';
+        '<textarea id="v9-r-' + x.id + '" class="input-field" rows="2" placeholder="رد الإدارة (بيظهر للموظف)">' + E(x.admin_reply || '') + '</textarea><button class="btn-primary btn-sm" onclick="V9A.save(' + x.id + ')">حفظ</button>' + (adminUser && adminUser.isSuper ? '<button class="btn-danger btn-sm" onclick="V9A.del(' + x.id + ')">🗑️ حذف البلاغ</button>' : '') + '</div>') + '</div>';
     }).join('');
     countNew();
   }
@@ -8096,6 +8096,15 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
       const {data} = await sb.from('worker_reports').select('photo_data').eq('id', id).maybeSingle();
       const h = $q('v9-ph-' + id); if(!h) return;
       h.innerHTML = data && data.photo_data ? '<img class="v9-img" src="' + E(data.photo_data) + '" onclick="window.open(this.src)">' : '<span class="muted">لا توجد صورة</span>';
+    },
+    async del(id){
+      if(!(adminUser && adminUser.isSuper)) return showToast('الحذف للسوبر أدمن فقط');
+      if(!confirm('حذف البلاغ نهائيًا؟ مش هيتسترجع.')) return;
+      const {error} = await sb.from('worker_reports').delete().eq('id', id);
+      if(error) return showToast(error.message || 'تعذر الحذف');
+      showToast('تم حذف البلاغ 🗑️');
+      try{ if(adminUser.id) await logActivityV22('admin', adminUser.id, 'حذف بلاغ موظف', 'worker_report', id, {}); }catch(e){}
+      renderReports();
     },
     async save(id){
       const st = $q('v9-s-' + id).value, rp = $q('v9-r-' + id).value.trim();
