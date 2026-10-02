@@ -8557,6 +8557,312 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   };
 })();
 
+
+/* =====================================================================
+   V11 — تايمر الإظهار للتدريبات (فيديو) والاختبارات
+   • عند الإظهار: تختار مدة (ساعات/أيام) أو تاريخ انتهاء أو بدون تايمر
+   • بعد انتهاء المدة بيختفي عن كل الموظفين تلقائيًا، وبيتسجّل في القاعدة إنه مخفي
+   • زر "المتابعة" في كل عنصر: مين دخل ومين لسه في فترة العرض الأخيرة + تصدير Excel
+   يحتاج phase6.sql (أعمدة visible_since / visible_until). بدونه بيشتغل الإظهار العادي.
+   ===================================================================== */
+(function(){
+  const $q = id => document.getElementById(id);
+  const E = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const TB = { video: 'training_topics', quiz: 'quizzes' };
+  const NM = { video: 'التدريب', quiz: 'الاختبار' };
+  const T = { video: {}, quiz: {} };            // id -> {since, until}
+  let colsOk = true;
+  const toast = m => { try{ showToast(m); }catch(e){} };
+  const isAdminNow = () => typeof adminUser !== 'undefined' && !!adminUser;
+  const scope = () => { try{ return adminUser.isSuper ? null : (typeof getAdminScopeIds === 'function' ? getAdminScopeIds() : [adminUser.section_id]); }catch(e){ return null; } };
+
+  /* ---------- الموظف: العنصر المنتهي مايظهرش (حتى لو لسه is_visible = true) ---------- */
+  const expired = r => r && r.visible_until && new Date(r.visible_until).getTime() <= Date.now();
+  const prevFrom = sb.from;
+  sb.from = function(table){
+    const qb = prevFrom.call(sb, table);
+    if(table !== 'training_topics' && table !== 'quizzes') return qb;
+    const post = b => {
+      if(!b || typeof b.then !== 'function') return b;
+      return new Proxy(b, {
+        get(t, p){
+          if(p === 'then'){
+            return function(res, rej){
+              return Promise.resolve(t).then(r => {
+                try{
+                  if(r && !isAdminNow() && typeof currentUser !== 'undefined' && currentUser && Array.isArray(r.data)){
+                    r = Object.assign({}, r, { data: r.data.filter(x => !expired(x)) });
+                  }
+                }catch(e){}
+                return r;
+              }).then(res, rej);
+            };
+          }
+          const v = t[p]; if(typeof v !== 'function') return v;
+          return function(){ const r = v.apply(t, arguments); return r === t ? post(t) : r; };
+        }
+      });
+    };
+    return new Proxy(qb, {
+      get(t, p){
+        const v = t[p]; if(typeof v !== 'function') return v;
+        if(p === 'select') return function(){ return post(v.apply(t, arguments)); };
+        return v.bind(t);
+      }
+    });
+  };
+
+  /* ---------- تحميل بيانات التايمر (للأدمن) ---------- */
+  async function loadTimes(type){
+    try{
+      const {data, error} = await sb.from(TB[type]).select('id,visible_since,visible_until,is_visible');
+      if(error){ colsOk = false; return; }
+      colsOk = true; T[type] = {};
+      (data || []).forEach(r => { T[type][r.id] = { since: r.visible_since, until: r.visible_until, vis: r.is_visible }; });
+    }catch(e){ colsOk = false; }
+  }
+  const fmt = d => { try{ return new Date(d).toLocaleString('ar-EG', { numberingSystem: 'latn', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }); }catch(e){ return String(d); } };
+  function left(ms){
+    if(ms <= 0) return 'انتهت';
+    const m = Math.floor(ms / 60000), d = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60), mm = m % 60;
+    return d ? (d + ' يوم' + (h ? ' و ' + h + ' س' : '')) : (h ? (h + ' ساعة' + (mm ? ' و ' + mm + ' د' : '')) : (mm + ' دقيقة'));
+  }
+
+  /* ---------- نافذة اختيار المدة ---------- */
+  function askTimer(type, title, opts){
+    opts = opts || {};
+    return new Promise(resolve => {
+      const ov = document.createElement('div'); ov.className = 'v11-ov';
+      ov.innerHTML = '<div class="v11-m" dir="rtl"><div class="v11-h"><b>⏱️ ' + (opts.edit ? 'تعديل مدة عرض ' : 'مدة إظهار ') + NM[type] + '</b><button type="button" class="v11-x">✕</button></div>' +
+        '<div class="v11-t">' + E(title || '') + '</div>' +
+        '<div class="v11-hint">بعد انتهاء المدة بيختفي عن كل الموظفين تلقائيًا، وتقدر تشوف مين دخل ومين لأ.</div>' +
+        '<div class="v11-chips">' + [['24 ساعة', 1, 'd'], ['3 أيام', 3, 'd'], ['7 أيام', 7, 'd'], ['14 يوم', 14, 'd'], ['30 يوم', 30, 'd']].map(c => '<button type="button" class="v11-chip" data-n="' + c[1] + '" data-u="' + c[2] + '">' + c[0] + '</button>').join('') + '</div>' +
+        '<div class="v11-row"><label>أو مدة مخصصة</label><input id="v11-n" type="number" min="1" value="3" class="input-field"/><select id="v11-u" class="input-field"><option value="h">ساعات</option><option value="d" selected>أيام</option></select></div>' +
+        '<div class="v11-row"><label>أو ينتهي في</label><input id="v11-dt" type="datetime-local" class="input-field"/></div>' +
+        '<div class="v11-err" id="v11-err"></div>' +
+        '<div class="v11-f"><button type="button" class="btn-primary" id="v11-ok">' + (opts.edit ? 'حفظ المدة' : 'إظهار بالمدة دي') + '</button>' +
+        (opts.edit ? '<button type="button" class="btn-secondary" id="v11-none">بدون تايمر (مفتوح)</button>' : '<button type="button" class="btn-secondary" id="v11-none">إظهار بدون تايمر</button>') +
+        '<button type="button" class="btn-secondary" id="v11-cancel">إلغاء</button></div></div>';
+      document.body.appendChild(ov);
+      const close = v => { ov.remove(); resolve(v); };
+      let sel = null;
+      ov.querySelectorAll('.v11-chip').forEach(b => b.onclick = () => { ov.querySelectorAll('.v11-chip').forEach(x => x.classList.remove('on')); b.classList.add('on'); sel = { n: +b.dataset.n, u: b.dataset.u }; $q('v11-dt').value = ''; });
+      $q('v11-n').oninput = () => { ov.querySelectorAll('.v11-chip').forEach(x => x.classList.remove('on')); sel = null; $q('v11-dt').value = ''; };
+      $q('v11-dt').oninput = () => { ov.querySelectorAll('.v11-chip').forEach(x => x.classList.remove('on')); sel = null; };
+      ov.querySelector('.v11-x').onclick = $q('v11-cancel').onclick = () => close(null);
+      $q('v11-none').onclick = () => close({ until: null });
+      $q('v11-ok').onclick = () => {
+        let until;
+        const dt = $q('v11-dt').value;
+        if(dt){ until = new Date(dt); }
+        else {
+          const n = sel ? sel.n : Number($q('v11-n').value), u = sel ? sel.u : $q('v11-u').value;
+          if(!(n > 0)){ $q('v11-err').textContent = 'اكتب مدة صحيحة'; return; }
+          until = new Date(Date.now() + n * (u === 'h' ? 3600000 : 86400000));
+        }
+        if(isNaN(until.getTime()) || until.getTime() <= Date.now()){ $q('v11-err').textContent = 'وقت الانتهاء لازم يكون في المستقبل'; return; }
+        close({ until: until.toISOString() });
+      };
+    });
+  }
+
+  async function saveTimes(type, id, patch){
+    const r = await sb.from(TB[type]).update(patch).eq('id', id);
+    if(r.error){
+      if(/visible_(since|until)/i.test(r.error.message || '')){ colsOk = false; toast('التايمر محتاج تشغيل phase6.sql في Supabase مرة واحدة — اتعمل إظهار عادي بدون مدة'); }
+      else toast('تعذر حفظ المدة: ' + (r.error.message || ''));
+      return false;
+    }
+    T[type][id] = Object.assign({}, T[type][id] || {}, { since: patch.visible_since !== undefined ? patch.visible_since : (T[type][id] || {}).since, until: patch.visible_until });
+    return true;
+  }
+  async function log(action, type, id, meta){ try{ if(typeof logActivityV22 === 'function' && adminUser) await logActivityV22('admin', adminUser.id, action, type, id, meta || {}); }catch(e){} }
+
+  /* تطبيق مدة عند الإظهار (before original toggle) */
+  async function applyOnShow(type, id, title){
+    const ch = await askTimer(type, title);
+    if(!ch) return false;
+    const patch = { visible_since: new Date().toISOString(), visible_until: ch.until };
+    await saveTimes(type, id, patch);
+    log('تايمر إظهار ' + NM[type], type, id, { until: ch.until });
+    return true;
+  }
+
+  /* ---------- الهب (المحتوى): اعتراض زر النشر/الإخفاء ---------- */
+  let bypass = false;
+  const hubType = () => { const h = document.querySelector('#tab-content .v6-bar h3'); const t = h ? h.textContent : ''; return /الاختبارات/.test(t) ? 'quiz' : /الفيديوهات/.test(t) ? 'video' : null; };
+  document.addEventListener('click', async function(e){
+    const inp = e.target && e.target.closest && e.target.closest('.v6-card input[data-a="toggle"]');
+    if(!inp || bypass) return;
+    const type = hubType(); if(!type) return;
+    if(!inp.checked) return;                          // إخفاء: عادي
+    e.stopImmediatePropagation(); e.preventDefault();
+    const card = inp.closest('.v6-card'), id = Number(card.dataset.id);
+    const title = (card.querySelector('.v6-title') || {}).textContent || '';
+    if(!colsOk){ await loadTimes(type); }
+    const ok = await applyOnShow(type, id, title);
+    if(!ok){ inp.checked = false; return; }
+    bypass = true; inp.checked = false; inp.click(); bypass = false;
+    setTimeout(decorate, 600);
+  }, true);
+
+  /* ---------- القوائم القديمة (الإدارة المتقدمة) ---------- */
+  if(typeof toggleTopicVisibility === 'function'){
+    const _t = toggleTopicVisibility;
+    toggleTopicVisibility = async function(id){
+      try{
+        const {data} = await sb.from('training_topics').select('is_visible,title_ar').eq('id', id).maybeSingle();
+        if(data && !data.is_visible){ if(!(await applyOnShow('video', id, data.title_ar))) return; }
+      }catch(e){}
+      return _t.apply(this, arguments);
+    };
+  }
+  if(typeof toggleQuizVisibilityV22 === 'function'){
+    const _q = toggleQuizVisibilityV22;
+    toggleQuizVisibilityV22 = async function(id){
+      try{
+        const {data} = await sb.from('quizzes').select('is_visible,title_ar').eq('id', id).maybeSingle();
+        if(data && !data.is_visible){ if(!(await applyOnShow('quiz', id, data.title_ar))) return; }
+      }catch(e){}
+      return _q.apply(this, arguments);
+    };
+  }
+
+  /* ---------- شارات التايمر + أزرار على كروت الهب ---------- */
+  function decorate(){
+    const type = hubType(); if(!type) return;
+    document.querySelectorAll('#tab-content .v6-card').forEach(card => {
+      const id = Number(card.dataset.id), t = T[type][id] || {};
+      let box = card.querySelector('.v11-box');
+      if(!box){ box = document.createElement('div'); box.className = 'v11-box'; const act = card.querySelector('.v6-act'); if(act) card.insertBefore(box, act); else card.appendChild(box); }
+      const vis = card.querySelector('input[data-a="toggle"]') ? card.querySelector('input[data-a="toggle"]').checked : false;
+      let line = '';
+      if(t.until){
+        const ms = new Date(t.until).getTime() - Date.now();
+        line = ms > 0 && vis ? '<span class="v11-b live">⏳ متبقي ' + left(ms) + ' — ينتهي ' + E(fmt(t.until)) + '</span>' : '<span class="v11-b done">⌛ انتهت مدة العرض ' + E(fmt(t.until)) + '</span>';
+      } else if(vis && t.since){ line = '<span class="v11-b open">♾️ مفتوح بدون تايمر</span>'; }
+      box.innerHTML = line + '<div class="v11-btns"><button type="button" class="v11-btn" data-v11="rep">👥 المتابعة</button>' +
+        (vis ? '<button type="button" class="v11-btn" data-v11="edit">⏱️ المدة</button>' : '') + '</div>';
+    });
+  }
+  document.addEventListener('click', async function(e){
+    const b = e.target && e.target.closest && e.target.closest('[data-v11]'); if(!b) return;
+    const card = b.closest('.v6-card'); if(!card) return;
+    e.stopPropagation();
+    const type = hubType(), id = Number(card.dataset.id), title = (card.querySelector('.v6-title') || {}).textContent || '';
+    if(b.dataset.v11 === 'rep') return openReport(type, id, title);
+    if(b.dataset.v11 === 'edit'){
+      const ch = await askTimer(type, title, { edit: true }); if(!ch) return;
+      if(await saveTimes(type, id, { visible_until: ch.until })){ toast('تم حفظ المدة ✅'); log('تعديل مدة ' + NM[type], type, id, { until: ch.until }); }
+      decorate();
+    }
+  });
+  let obsT = null;
+  new MutationObserver(() => { clearTimeout(obsT); obsT = setTimeout(async () => { const type = hubType(); if(!type) return; if(!Object.keys(T[type]).length) await loadTimes(type); decorate(); }, 150); })
+    .observe(document.body, { childList: true, subtree: true });
+
+  /* ---------- إخفاء المنتهي في القاعدة (الأدمن) ---------- */
+  async function syncExpired(){
+    if(!isAdminNow() || !colsOk) return;
+    for(const type of ['video', 'quiz']){
+      try{
+        await loadTimes(type); if(!colsOk) return;
+        const now = Date.now();
+        for(const id of Object.keys(T[type])){
+          const t = T[type][id];
+          if(t.vis && t.until && new Date(t.until).getTime() <= now){
+            await sb.from(TB[type]).update({ is_visible: false }).eq('id', id);
+            if(type === 'video') await sb.from('training_videos').update({ is_visible: false }).eq('topic_id', id);
+            t.vis = false; log('انتهاء مدة عرض ' + NM[type], type, Number(id), {});
+          }
+        }
+      }catch(e){}
+    }
+    decorate();
+  }
+  const _ea = enterAdmin;
+  enterAdmin = async function(){ const r = await _ea.apply(this, arguments); setTimeout(syncExpired, 800); return r; };
+  setInterval(() => { try{ syncExpired(); }catch(e){} }, 60000);
+
+  /* ---------- تقرير المتابعة: مين دخل ومين لأ ---------- */
+  async function allRows(mk){
+    const out = []; let from = 0;
+    for(;;){ const r = await mk().range(from, from + 999); if(r.error) throw r.error; const d = r.data || []; out.push(...d); if(d.length < 1000) break; from += 1000; }
+    return out;
+  }
+  async function openReport(type, id, title){
+    const ov = document.createElement('div'); ov.className = 'v11-ov';
+    ov.innerHTML = '<div class="v11-m wide" dir="rtl"><div class="v11-h"><b>👥 متابعة ' + NM[type] + '</b><button type="button" class="v11-x">✕</button></div><div class="v11-t">' + E(title) + '</div><div id="v11-rb" class="v11-hint">جاري التحميل…</div></div>';
+    document.body.appendChild(ov); ov.querySelector('.v11-x').onclick = () => ov.remove();
+    try{
+      const {data: item} = await sb.from(TB[type]).select('*').eq('id', id).maybeSingle();
+      const sc = scope();
+      const workers = await allRows(() => { let q = sb.from('workers_evaluations').select('id,worker_name,section_id,job_role_id').order('id'); if(sc && sc.length) q = q.in('section_id', sc); return q; });
+      const roles = {}; try{ (await allRows(() => sb.from('job_roles').select('id,target_department_id').order('id'))).forEach(r => roles[r.id] = r.target_department_id); }catch(e){}
+      let aud = []; try{ const a = await sb.from('content_audience').select('kind,ref_id').eq('item_type', type).eq('item_id', id); aud = a.data || []; }catch(e){}
+      const secs = (typeof sections !== 'undefined' ? sections : []);
+      const S = { R: new Set(), D: new Set(), U: new Set() };
+      aud.forEach(r => (r.kind === 'region' ? S.R : r.kind === 'department' ? S.D : S.U).add(Number(r.ref_id)));
+      const eligible = w => {
+        const u = secs.find(s => Number(s.id) === Number(w.section_id));
+        const dept = (u && u.department_id != null) ? u.department_id : roles[w.job_role_id];
+        if(item && item.audience_restricted){
+          if(S.U.has(Number(w.section_id))) return true;
+          if(!S.R.size && !S.D.size) return false;
+          return (!S.R.size || S.R.has(Number(u && u.region_id))) && (!S.D.size || S.D.has(Number(dept)));
+        }
+        if(item && item.section_id && Number(item.section_id) !== Number(w.section_id)) return false;
+        if(item && item.target_department_id && Number(roles[w.job_role_id]) !== Number(item.target_department_id)) return false;
+        return true;
+      };
+      const list = workers.filter(eligible);
+      const since = item && item.visible_since ? new Date(item.visible_since).getTime() : 0;
+      const rec = {};
+      if(type === 'video'){
+        const rows = await allRows(() => sb.from('training_progress').select('worker_id,progress_percent,completed,updated_at').eq('topic_id', id).order('id'));
+        rows.forEach(p => { const at = new Date(p.updated_at || 0).getTime(); if(at >= since && (!rec[p.worker_id] || at > rec[p.worker_id].at)) rec[p.worker_id] = { at, txt: p.completed ? 'مكتمل ✅' : Math.round(p.progress_percent || 0) + '%' }; });
+      } else {
+        const rows = await allRows(() => sb.from('quiz_attempts').select('worker_id,score,created_at').eq('quiz_id', id).order('id'));
+        rows.forEach(p => { const at = new Date(p.created_at || 0).getTime(); if(at >= since && (!rec[p.worker_id] || at > rec[p.worker_id].at)) rec[p.worker_id] = { at, txt: (p.score != null ? p.score + '%' : 'تم') }; });
+      }
+      const secName = sid => { const s = secs.find(x => Number(x.id) === Number(sid)); return s ? (s.name_ar || '') : ''; };
+      const ent = list.filter(w => rec[w.id]), non = list.filter(w => !rec[w.id]);
+      const win = item && item.visible_since ? 'فترة العرض: من ' + fmt(item.visible_since) + (item.visible_until ? ' إلى ' + fmt(item.visible_until) : ' (مفتوحة)') : 'مفيش تايمر مسجّل — بنعرض كل الفترات';
+      const row = (w, ok) => '<div class="v11-r ' + (ok ? 'ok' : 'no') + '"><span>#' + w.id + ' — ' + E(w.worker_name) + ' <small>' + E(secName(w.section_id)) + '</small></span><b>' + (ok ? E(rec[w.id].txt) + ' · ' + E(fmt(rec[w.id].at)) : 'لم يدخل') + '</b></div>';
+      $q('v11-rb').className = '';
+      $q('v11-rb').innerHTML = '<div class="v11-win">' + E(win) + '</div>' +
+        '<div class="v11-sum"><div class="ok"><b>' + ent.length + '</b>دخلوا</div><div class="no"><b>' + non.length + '</b>لم يدخلوا</div><div><b>' + list.length + '</b>الإجمالي</div></div>' +
+        '<div class="v11-tabs"><button type="button" class="on" data-k="no">❌ لم يدخلوا (' + non.length + ')</button><button type="button" data-k="ok">✅ دخلوا (' + ent.length + ')</button><button type="button" data-k="all">👥 الكل</button><button type="button" id="v11-csv">⬇️ Excel</button></div>' +
+        '<div id="v11-list"></div>';
+      const paint = k => { $q('v11-list').innerHTML = ((k === 'ok' ? ent.map(w => row(w, true)) : k === 'no' ? non.map(w => row(w, false)) : list.map(w => row(w, !!rec[w.id]))).join('')) || '<div class="v11-hint">لا يوجد</div>'; };
+      paint('no');
+      $q('v11-rb').querySelectorAll('.v11-tabs button[data-k]').forEach(b => b.onclick = () => { $q('v11-rb').querySelectorAll('.v11-tabs button').forEach(x => x.classList.remove('on')); b.classList.add('on'); paint(b.dataset.k); });
+      $q('v11-csv').onclick = () => {
+        const q = s => '"' + String(s == null ? '' : s).replace(/"/g, '""') + '"';
+        const lines = [['الرقم', 'الاسم', 'الوحدة', 'الحالة', 'النتيجة/التقدم', 'آخر دخول'].map(q).join(',')].concat(list.map(w => [w.id, w.worker_name, secName(w.section_id), rec[w.id] ? 'دخل' : 'لم يدخل', rec[w.id] ? rec[w.id].txt : '', rec[w.id] ? new Date(rec[w.id].at).toLocaleString('en-GB') : ''].map(q).join(',')));
+        const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'follow-up-' + type + '-' + id + '.csv'; document.body.appendChild(a); a.click(); a.remove();
+      };
+    }catch(e){ $q('v11-rb').textContent = 'تعذر التحميل: ' + (e.message || e); }
+  }
+  window.V11 = { askTimer, openReport, syncExpired, T };
+
+  const st = document.createElement('style');
+  st.textContent = `.v11-ov{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:100000;display:flex;align-items:center;justify-content:center;padding:14px}
+.v11-m{background:#fff;color:#0f172a;border-radius:16px;padding:16px;width:100%;max-width:420px;max-height:90vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)}.v11-m.wide{max-width:560px}
+.v11-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:15px}.v11-x{background:none;border:0;font-size:18px;cursor:pointer}
+.v11-t{font-weight:800;font-size:13px;margin-bottom:6px}.v11-hint{font-size:12px;color:#64748b;margin-bottom:10px}
+.v11-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}.v11-chip{border:1px solid #cbd5e1;background:#f8fafc;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer}.v11-chip.on{background:#176b43;color:#fff;border-color:#176b43}
+.v11-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:12px}.v11-row label{min-width:86px;font-weight:700}.v11-row .input-field{flex:1;padding:8px}
+.v11-err{color:#b91c1c;font-size:12px;min-height:16px}.v11-f{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.v11-f button{flex:1;min-width:110px}
+.v11-box{padding:0 12px 6px}.v11-b{display:inline-block;font-size:11px;font-weight:700;padding:4px 9px;border-radius:999px;margin-bottom:6px}.v11-b.live{background:#fef3c7;color:#92400e}.v11-b.done{background:#fee2e2;color:#991b1b}.v11-b.open{background:#e0f2fe;color:#075985}
+.v11-btns{display:flex;gap:6px;flex-wrap:wrap}.v11-btn{border:1px solid #cbd5e1;background:#fff;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer}
+.v11-win{font-size:12px;background:#f1f5f9;border-radius:8px;padding:7px 10px;margin-bottom:8px}.v11-sum{display:flex;gap:8px;margin-bottom:8px}.v11-sum div{flex:1;text-align:center;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:8px;font-size:11px}.v11-sum b{display:block;font-size:20px}.v11-sum .ok b{color:#166534}.v11-sum .no b{color:#b91c1c}
+.v11-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}.v11-tabs button{border:1px solid #cbd5e1;background:#fff;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer}.v11-tabs button.on{background:#176b43;color:#fff;border-color:#176b43}
+.v11-r{display:flex;justify-content:space-between;gap:8px;align-items:center;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:7px 10px;margin-bottom:5px;font-size:12px}.v11-r small{color:#64748b}.v11-r.ok b{color:#166534}.v11-r.no b{color:#b91c1c}`;
+  document.head.appendChild(st);
+})();
+
 </script>
 </body>
 </html>
