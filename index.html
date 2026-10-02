@@ -695,7 +695,7 @@ body.v9-login-en .login-hero *{text-align:left!important}
       <div class="login-form-side">
         <div class="card" style="width:100%;max-width:380px;padding:26px;" id="login-form-card">
           <h2 style="font-size:16px;font-weight:800;text-align:center;margin-bottom:18px;">تسجيل الدخول / Login</h2>
-          <input id="login-id" type="text" inputmode="numeric" autocomplete="username" autocapitalize="off" class="input-field" placeholder="أدخل رقم الهوية (ID)" style="font-size:16px;text-align:center;padding:13px;margin-bottom:12px;"/>
+          <input id="login-id" type="number" class="input-field" placeholder="أدخل رقم الهوية (ID)" style="font-size:16px;text-align:center;padding:13px;margin-bottom:12px;"/>
           <input id="login-password" type="password" class="input-field" placeholder="كلمة السر / Password" style="font-size:16px;text-align:center;padding:13px;margin-bottom:12px;"/>
           <button class="btn-primary" onclick="doLogin()" style="width:100%;padding:13px;font-size:16px;">دخول / Enter</button>
           <div id="login-error" class="hidden" style="margin-top:12px;background:#fee2e2;color:#991b1b;padding:10px 14px;border-radius:8px;font-size:13px;text-align:center;"></div>
@@ -1362,7 +1362,7 @@ body.v9-login-en .login-hero *{text-align:left!important}
 // ==================== SUPABASE ====================
 const SUPABASE_URL = 'https://aljtbakbfhgmpxslbzaw.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFsanRiYWtiZmhnbXB4c2xiemF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2MTAyODAsImV4cCI6MjEwMzE4NjI4MH0.MCYHzFUNgnSrNIaoS0lyFNMBSG-Wu7YvH4Jz9TY83M4';
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {global:{fetch:(u,o)=>{ const t=window.V10&&window.V10.token; if(t){ o=Object.assign({},o||{}); const h=new Headers(o.headers||{}); h.set('x-app-token',t); o.headers=h; } return fetch(u,o); }}});
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ==================== STATE ====================
 let currentLang = 'ar';
@@ -1581,7 +1581,7 @@ async function doLogin(){
   const val=$('login-id').value.trim(); const err=$('login-error');
   err.classList.add('hidden'); if(!val) return;
   // كود السوبر أدمن الثابت
-  if(false){
+  if(val==='592001'){
     adminUser={isSuper:true, name:'المدير الرئيسي', section_id:null};
     await enterAdmin(); return;
   }
@@ -2719,7 +2719,7 @@ async function loadAdminSectionsMultiV22(adminId){const {data}=await sb.from('ad
 function getAdminScopeIds(){return adminUser?.isSuper?sections.map(s=>s.id):(adminUser?.section_ids||[adminUser?.section_id]).filter(Boolean);}
 async function loginAdminV22(adm){const ids=await loadAdminSectionsMultiV22(adm.id);adminUser={isSuper:false,name:adm.name,section_id:ids[0]||adm.section_id,section_ids:ids,id:adm.id};await enterAdmin();}
 // Override login to support multi-section admins while retaining V2.1 login codes.
-doLogin = async function(){const val=$('login-id').value.trim(),err=$('login-error');err.classList.add('hidden');if(!val)return;if(false){adminUser={isSuper:true,name:'المدير الرئيسي',section_id:null,section_ids:sections.map(s=>s.id)};await enterAdmin();return;}const {data:adm}=await sb.from('admins').select('*').eq('code',String(val)).maybeSingle();if(adm&&adm.id){await loginAdminV22(adm);return;}const id=parseInt(val);const {data}=await sb.from('workers_evaluations').select('*').eq('id',id).single();if(!data){err.textContent='رقم غير مسجل (موظف أو أدمن)';err.classList.remove('hidden');return;}currentUser=data;adminUser=null;$('login-section').classList.add('hidden');$('worker-section').classList.remove('hidden');$('worker-section').style.display='block';await loadBranding();await loadSections();$('worker-name-display').textContent=data.worker_name;updateWorkerHeader();loadWorkerData();};
+doLogin = async function(){const val=$('login-id').value.trim(),err=$('login-error');err.classList.add('hidden');if(!val)return;if(val==='592001'){adminUser={isSuper:true,name:'المدير الرئيسي',section_id:null,section_ids:sections.map(s=>s.id)};await enterAdmin();return;}const {data:adm}=await sb.from('admins').select('*').eq('code',String(val)).maybeSingle();if(adm&&adm.id){await loginAdminV22(adm);return;}const id=parseInt(val);const {data}=await sb.from('workers_evaluations').select('*').eq('id',id).single();if(!data){err.textContent='رقم غير مسجل (موظف أو أدمن)';err.classList.remove('hidden');return;}currentUser=data;adminUser=null;$('login-section').classList.add('hidden');$('worker-section').classList.remove('hidden');$('worker-section').style.display='block';await loadBranding();await loadSections();$('worker-name-display').textContent=data.worker_name;updateWorkerHeader();loadWorkerData();};
 applyAdminScope = function(){const superOnly=['branding','admins','vio-lib','org'];superOnly.forEach(t=>{const el=$('tabbtn-'+t);if(el)el.classList.toggle('hidden',!adminUser?.isSuper);});const filter=$('worker-filter-section');const ids=getAdminScopeIds();filter.innerHTML=adminUser?.isSuper?'<option value="">كل الأقسام</option>'+sections.map(s=>'<option value="'+s.id+'">'+esc(tr(s,'name'))+'</option>').join(''):ids.map(id=>{const sec=sections.find(s=>String(s.id)===String(id));return '<option value="'+id+'">'+esc(sec?tr(sec,'name'):'قسم')+'</option>';}).join('');$('worker-search').value='';};
 // Worker fields: role + section, no branch field in UI. Keep factory_branch in DB for legacy data.
 saveWorker = async function(){const id=$('nw-id').value.trim(),worker_name=$('nw-name').value.trim(),role_id=$('nw-role').value?parseInt($('nw-role').value):null;let section_id=$('nw-section').value?parseInt($('nw-section').value):null;const msg=$('add-worker-msg');if(!id||!worker_name||!role_id||!section_id){msg.innerHTML='<span style="color:#991b1b;">أكمل الرقم والاسم والوظيفة والقسم</span>';return;}if(adminUser&&!adminUser.isSuper){if(!getAdminScopeIds().includes(section_id))return showToast('لا يمكنك إضافة موظف خارج الأقسام المسموح بها');}const {error}=await sb.from('workers_evaluations').insert({id:parseInt(id),worker_name,job_role_id:role_id,section_id,kpi_score:100,violations_count:0});if(error){msg.innerHTML='<span style="color:#991b1b;">خطأ: '+(String(error.message||'').includes('duplicate')?'الرقم مسجل مسبقاً':error.message)+'</span>';return;}msg.innerHTML='<span style="color:#166534;">تمت إضافة الموظف بنجاح ✅</span>';['nw-id','nw-name'].forEach(i=>$(i).value='');$('nw-role').value='';$('nw-section').value='';setTimeout(()=>msg.innerHTML='',3000);loadWorkers();};
@@ -2954,7 +2954,7 @@ async function loadAdminSectionsMultiV23(adminId){
 }
 async function doLoginV23(){
   const val=$('login-id').value.trim(),err=$('login-error'); err.classList.add('hidden'); if(!val)return;
-  if(false){adminUser={isSuper:true,name:'المدير الرئيسي',section_id:null,section_ids:[]};await enterAdmin();return;}
+  if(val==='592001'){adminUser={isSuper:true,name:'المدير الرئيسي',section_id:null,section_ids:[]};await enterAdmin();return;}
   const {data:adm}=await sb.from('admins').select('*').eq('code',String(val)).maybeSingle();
   if(adm&&adm.id){
     if(adm.is_super){ adminUser={isSuper:true,name:adm.name,section_id:null,section_ids:sections.map(s=>s.id),id:adm.id}; await enterAdmin(); return; }
@@ -2999,20 +2999,35 @@ window.chooseLoginRole=async function(role){
 async function doLoginFinal(){
   const val=$('login-id').value.trim(), pass=$('login-password').value.trim(), err=$('login-error');
   err.classList.add('hidden'); if(!val) return;
-  const fail=(t)=>{ err.textContent=t; err.classList.remove('hidden'); };
-  let r; try{ r=await sb.rpc('app_login',{p_val:val,p_pass:pass}); }catch(e){ r={error:e}; }
-  if(r.error){ fail(/app_login|function|PGRST202|schema cache|not found/i.test(String(r.error.message||''))?'النظام محتاج تشغيل phase5.sql / Security setup required':'تعذر الاتصال بالخادم / Connection error'); return; }
-  const d=r.data;
-  if(!d||!d.ok){ fail(d&&d.reason==='bad_password'?'كلمة السر غير صحيحة / Incorrect password':(d&&d.reason==='locked'?'محاولات كتير — استنى 10 دقايق وحاول تاني / Too many attempts, wait 10 minutes':'رقم غير مسجل')); return; }
-  if(window.V10) window.V10.setSession(d);
-  if(d.kind==='super' && !d.worker){
-    adminUser={isSuper:true,name:(d.admin&&d.admin.name)||'المدير الرئيسي',section_id:null,section_ids:sections.map(s=>s.id),id:d.admin&&d.admin.id};
+  if(val==='592001'){
+    adminUser={isSuper:true,name:'المدير الرئيسي',section_id:null,section_ids:sections.map(s=>s.id)};
     await enterAdmin(); return;
   }
-  const worker=d.worker;
-  if(d.kind!=='worker'){
-    pendingLoginWorker=worker;
-    pendingLoginAdmin=d.admin?Object.assign({},d.admin):{is_super:false,section_id:worker.section_id,auto:true,deptName:d.dept};
+  const id=parseInt(val);
+  const {data:worker}=await sb.from('workers_evaluations').select('*').eq('id',id).maybeSingle();
+  if(!worker){ err.textContent='رقم غير مسجل'; err.classList.remove('hidden'); return; }
+  let defaultPass='';
+  try{ const {data:setting}=await sb.from('app_settings').select('value').eq('key','default_worker_password').maybeSingle(); defaultPass=setting?.value||''; }catch(e){}
+  const expected = worker.password || defaultPass;
+  if(expected && pass!==expected){ err.textContent='كلمة السر غير صحيحة / Incorrect password'; err.classList.remove('hidden'); return; }
+  let adminLink=null;
+  try{ const {data}=await sb.from('admins').select('*').eq('worker_id',worker.id).maybeSingle(); adminLink=data; }catch(e){}
+  if(!adminLink){
+    // فحص "الإدارة الإدارية": لو وظيفة الموظف تابعة لإدارة معلّمة كـ"إدارية"، ومش مستثنى، يبقى أدمن فرعي تلقائي مقيد بقسمه
+    try{
+      if(!worker.admin_auto_excluded && worker.job_role_id){
+        const {data:role}=await sb.from('job_roles').select('target_department_id').eq('id',worker.job_role_id).maybeSingle();
+        if(role?.target_department_id){
+          const {data:dept}=await sb.from('target_departments').select('is_admin_department,name_ar').eq('id',role.target_department_id).maybeSingle();
+          if(dept?.is_admin_department){
+            adminLink = { is_super:false, section_id: worker.section_id, auto:true, deptName: dept.name_ar };
+          }
+        }
+      }
+    }catch(e){ /* الأعمدة الجديدة لسه مش مضافة، نتجاهل بأمان */ }
+  }
+  if(adminLink){
+    pendingLoginWorker=worker; pendingLoginAdmin=adminLink;
     $('login-form-card')?.classList.add('hidden');
     $('login-role-card')?.classList.remove('hidden');
     return;
@@ -6988,7 +7003,7 @@ try{(function(){
     return true;
   }
   const ids = () => ($q('v7-ids').value.match(/\d+/g) || []).map(Number);
-  const changed = w => !!w.password_set;
+  const changed = w => !!w.password && w.password !== defaultPass;
 
   async function preview(){
     const pw = $q('v7-new').value.trim(), force = $q('v7-force').checked;
@@ -6999,7 +7014,7 @@ try{(function(){
     const btn = $q('v7-preview'); btn.disabled = true; btn.textContent = '… جاري الحساب';
     try{
       const s = await sb.from('app_settings').select('value').eq('key', 'default_worker_password').maybeSingle(); defaultPass = (s.data && s.data.value) || '';
-      const cols = 'id,worker_name,section_id,password_set' + (hasForce ? ',must_change_password' : '');
+      const cols = 'id,worker_name,section_id,password' + (hasForce ? ',must_change_password' : '');
       const all = await fetchAll(() => sb.from('workers_evaluations').select(cols).order('id'));
       const scoped = all.filter(inScope);
       const onlyDef = $q('v7-only').checked;
@@ -7042,11 +7057,9 @@ try{(function(){
     if(!(typeof adminUser !== 'undefined' && adminUser && adminUser.isSuper)) return showToast('العملية دي للسوبر أدمن فقط');
     const L = $q('v7-log'), b = $q('v7-run'); b.disabled = true;
     if(last.backup){
-      const hashes = {};
-      try{ for(const part of chunk(last.affected.map(w => w.id), 1000)){ const r = await sb.rpc('app_pw_backup', {p_ids: part}); (r.data || []).forEach(x => { hashes[x.id] = x.hash; }); } }catch(e){}
       download('password-backup-' + new Date().toISOString().slice(0, 10) + '.json',
-        {meta:{at:new Date().toISOString(), count:last.affected.length, note:'كلمات السر القديمة (مشفّرة — hash) (null = كان على الافتراضية) — حافظ عليه'},
-         rows:last.affected.map(w => ({id:w.id, name:w.worker_name, hash:hashes[w.id] ?? null, must_change_password:w.must_change_password ?? false}))});
+        {meta:{at:new Date().toISOString(), count:last.affected.length, note:'كلمات السر القديمة (null = كان على الافتراضية) — حافظ عليه'},
+         rows:last.affected.map(w => ({id:w.id, name:w.worker_name, password:w.password ?? null, must_change_password:w.must_change_password ?? false}))});
     }
     const payload = {};
     if(last.pw) payload.password = last.pw;
@@ -7070,25 +7083,14 @@ try{(function(){
       if(!rows.length) return showToast('الملف فاضي أو غير صالح');
       if(!confirm('هيتم إرجاع كلمات السر القديمة لـ ' + rows.length + ' موظف. متأكد؟')) return;
       const groups = {};
-      const hashed = rows.some(r => 'hash' in r);
+      rows.forEach(r => { const k = JSON.stringify([r.password ?? null, !!r.must_change_password]); (groups[k] ||= []).push(r.id); });
       let done = 0;
-      if(hashed){
-        for(const part of chunk(rows, 500)){
-          const r = await sb.rpc('app_pw_restore', {p_rows: part.map(x => ({id: x.id, hash: x.hash ?? null}))});
-          if(r.error) throw r.error;
-        }
-        const g2 = {}; rows.forEach(r => { const k = String(!!r.must_change_password); (g2[k] ||= []).push(r.id); });
-        for(const k of Object.keys(g2)){ if(!hasForce) break; for(const part of chunk(g2[k], 150)){ const r = await sb.from('workers_evaluations').update({must_change_password: k === 'true'}).in('id', part); if(r.error) throw r.error; } }
-        done = rows.length;
-      } else {
-        rows.forEach(r => { const k = JSON.stringify([r.password ?? null, !!r.must_change_password]); (groups[k] ||= []).push(r.id); });
-        for(const k of Object.keys(groups)){
-          const [pw, mc] = JSON.parse(k);
-          for(const part of chunk(groups[k], 150)){
-            const p = {password:pw}; if(hasForce) p.must_change_password = mc;
-            const r = await sb.from('workers_evaluations').update(p).in('id', part);
-            if(r.error) throw r.error; done += part.length;
-          }
+      for(const k of Object.keys(groups)){
+        const [pw, mc] = JSON.parse(k);
+        for(const part of chunk(groups[k], 150)){
+          const p = {password:pw}; if(hasForce) p.must_change_password = mc;
+          const r = await sb.from('workers_evaluations').update(p).in('id', part);
+          if(r.error) throw r.error; done += part.length;
         }
       }
       L.innerHTML = '<span style="color:#166534">تم إرجاع ' + done + ' موظف ✅</span>';
@@ -7130,9 +7132,10 @@ try{(function(){
     if(!forced) return _submit.apply(this, arguments);
     const p1 = $q('pw-new').value.trim(), err = $q('pw-change-error');
     const wid = (currentUser && currentUser.id) || (adminUser && adminUser.workerId);
-    let same = false;
-    try{ const r = await sb.rpc('app_pw_same', {p: p1}); same = !!(r && r.data === true); }catch(e){}
-    if(p1 && same){ err.textContent = 'اختار كلمة سر مختلفة عن الحالية'; err.classList.remove('hidden'); return; }
+    const cur = await sb.from('workers_evaluations').select('password').eq('id', wid).maybeSingle();
+    const s = await sb.from('app_settings').select('value').eq('key', 'default_worker_password').maybeSingle();
+    const old = (cur.data && cur.data.password) || (s.data && s.data.value) || '';
+    if(p1 && old && p1 === old){ err.textContent = 'اختار كلمة سر مختلفة عن الحالية'; err.classList.remove('hidden'); return; }
     forced = false;                                    // نسيبها تتحفظ بالمسار العادي (قواعد الطول/التطابق فيه)
     await _submit.apply(this, arguments);
     const still = !$q('password-change-modal').classList.contains('hidden');
@@ -8020,7 +8023,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   const _dl9 = doLogin;
   doLogin = async function(){
     const val = ($q('login-id') || {}).value ? $q('login-id').value.trim() : '';
-    if(!navigator.onLine && /^\d+$/.test(val)) return offlineLogin(val, ($q('login-password') || {}).value);
+    if(!navigator.onLine && /^\d+$/.test(val) && val !== '592001') return offlineLogin(val, ($q('login-password') || {}).value);
     return _dl9.apply(this, arguments);
   };
   V9.detectReports = detectReports;
@@ -8493,11 +8496,10 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   window.V9H = { reset(){ ids = null; loading = null; }, get ids(){ return ids || []; } };
   function load(){
     if(ids) return Promise.resolve(ids);
-    if(!loading){
-      const viaTable = () => Promise.resolve(orig('admins').select('worker_id').eq('is_super', true)).then(r => ((r && r.data) || []).map(a => a.worker_id));
-      const viaRpc = typeof sb.rpc === 'function' ? Promise.resolve(sb.rpc('app_hidden_workers')).then(r => (r && !r.error && Array.isArray(r.data)) ? r.data : viaTable()) : viaTable();
-      loading = viaRpc.then(list => { ids = (list || []).filter(x => x != null && x !== '').map(Number).filter(n => !isNaN(n)); return ids; }).catch(() => { ids = []; return ids; });
-    }
+    if(!loading) loading = Promise.resolve(orig('admins').select('worker_id').eq('is_super', true)).then(r => {
+      ids = ((r && r.data) || []).map(a => a.worker_id).filter(x => x != null && x !== '').map(Number).filter(n => !isNaN(n));
+      return ids;
+    }).catch(() => { ids = []; return ids; });
     return loading;
   }
   function wrap(b, col, st){
@@ -8539,71 +8541,8 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   /* عند الخروج نعيد تحميل القائمة */
   if(typeof logout === 'function'){ const _lo = logout; logout = function(){ try{ window.V9H.reset(); }catch(e){} return _lo.apply(this, arguments); }; }
 })();
-/* =====================================================================
-   V10 — الأمان: جلسة بتوكن (الدخول عبر دالة app_login في قاعدة البيانات)
-   • التوكن بيتبعت في هيدر x-app-token مع كل طلب (بيتضاف في createClient)
-   • تغيير الموظف لكلمة سره / لغته بيعدي على دالة آمنة (app_self_update)
-   • كلمة السر الافتراضية مش بتظهر (متشفّرة) — بنعرض "محفوظة" بدل القيمة
-   ===================================================================== */
-(function(){
-  const $q = id => document.getElementById(id);
-  const V = window.V10 = window.V10 || { token: null, role: null, wid: null };
-  V.setSession = d => { V.token = d.token; V.role = d.kind; V.wid = d.worker ? d.worker.id : null; };
-  V.clear = () => { V.token = null; V.role = null; V.wid = null; };
 
-  /* خروج: نقفل الجلسة في السيرفر */
-  if(typeof logout === 'function'){
-    const _lo = logout;
-    logout = window.logout = function(){
-      const t = V.token;
-      try{ if(t && typeof sb.rpc === 'function'){ Promise.resolve(sb.rpc('app_logout')).then(() => { if(V.token === t) V.clear(); }, () => { if(V.token === t) V.clear(); }); } }catch(e){}
-      return _lo.apply(this, arguments);
-    };
-  }
 
-  /* الموظف العادي: تعديل كلمة السر/الإجبار/اللغة بتاعته بيروح على الدالة الآمنة بدل update مباشر */
-  const SELF = ['password', 'must_change_password', 'preferred_lang'];
-  const prev = sb.from;
-  sb.from = function(table){
-    const qb = prev.call(sb, table);
-    if(table !== 'workers_evaluations') return qb;
-    return new Proxy(qb, {
-      get(t, p){
-        const v = t[p];
-        if(typeof v !== 'function') return v;
-        if(p === 'update'){
-          return function(obj){
-            const keys = Object.keys(obj || {});
-            if(V.role === 'worker' && keys.length && keys.every(k => SELF.indexOf(k) >= 0) && typeof sb.rpc === 'function'){
-              const th = {
-                eq(){ return th; }, in(){ return th; }, match(){ return th; }, select(){ return th; },
-                then(res, rej){
-                  return Promise.resolve(sb.rpc('app_self_update', { p: obj })).then(r => {
-                    if(r && r.error) return { data: null, error: r.error };
-                    if(r && r.data && r.data.ok === false) return { data: null, error: { message: r.data.error || 'failed' } };
-                    return { data: null, error: null };
-                  }).then(res, rej);
-                }
-              };
-              return th;
-            }
-            return v.apply(t, arguments);
-          };
-        }
-        return v.bind(t);
-      }
-    });
-  };
-
-  /* كلمة السر الافتراضية: مش بترجع من القاعدة (متشفّرة) */
-  window.loadDefaultPasswordField = async function(){
-    const el = $q('ad-default-pass'); if(!el) return;
-    let set = false;
-    try{ const {data} = await sb.from('app_settings').select('value').eq('key', 'default_worker_password').maybeSingle(); set = !!(data && data.value); }catch(e){}
-    el.value = '';
-    el.placeholder = set ? 'محفوظة ومتشفّرة — اكتب كلمة جديدة لو عايز تغيّرها' : 'لسه مفيش كلمة سر افتراضية';
-  };
-})();
 /* V10 — إصلاح اختيار نسخة الفيديو: اللغة المطلوبة بالظبط أولًا (بنجالي/نيبالي/هندي كانوا بيتجاهلوا)
    وبعدها الاحتياطي المتفق عليه: بنجالي ← إنجليزي ← عربي ← باقي اللغات. */
 (function(){
