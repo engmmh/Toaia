@@ -8863,6 +8863,148 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   document.head.appendChild(st);
 })();
 
+
+/* =====================================================================
+   V12 — إشعارات Push حقيقية للموظف (تدريب جديد / اختبار جديد / قبل الاختفاء بـ 5 ساعات)
+   • زر تفعيل داخل صفحة الموظف (5 لغات) — بيطلب الإذن ويحفظ اشتراك الجهاز في fs_push_subs
+   • الإرسال نفسه من Supabase (Edge Function fs-push + pg_cron) — الجهاز بيستقبل حتى لو الموقع مقفول
+   ===================================================================== */
+(function(){
+  const $q = id => document.getElementById(id);
+  const E = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const VAPID_DEFAULT = 'BKcYRfScla5xRIdKvpyEzhEA7YepnC4JYhqfalpxztPi82mYTSxjNOX09o4NRDlgqAyygi_b8tj6RpFm6bF8UlM';
+  const TX = {
+    title: { ar:'🔔 الإشعارات', en:'🔔 Notifications', bn:'🔔 নোটিফিকেশন', ne:'🔔 सूचनाहरू', hi:'🔔 सूचनाएँ' },
+    desc:  { ar:'فعّلها عشان توصلك التدريبات والاختبارات الجديدة حتى لو الموقع مقفول', en:'Turn on to get new trainings and quizzes even when the site is closed', bn:'নতুন প্রশিক্ষণ ও পরীক্ষার খবর পেতে চালু করুন, সাইট বন্ধ থাকলেও আসবে', ne:'नयाँ तालिम र परीक्षाको सूचना पाउन खोल्नुहोस्, साइट बन्द भए पनि आउँछ', hi:'नई ट्रेनिंग और टेस्ट की सूचना पाने के लिए चालू करें, साइट बंद होने पर भी आएगी' },
+    on:    { ar:'تفعيل الإشعارات', en:'Turn on notifications', bn:'নোটিফিকেশন চালু করুন', ne:'सूचना खोल्नुहोस्', hi:'सूचनाएँ चालू करें' },
+    active:{ ar:'الإشعارات شغالة ✅', en:'Notifications are on ✅', bn:'নোটিফিকেশন চালু আছে ✅', ne:'सूचना चालु छ ✅', hi:'सूचनाएँ चालू हैं ✅' },
+    off:   { ar:'إيقاف', en:'Turn off', bn:'বন্ধ করুন', ne:'बन्द गर्नुहोस्', hi:'बंद करें' },
+    denied:{ ar:'الإشعارات محظورة من إعدادات المتصفح — فعّلها من إعدادات الموقع', en:'Notifications are blocked in browser settings — allow them in the site settings', bn:'ব্রাউজার সেটিংসে নোটিফিকেশন বন্ধ করা আছে — সাইট সেটিংস থেকে চালু করুন', ne:'ब्राउजर सेटिङमा सूचना रोकिएको छ — साइट सेटिङबाट खोल्नुहोस्', hi:'ब्राउज़र सेटिंग में सूचनाएँ ब्लॉक हैं — साइट सेटिंग से चालू करें' },
+    unsup: { ar:'جهازك/متصفحك مش بيدعم الإشعارات (على الآيفون ثبّت التطبيق على الشاشة الرئيسية الأول)', en:'This device/browser does not support notifications (on iPhone, add the app to the Home Screen first)', bn:'আপনার ডিভাইস/ব্রাউজার নোটিফিকেশন সমর্থন করে না (আইফোনে আগে অ্যাপটি হোম স্ক্রিনে যোগ করুন)', ne:'तपाईंको उपकरण/ब्राउजरले सूचना समर्थन गर्दैन (आइफोनमा पहिले एप होम स्क्रिनमा थप्नुहोस्)', hi:'आपका डिवाइस/ब्राउज़र सूचनाएँ सपोर्ट नहीं करता (iPhone पर पहले ऐप को होम स्क्रीन पर जोड़ें)' },
+    fail:  { ar:'تعذر تفعيل الإشعارات، حاول تاني', en:'Could not enable notifications, try again', bn:'নোটিফিকেশন চালু করা যায়নি, আবার চেষ্টা করুন', ne:'सूचना खोल्न सकिएन, फेरि प्रयास गर्नुहोस्', hi:'सूचनाएँ चालू नहीं हो सकीं, फिर कोशिश करें' }
+  };
+  const lang = () => { try{ return (typeof currentLang !== 'undefined' && TX.title[currentLang]) ? currentLang : 'ar'; }catch(e){ return 'ar'; } };
+  const t = k => TX[k][lang()];
+  const supported = () => ('serviceWorker' in navigator) && ('PushManager' in window) && ('Notification' in window);
+  const u8 = b64 => { const p = '='.repeat((4 - b64.length % 4) % 4), s = (b64 + p).replace(/-/g, '+').replace(/_/g, '/'), r = atob(s); return Uint8Array.from([...r].map(c => c.charCodeAt(0))); };
+  const workerId = () => { try{ return (typeof currentUser !== 'undefined' && currentUser) ? currentUser.id : null; }catch(e){ return null; } };
+  let vapid = null, busy = false, msg = '';
+
+  async function getKey(){
+    if(vapid) return vapid;
+    vapid = VAPID_DEFAULT;
+    try{ const {data} = await sb.from('app_settings').select('value').eq('key', 'push_vapid_public').maybeSingle(); if(data && data.value) vapid = data.value; }catch(e){}
+    return vapid;
+  }
+  async function currentSub(){
+    try{ const reg = await navigator.serviceWorker.ready; return await reg.pushManager.getSubscription(); }catch(e){ return null; }
+  }
+  async function save(sub){
+    const wid = workerId(); if(!wid || !sub) return false;
+    const j = sub.toJSON ? sub.toJSON() : {}; const keys = j.keys || {};
+    if(!keys.p256dh || !keys.auth) return false;
+    const r = await sb.from('fs_push_subs').upsert({ worker_id: wid, endpoint: sub.endpoint, p256dh: keys.p256dh, auth: keys.auth, lang: lang(), ua: (navigator.userAgent || '').slice(0, 160), updated_at: new Date().toISOString() }, { onConflict: 'endpoint' });
+    return !r.error;
+  }
+
+  async function enable(){
+    if(busy || !supported()) return; busy = true; msg = ''; draw();
+    try{
+      const perm = await Notification.requestPermission();
+      if(perm !== 'granted'){ busy = false; return draw(); }
+      const reg = await navigator.serviceWorker.ready;
+      let sub = await reg.pushManager.getSubscription();
+      if(!sub){
+        const key = u8(await getKey());
+        try{ sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key }); }
+        catch(e){ const old = await reg.pushManager.getSubscription(); if(old){ await old.unsubscribe(); } sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key }); }
+      }
+      if(!(await save(sub))) msg = t('fail');
+    }catch(e){ console.error('push enable', e); msg = t('fail'); }
+    busy = false; draw();
+  }
+  async function disable(){
+    if(busy) return; busy = true;
+    try{
+      const sub = await currentSub();
+      if(sub){ const ep = sub.endpoint; try{ await sb.from('fs_push_subs').delete().eq('endpoint', ep); }catch(e){} await sub.unsubscribe(); }
+    }catch(e){ console.error('push disable', e); }
+    busy = false; draw();
+  }
+
+  async function draw(){
+    const wid = workerId();
+    let host = $q('v12-push');
+    if(!wid){ if(host) host.remove(); return; }
+    if(!host){
+      host = document.createElement('div'); host.id = 'v12-push'; host.className = 'v12-push';
+      const anchor = $q('v9-banner') || $q('worker-name-display');
+      if(anchor && anchor.parentElement && $q('v9-banner')) anchor.insertAdjacentElement('afterend', host);
+      else { const ws = $q('worker-section'); if(!ws) return; ws.insertBefore(host, ws.firstChild); }
+    }
+    if(!supported()){ host.className = 'v12-push note'; host.innerHTML = '<span>' + E(t('unsup')) + '</span>'; return; }
+    const perm = Notification.permission, sub = perm === 'granted' ? await currentSub() : null;
+    if(perm === 'denied'){ host.className = 'v12-push note'; host.innerHTML = '<span>' + E(t('denied')) + '</span>'; return; }
+    if(sub){
+      host.className = 'v12-push ok';
+      host.innerHTML = '<span>' + E(t('active')) + '</span><button type="button" class="v12-link" id="v12-off">' + E(t('off')) + '</button>' + (msg ? '<div class="v12-msg">' + E(msg) + '</div>' : '');
+      $q('v12-off').onclick = disable; return;
+    }
+    host.className = 'v12-push';
+    host.innerHTML = '<div class="v12-t">' + E(t('title')) + '</div><div class="v12-d">' + E(t('desc')) + '</div><button type="button" class="btn-primary v12-btn" id="v12-on"' + (busy ? ' disabled' : '') + '>' + E(t('on')) + '</button>' + (msg ? '<div class="v12-msg">' + E(msg) + '</div>' : '');
+    $q('v12-on').onclick = enable;
+  }
+
+  /* مزامنة صامتة: لو الجهاز مشترك بالفعل نربطه بالموظف الحالي وبلغته الحالية */
+  async function resync(){
+    try{ if(!supported() || Notification.permission !== 'granted') return; const sub = await currentSub(); if(sub) await save(sub); }catch(e){}
+  }
+
+  const _ew = enterAsWorkerFinal;
+  enterAsWorkerFinal = async function(){
+    const r = await _ew.apply(this, arguments);
+    try{ await resync(); await draw(); }catch(e){}
+    return r;
+  };
+  if(typeof setLang === 'function'){
+    const _sl = setLang;
+    setLang = function(){ const r = _sl.apply(this, arguments); setTimeout(() => { resync(); draw(); }, 50); return r; };
+    window.setLang = setLang;
+  }
+  const _lo = window.logout;
+  if(typeof _lo === 'function'){
+    window.logout = function(){ const h = $q('v12-push'); if(h) h.remove(); return _lo.apply(this, arguments); };
+    logout = window.logout;
+  }
+
+  /* ---------- الأدمن: عدد الأجهزة المشتركة (في تبويب الإعدادات) ---------- */
+  const _at = adminTab;
+  adminTab = function(tab){
+    const r = _at.apply(this, arguments);
+    if(tab === 'passwords') setTimeout(adminCard, 400);
+    return r;
+  };
+  async function adminCard(){
+    try{
+      const host = $q('tab-passwords'); if(!host) return;
+      let c = $q('v12-admin');
+      if(!c){ c = document.createElement('div'); c.id = 'v12-admin'; c.className = 'card'; c.style.cssText = 'padding:14px;margin-top:12px'; host.appendChild(c); }
+      const r = await sb.from('fs_push_subs').select('id', { count: 'exact', head: true });
+      if(r.error){ c.innerHTML = '<b>🔔 إشعارات الموظفين</b><div class="muted" style="font-size:12px;margin-top:4px">لسه محتاجة تشغيل phase7.sql (راجع README-push.txt).</div>'; return; }
+      c.innerHTML = '<b>🔔 إشعارات الموظفين</b><div style="font-size:13px;margin-top:6px">الأجهزة المشتركة دلوقتي: <b>' + (r.count || 0) + '</b></div><div class="muted" style="font-size:11px;margin-top:4px">بتوصل تلقائيًا عند نشر تدريب/اختبار، وقبل اختفائه بـ 5 ساعات (لو مدته أكبر من 5 ساعات).</div>';
+    }catch(e){}
+  }
+
+  const st = document.createElement('style');
+  st.textContent = `.v12-push{margin:10px 12px;padding:12px 14px;border-radius:14px;background:linear-gradient(135deg,#ecfdf5,#f0f9ff);border:1px solid #bbf7d0;font-size:13px;color:#0f172a}
+.v12-push .v12-t{font-weight:800;margin-bottom:3px}.v12-push .v12-d{font-size:12px;color:#475569;margin-bottom:8px;line-height:1.5}.v12-btn{padding:9px 16px;font-size:12px;width:auto}
+.v12-push.ok{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:8px 14px;background:#f0fdf4;font-weight:700;font-size:12px}
+.v12-push.note{background:#fffbeb;border-color:#fde68a;font-size:12px;color:#92400e}
+.v12-link{background:none;border:0;color:#64748b;text-decoration:underline;font-size:11px;cursor:pointer}.v12-msg{width:100%;margin-top:6px;color:#b91c1c;font-size:12px}`;
+  document.head.appendChild(st);
+  window.V12 = { enable, disable, draw, resync };
+})();
+
 </script>
 </body>
 </html>
