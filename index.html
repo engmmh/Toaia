@@ -1183,8 +1183,15 @@ body.v9-login-en .login-hero *{text-align:left!important}
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
             <div style="grid-column:1/-1;">
               <label class="field-label">عنوان/موضوع التدريب</label>
-              <input id="os-title" type="text" class="input-field" placeholder="مثال: أهمية نظافة السكن والغرفة" oninput="searchOnsiteSameTitle()"/>
+              <input id="os-title" type="text" class="input-field" placeholder="مثال: أهمية نظافة السكن والغرفة" oninput="searchOnsiteSameTitle()" onblur="v16Translate()"/>
               <div id="os-same-title-results" style="margin-top:6px;"></div>
+              <div id="v16-title-tr" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px;">
+                <input id="os-title-en" class="input-field" dir="ltr" placeholder="English title (تلقائي)"/>
+                <input id="os-title-bn" class="input-field" placeholder="বাংলা শিরোনাম (تلقائي)"/>
+                <input id="os-title-ne" class="input-field" placeholder="नेपाली शीर्षक (تلقائي)"/>
+                <input id="os-title-hi" class="input-field" placeholder="हिन्दी शीर्षक (تلقائي)"/>
+              </div>
+              <div id="v16-note" class="muted" style="font-size:10.5px;margin-top:3px">الترجمة بتتم تلقائي لما تكتب العنوان بالعربي، وتقدر تعدّلها بإيدك.</div>
             </div>
             <div><label class="field-label">تاريخ التدريب</label><input id="os-date" type="date" class="input-field"/></div>
             <div><label class="field-label">مدة التدريب (دقيقة)</label><input id="os-duration" type="number" class="input-field" value="30"/></div>
@@ -4914,7 +4921,7 @@ try{(function(){
     try{
       const {data:parts} = await sb.from('onsite_training_participants').select('*').eq('worker_id',currentUser.id);
       const ids=(parts||[]).map(p=>p.onsite_training_id);
-      const {data:sessions} = ids.length ? await sb.from('onsite_trainings').select('id,title,training_date,provider').in('id',ids) : {data:[]};
+      const {data:sessions} = ids.length ? await sb.from('onsite_trainings').select('*').in('id',ids) : {data:[]};
       const sMap={}; (sessions||[]).forEach(s=>sMap[s.id]=s);
       workerOnsiteTotal = (parts||[]).length;
       workerOnsitePendingCount = (parts||[]).filter(p=>!p.worker_evaluation).length;
@@ -4935,7 +4942,7 @@ try{(function(){
           '</div>';
         }
         return '<div style="background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;">'+
-          '<div style="font-weight:800;font-size:13px;">🎓 '+esc(s.title)+'</div>'+
+          '<div style="font-weight:800;font-size:13px;">🎓 '+esc((currentLang!=='ar'&&s['title_'+currentLang])||s.title)+'</div>'+
           '<div class="muted" style="font-size:10.5px;margin-top:3px;">📅 '+fmtDate(s.training_date)+(s.provider?' &nbsp;|&nbsp; '+esc(wt('onsiteProvider'))+': '+esc(s.provider):'')+'</div>'+
           '<div style="margin-top:6px;font-size:12px;">'+esc(wt('onsiteAdminLabel'))+': '+adminEvalHtml+'</div>'+
           bottom+
@@ -7546,7 +7553,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   const lsGet = k => { try{ return localStorage.getItem(k); }catch(e){ return null; } };
   const lsSet = (k, v) => { try{ localStorage.setItem(k, v); }catch(e){} };
   const CH = 150;
-  const S = { review:'on', board:'on', names:'first', overdue:14, reports:'on' };
+  const S = { review:'on', board:'on', names:'first', overdue:14, reports:'off' };
   let reportsOk = null, me = null, meBusy = false;
   const V9 = window.V9 = { S, n, E, lsGet, lsSet, get me(){ return me; } };
 
@@ -7559,7 +7566,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
         if(r.key === 'worker_leaderboard') S.board = r.value === 'off' ? 'off' : 'on';
         if(r.key === 'worker_leaderboard_names') S.names = r.value === 'anon' ? 'anon' : 'first';
         if(r.key === 'worker_overdue_days') S.overdue = Math.max(1, parseInt(r.value) || 14);
-        if(r.key === 'worker_reports') S.reports = r.value === 'off' ? 'off' : 'on';
+        if(r.key === 'worker_reports') S.reports = r.value === 'on' ? 'on' : 'off';
       });
     }catch(e){}
   }
@@ -7667,7 +7674,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   function refreshLabels(){
     if($q('wicon-label-report')) $q('wicon-label-report').textContent = n('tabReport');
     darkUI();
-    $q('wicon-btn-report')?.classList.toggle('hidden', !(reportsOk && S.reports !== 'off'));
+    $q('wicon-btn-report')?.classList.toggle('hidden', !(reportsOk && S.reports === 'on'));
   }
 
   /* ---------- لوحة إنجازاتي ---------- */
@@ -8134,7 +8141,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
       if(m.worker_quiz_review) $q('v9-set-review').value = m.worker_quiz_review;
       if(m.worker_leaderboard) $q('v9-set-board').value = m.worker_leaderboard;
       if(m.worker_overdue_days) $q('v9-set-days').value = m.worker_overdue_days;
-      if(m.worker_reports) $q('v9-set-rep').value = m.worker_reports;
+      $q('v9-set-rep').value = (m.worker_reports === 'on') ? 'on' : 'off';
     }catch(e){}
   }
   V9A.saveSettings = async function(){
@@ -9352,6 +9359,98 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     }catch(e){ console.error(e); }
     return r;
   };
+})();
+
+
+
+/* ===== V16 — ترجمة عنوان التدريب الميداني تلقائياً (زي الفيديوهات) ===== */
+(function(){
+  const $ = id => document.getElementById(id);
+  const MAP = { en:'os-title-en', bn:'os-title-bn', ne:'os-title-ne', hi:'os-title-hi' };
+  let colsOk = null;
+  async function hasCols(){
+    if(colsOk !== null) return colsOk;
+    try{ const r = await sb.from('onsite_trainings').select('title_en,title_bn,title_ne,title_hi').limit(1); colsOk = !r.error; }catch(e){ colsOk = false; }
+    const n = $('v16-note');
+    if(n && !colsOk) n.innerHTML = '<span style="color:#b45309">⚠️ لازم تشغّل ملف phase9.sql في Supabase عشان الترجمة تتحفظ.</span>';
+    return colsOk;
+  }
+  window.v16Translate = async function(){ hasCols(); try{ await autoTranslateGroup('os-title', MAP); }catch(e){} };
+  function fill(o){ Object.keys(MAP).forEach(l => { const el = $(MAP[l]); if(el) el.value = (o && o['title_'+l]) || ''; }); }
+
+  // فتح الفورم: جلسة جديدة / نسخ / تعديل
+  const _n = window.openNewOnsiteSessionForm;
+  window.openNewOnsiteSessionForm = function(prefill){
+    const r = _n.apply(this, arguments);
+    fill(prefill && prefill.title_en !== undefined ? prefill : null); hasCols();
+    return r;
+  };
+  const _e = window.editOnsiteSession;
+  window.editOnsiteSession = async function(id){
+    const r = await _e.apply(this, arguments);
+    try{ const {data} = await sb.from('onsite_trainings').select('*').eq('id', id).single(); fill(data); hasCols(); }catch(e){}
+    return r;
+  };
+
+  // الحفظ: نكمّل الترجمة الناقصة، ونضيف الترجمات للـ payload من غير ما نلمس باقي الكود
+  const _s = window.saveOnsiteSession;
+  window.saveOnsiteSession = async function(){
+    const title = ($('os-title')||{}).value;
+    if(!title || !title.trim()) return _s.apply(this, arguments);
+    const ok = await hasCols();
+    if(ok){ try{ await autoTranslateGroup('os-title', MAP); }catch(e){} }
+    const extra = {}; if(ok) Object.keys(MAP).forEach(l => { extra['title_'+l] = ($(MAP[l])||{}).value ? $(MAP[l]).value.trim() : null; });
+    const origFrom = sb.from.bind(sb);
+    sb.from = function(t){
+      const q = origFrom(t);
+      if(t === 'onsite_trainings' && ok){
+        const ins = q.insert.bind(q), upd = q.update.bind(q);
+        q.insert = (p, ...a) => ins(Object.assign({}, p, extra), ...a);
+        q.update = (p, ...a) => upd(Object.assign({}, p, extra), ...a);
+      }
+      return q;
+    };
+    try{ return await _s.apply(this, arguments); } finally { sb.from = origFrom; }
+  };
+})();
+
+/* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
+(function(){
+  const VERSION = 'v9.18';
+  const $ = id => document.getElementById(id);
+  let running = false;
+  async function tx(text, lang){
+    try{
+      const r = await fetch('https://api.mymemory.translated.net/get?q='+encodeURIComponent(text)+'&langpair=ar|'+lang);
+      const j = await r.json(); const t = j && j.responseData && j.responseData.translatedText;
+      return (t && !/MYMEMORY WARNING|QUERY LENGTH/i.test(t)) ? t : null;
+    }catch(e){ return null; }
+  }
+  async function backfill(){
+    if(running) return; running = true;
+    try{
+      const chk = await sb.from('onsite_trainings').select('title_en').limit(1);
+      if(chk.error) return;                                   // phase9 لسه ما اتشغلش
+      const {data} = await sb.from('onsite_trainings').select('id,title,title_en,title_bn,title_ne,title_hi').order('id',{ascending:false}).limit(40);
+      const todo = (data||[]).filter(s => s.title && (!s.title_en || !s.title_bn || !s.title_ne || !s.title_hi)).slice(0,6);
+      for(const s of todo){
+        const upd = {};
+        for(const l of ['en','bn','ne','hi']){ if(!s['title_'+l]){ const t = await tx(s.title, l); if(t) upd['title_'+l] = t; } }
+        if(Object.keys(upd).length) await sb.from('onsite_trainings').update(upd).eq('id', s.id);
+      }
+    }catch(e){} finally { running = false; }
+  }
+  const _l = window.loadOnsiteSessionsList;
+  if(typeof _l === 'function') window.loadOnsiteSessionsList = async function(){ const r = await _l.apply(this, arguments); setTimeout(backfill, 300); return r; };
+  window.v16Backfill = backfill;
+
+  // رقم النسخة في الفوتر عشان تتأكد إن التحديث وصل
+  function stamp(){
+    document.querySelectorAll('div,p,span,footer').forEach(el=>{
+      if(el.children.length===0 && /Prepared by/i.test(el.textContent) && !el.dataset.v16s){ el.dataset.v16s='1'; el.insertAdjacentHTML('afterend','<div style="font-size:10px;opacity:.55;text-align:center;direction:ltr">'+VERSION+'</div>'); }
+    });
+  }
+  setInterval(stamp, 2500); stamp();
 })();
 
 </script>
