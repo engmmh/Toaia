@@ -9295,6 +9295,65 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   window.addEventListener('resize', ()=>{ const a=$('onsite-print-area'); if(a) fit(a); });
 })();
 
+
+
+/* ===== V15 — تغيير رقم الموظف (ID) من شاشة تفاصيل الموظف — بيتغير في كل حاجة تخصه ===== */
+(function(){
+  const $ = id => document.getElementById(id);
+  function ensureBox(){
+    if($('v15-id-box')) return $('v15-id-box');
+    const panel = $('wmpanel-data'); if(!panel) return null;
+    const card = panel.firstElementChild; if(!card) return null;
+    const d = document.createElement('div'); d.id = 'v15-id-box';
+    d.style.cssText = 'margin-top:12px;padding-top:10px;border-top:1px dashed var(--border)';
+    d.innerHTML = '<label class="field-label">🔢 رقم الموظف (ID)</label>'+
+      '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">'+
+      '<input id="v15-id" type="number" min="1" inputmode="numeric" class="input-field" style="max-width:180px">'+
+      '<button class="btn-secondary btn-sm" id="v15-id-btn" type="button">تغيير الرقم</button></div>'+
+      '<div class="muted" style="font-size:10.5px;margin-top:6px">لما تغيّر الرقم بيتغير تلقائي في كل حاجة تخص الموظف (التدريبات، الاختبارات، المخالفات، التدريب الميداني، البلاغات، التعليقات، الإشعارات…) ومفيش أي أثر للرقم القديم. الموظف يدخل بعد كده بالرقم الجديد وبنفس كلمة السر.</div>'+
+      '<div id="v15-id-msg" class="muted" style="font-size:11px;margin-top:4px"></div>';
+    card.appendChild(d);
+    $('v15-id-btn').onclick = change;
+    return d;
+  }
+  async function change(){
+    const oldId = Number(currentModalWorkerId), nv = parseInt(($('v15-id').value||'').trim(), 10), msg = $('v15-id-msg');
+    if(!oldId) return;
+    if(!(nv > 0)){ msg.textContent = 'اكتب رقم صحيح'; return; }
+    if(nv === oldId){ msg.textContent = 'ده نفس الرقم الحالي'; return; }
+    if(!confirm('تغيير رقم الموظف من '+oldId+' إلى '+nv+'؟\nهيتغير في كل بياناته (تدريب، اختبارات، مخالفات، ميداني، بلاغات...) ومش هيفضل أي أثر للرقم القديم.\nالموظف لازم يدخل بالرقم الجديد.')) return;
+    const btn = $('v15-id-btn'); btn.disabled = true; msg.textContent = 'جاري التغيير…';
+    let r;
+    try{ r = await sb.rpc('fs_change_worker_id', { p_old: oldId, p_new: nv }); }catch(e){ r = { error: e }; }
+    btn.disabled = false;
+    if(r.error){
+      const m = String(r.error.message || r.error);
+      msg.textContent = /NEW_ID_EXISTS/.test(m) ? 'الرقم '+nv+' مستخدم لموظف تاني' :
+        /OLD_NOT_FOUND/.test(m) ? 'الموظف مش موجود' :
+        /INVALID_ID/.test(m) ? 'رقم غير صالح' :
+        /fs_change_worker_id|function|schema cache/i.test(m) ? 'لازم تشغّل ملف phase8.sql في Supabase الأول' : ('تعذر التغيير: '+m);
+      return;
+    }
+    try{ if(adminUser && adminUser.id) await logActivityV22('admin', adminUser.id, 'تغيير رقم موظف من '+oldId+' إلى '+nv, 'worker', nv, { old_id: oldId, new_id: nv }); }catch(e){}
+    showToast('تم تغيير الرقم إلى '+nv+' ✅');
+    try{ closeWorkerModal(); }catch(e){}
+    try{ loadWorkers(); }catch(e){}
+  }
+  const _o = openWorkerModal;
+  openWorkerModal = async function(id){
+    const r = await _o.apply(this, arguments);
+    try{
+      const box = ensureBox();
+      if(box){
+        const sup = !!(typeof adminUser !== 'undefined' && adminUser && adminUser.isSuper);
+        box.style.display = sup ? '' : 'none';
+        $('v15-id').value = id; $('v15-id-msg').textContent = '';
+      }
+    }catch(e){ console.error(e); }
+    return r;
+  };
+})();
+
 </script>
 </body>
 </html>
