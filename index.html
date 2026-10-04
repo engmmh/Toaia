@@ -9039,6 +9039,147 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   document.head.appendChild(st);
 })();
 
+
+
+/* ===== V13 — ترتيب نص كروت السلامة + رقم سري للإبلاغ ===== */
+(function(){
+  const $ = id => document.getElementById(id);
+  const esc2 = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const lang = () => { try{ return (typeof currentLang!=='undefined'&&currentLang)||'ar'; }catch(e){ return 'ar'; } };
+
+  /* ---------- 1) تنسيق وصف الكارت ---------- */
+  const MARK = /(❌|✅|💡|⚠️|📌|🔴|🟢)/;
+  function fmt(text){
+    let t = String(text||'').replace(/\s+/g,' ').trim();
+    if(!t) return '';
+    // فاصل قبل أي علامة (❌ ✅ 💡 ⚠️ ...)
+    t = t.replace(/\s*(❌|✅|💡|⚠️|📌|🔴|🟢)/g,'\n$1');
+    const out = [];
+    t.split('\n').forEach(block=>{
+      block = block.trim(); if(!block) return;
+      const m = block.match(/^(❌|✅|💡|⚠️|📌|🔴|🟢)\s*/);
+      const cls = m ? ({'❌':'bad','🔴':'bad','✅':'good','🟢':'good','💡':'tip','⚠️':'tip','📌':'tip'}[m[1]]) : '';
+      const body = m ? block.slice(m[0].length) : block;
+      // قسّم الجمل
+      const sents = body.split(/(?<=[.!؟?۔।।])\s+/).map(s=>s.trim()).filter(Boolean);
+      sents.forEach((s,i)=>{
+        let h;
+        const k = s.search(/[:：]/);
+        if(k>0 && k<=45) h = '<b>'+esc2(s.slice(0,k+1))+'</b> '+esc2(s.slice(k+1).trim());
+        else h = esc2(s);
+        const icon = (m && i===0) ? '<span class="v13-ic">'+m[1]+'</span>' : '';
+        out.push('<div class="v13-l '+(cls||'')+(i===0&&cls?' first':'')+'">'+icon+h+'</div>');
+      });
+    });
+    return out.join('');
+  }
+  const st = document.createElement('style');
+  st.textContent = `
+  .v13-desc{margin:4px 0 8px;font-size:13.5px;line-height:1.85}
+  .v13-l{padding:5px 10px;margin:4px 0;border-radius:9px;background:rgba(100,116,139,.07);color:#334155}
+  .v13-l b{color:#0f172a}
+  .v13-l.bad{background:rgba(220,38,38,.09);border-inline-start:4px solid #dc2626}
+  .v13-l.good{background:rgba(22,163,74,.10);border-inline-start:4px solid #16a34a}
+  .v13-l.tip{background:rgba(245,158,11,.12);border-inline-start:4px solid #f59e0b}
+  .v13-ic{margin-inline-end:6px}
+  body.v9-dark .v13-l{color:#e2e8f0}body.v9-dark .v13-l b{color:#fff}
+  .v13-pin{position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px}
+  .v13-pin>div{background:#fff;color:#0f172a;border-radius:16px;padding:20px;max-width:340px;width:100%;text-align:center}
+  body.v9-dark .v13-pin>div{background:#1e293b;color:#fff}
+  .v13-pin input{text-align:center;font-size:22px;letter-spacing:6px;margin:10px 0}
+  `;
+  document.head.appendChild(st);
+
+  function fixCards(){
+    const g = $('worker-cards-grid'); if(!g) return;
+    g.querySelectorAll('.safety-card-slide p').forEach(p=>{
+      if(p.dataset.v13) return;
+      p.dataset.v13 = '1';
+      const d = document.createElement('div'); d.className = 'v13-desc'; d.innerHTML = fmt(p.textContent);
+      p.replaceWith(d);
+    });
+  }
+  let busy=false;
+  function arm(){
+    const g = $('worker-cards-grid'); if(!g || g.dataset.v13obs) return;
+    g.dataset.v13obs='1';
+    new MutationObserver(()=>{ if(busy) return; busy=true; try{ fixCards(); }finally{ setTimeout(()=>busy=false,0); } }).observe(g,{childList:true});
+    fixCards();
+  }
+  setInterval(arm, 1500); arm();
+
+  /* ---------- 2) رقم سري للإبلاغ ---------- */
+  const DEFAULT_PIN = '5900';
+  const T = {
+    ar:{t:'🔒 الإبلاغ بالرقم السري',d:'أدخل الرقم السري اللي أخدته من الإدارة',ok:'فتح',no:'إلغاء',bad:'الرقم السري غير صحيح'},
+    en:{t:'🔒 Reporting PIN',d:'Enter the PIN given to you by management',ok:'Open',no:'Cancel',bad:'Wrong PIN'},
+    bn:{t:'🔒 রিপোর্ট পিন',d:'ম্যানেজমেন্ট থেকে পাওয়া পিনটি দিন',ok:'খুলুন',no:'বাতিল',bad:'ভুল পিন'},
+    ne:{t:'🔒 रिपोर्ट पिन',d:'व्यवस्थापनले दिएको पिन हाल्नुहोस्',ok:'खोल्नुहोस्',no:'रद्द',bad:'गलत पिन'},
+    hi:{t:'🔒 रिपोर्ट पिन',d:'प्रबंधन द्वारा दिया गया पिन दर्ज करें',ok:'खोलें',no:'रद्द करें',bad:'गलत पिन'}
+  };
+  const tx = k => (T[lang()]||T.ar)[k];
+  async function currentPin(){
+    try{
+      const r = await sb.from('app_settings').select('value').eq('key','report_pin').maybeSingle();
+      const v = r && r.data && String(r.data.value||'').trim();
+      return v || DEFAULT_PIN;
+    }catch(e){ return DEFAULT_PIN; }
+  }
+  const ukey = () => 'v13_rep_ok_' + ((typeof currentUser!=='undefined'&&currentUser&&currentUser.id)||'x');
+  function askPin(pin){
+    return new Promise(res=>{
+      const w = document.createElement('div'); w.className='v13-pin';
+      w.innerHTML = '<div><div style="font-weight:800;font-size:16px">'+tx('t')+'</div><div style="font-size:12px;opacity:.8;margin-top:6px">'+tx('d')+'</div>'+
+        '<input type="password" inputmode="numeric" autocomplete="off" class="input-field" id="v13-pin-in" maxlength="12">'+
+        '<div style="display:flex;gap:8px"><button class="btn-primary" id="v13-pin-ok" style="flex:1">'+tx('ok')+'</button><button class="btn-secondary" id="v13-pin-no" style="flex:1">'+tx('no')+'</button></div></div>';
+      document.body.appendChild(w);
+      const inp = w.querySelector('#v13-pin-in'); setTimeout(()=>inp.focus(),50);
+      const done = v => { w.remove(); res(v); };
+      w.querySelector('#v13-pin-no').onclick = () => done(false);
+      w.querySelector('#v13-pin-ok').onclick = () => {
+        if(inp.value.trim() === pin){ try{ localStorage.setItem(ukey(), pin); }catch(e){} done(true); }
+        else { showToast(tx('bad')); inp.value=''; inp.focus(); }
+      };
+      inp.addEventListener('keydown',e=>{ if(e.key==='Enter') w.querySelector('#v13-pin-ok').click(); });
+    });
+  }
+  const _tw = toggleWorkerSection;
+  toggleWorkerSection = function(name){
+    if(name !== 'report') return _tw.apply(this, arguments);
+    const args = arguments, self = this;
+    (async()=>{
+      const pin = await currentPin();
+      let saved = null; try{ saved = localStorage.getItem(ukey()); }catch(e){}
+      if(saved === pin) return _tw.apply(self, args);   // لو الرقم اتغيّر القفل بيرجع تلقائي
+      if(await askPin(pin)) _tw.apply(self, args);
+    })();
+  };
+
+  /* ---------- 3) تغيير الرقم من الأدمن الرئيسي ---------- */
+  async function buildPinCard(){
+    if(typeof adminUser==='undefined' || !adminUser || !adminUser.isSuper) return;
+    const tab = $('tab-passwords'); if(!tab || $('v13-pin-card')) return;
+    const box = document.createElement('div'); box.className='card v9-adm'; box.id='v13-pin-card';
+    box.innerHTML = '<h3>🔒 الرقم السري لأيقونة الإبلاغ</h3><div class="v9-sub">الموظف لازم يدخل الرقم ده عشان يفتح الإبلاغ. لما تغيّره، كل اللي كانوا فاتحينه بيتقفل عليهم تلقائي.</div>'+
+      '<label class="v9-row">الرقم السري<input id="v13-pin-val" type="text" inputmode="numeric" class="input-field" maxlength="12"></label>'+
+      '<button class="btn-primary" id="v13-pin-save">حفظ الرقم</button><div id="v13-pin-msg" class="v9-sm"></div>';
+    tab.appendChild(box);
+    $('v13-pin-val').value = await currentPin();
+    $('v13-pin-save').onclick = async()=>{
+      const v = $('v13-pin-val').value.trim();
+      if(!/^\d{3,12}$/.test(v)){ $('v13-pin-msg').textContent='الرقم لازم يكون أرقام فقط (3 إلى 12 رقم)'; return; }
+      const r = await sb.from('app_settings').upsert({key:'report_pin', value:v});
+      $('v13-pin-msg').textContent = r.error ? ('تعذر الحفظ: '+(r.error.message||'')) : 'تم الحفظ ✅';
+    };
+  }
+  const _at = adminTab;
+  adminTab = function(tab){
+    const r = _at.apply(this, arguments);
+    if(tab==='passwords') setTimeout(()=>buildPinCard().catch(()=>{}), 400);
+    return r;
+  };
+})();
+
 </script>
 </body>
 </html>
