@@ -9180,6 +9180,121 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   };
 })();
 
+
+
+/* ===== V14 — سجل تدريب الموظفين: نسخة طبق الأصل من قالب EMPLOYEE_TRAINING_RECORD (FS 05-6) ===== */
+(function(){
+  const $ = id => document.getElementById(id);
+  const LOGO = 'data:image/jpeg;base64,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';
+  const EV = {excellent:'ممتاز', good:'جيد', acceptable:'مقبول', weak:'ضعيف'};
+  const H = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const tw = n => (n/20)+'pt';
+  let FORM = null;
+  async function loadForm(){
+    if(FORM) return FORM;
+    FORM = {company:'Afak Al Harouf Commercial', doc:'FS 05-6', rev:'00', issue:'01.05.2025'};
+    try{
+      const r = await sb.from('app_settings').select('key,value').in('key',['form_company','form_doc_no','form_rev_no','form_issue_date']);
+      (r.data||[]).forEach(x=>{ if(!x.value) return; if(x.key==='form_company') FORM.company=x.value; if(x.key==='form_doc_no') FORM.doc=x.value; if(x.key==='form_rev_no') FORM.rev=x.value; if(x.key==='form_issue_date') FORM.issue=x.value; });
+    }catch(e){}
+    return FORM;
+  }
+  const CSS = `
+  .rec{font-family:"Times New Roman",Times,"Liberation Serif",serif;color:#000;line-height:1.15;direction:ltr;text-align:left}
+  .rec table{border-collapse:collapse;table-layout:fixed}
+  .rec td{padding:0;vertical-align:top;border:.75pt solid #000;overflow:hidden}
+  .rec .hd{margin-left:${tw(301)};width:${tw(14884)};font-family:Arial,Helvetica,"Liberation Sans",sans-serif}
+  .rec .hd td{vertical-align:middle}
+  .rec .hd .co{font-size:14pt;font-weight:700;text-align:center;height:${tw(347)}}
+  .rec .hd .ti{font-size:18pt;font-weight:700;text-align:center;height:${tw(827)};line-height:1.1}
+  .rec .hd .ti div{direction:rtl}
+  .rec .hd .mt td{font-size:10pt;height:${tw(230)};padding:0 4pt;font-family:"Microsoft Sans Serif",Arial,sans-serif}
+  .rec .hd .lg{text-align:center;vertical-align:middle}
+  .rec .hd .lg img{width:${tw(586740/635)};height:auto;display:block;margin:0 auto}
+  .rec .bd{margin-left:${tw(291)};width:${tw(15168)};border:1.5pt solid #000;margin-top:${tw(690)}}
+  .rec .bd td{font-size:10pt;font-weight:700;padding:1.8pt 5.25pt}
+  .rec .bd td .ar{direction:rtl;unicode-bidi:isolate}
+  .rec .bd .t0{text-align:center;height:${tw(671)};vertical-align:middle}
+  .rec .bd .r1{height:${tw(321)}}
+  .rec .bd .r2,.rec .bd .r3{height:${tw(309)}}
+  .rec .bd .blue{color:#0070C0}.rec .bd .navy{color:#2F5496}
+  .rec .bd .pur{font-size:11pt}
+  .rec .bd .hh td{height:${tw(460)};vertical-align:top;padding-top:5pt}
+  .rec .bd .hh .c{text-align:center}
+  .rec .bd .hh small{display:block;font-size:9pt;white-space:nowrap;letter-spacing:-.2pt}.rec .bd .hh td.bg{padding-left:2pt;padding-right:2pt}
+  .rec .bd .dr td{height:${tw(306)};text-align:center;vertical-align:middle;padding:1pt 3pt;font-weight:400;color:#2F5496}
+  .rec .bd .dr td.n{color:#4472C4}
+  .rec .bd .dr td.b{font-weight:700}
+  .rec .gap{height:${tw(690)}}
+  `;
+  function parts(sess, F){
+    const s = sess.s, parts = sess.parts||[], wMap = sess.wMap||{};
+    const date = String(s.training_date||'').slice(0,10);
+    const title = (s.title||'').trim(), purpose = (s.purpose||'').trim(), prov = (s.provider||'').trim();
+    const rows = parts.map((p,i)=>
+      '<tr class="dr"><td class="n" colspan="1">'+(i+1)+'</td><td class="b">'+H(p.worker_id)+'</td><td class="b" colspan="2">'+H(wMap[p.worker_id]||('#'+p.worker_id))+'</td>'+
+      '<td>'+(p.is_internal===false?'خارجي':'داخلي')+'</td><td>'+H(p.certified_by||'ادارة الجودة')+'</td><td>'+H(EV[p.admin_evaluation]||'جيد')+'</td></tr>').join('');
+    const head =
+    '<table class="hd"><colgroup><col style="width:'+tw(1418)+'"><col style="width:'+tw(5939)+'"><col style="width:'+tw(4232)+'"><col style="width:'+tw(3295)+'"></colgroup>'+
+      '<tr><td class="lg" rowspan="3"><img src="'+LOGO+'" alt=""></td><td class="co" colspan="3">'+H(F.company)+'</td></tr>'+
+      '<tr><td class="ti" colspan="3"><div style="direction:ltr">Employee Training Record</div><div>سجل تدريب الموظفين</div></td></tr>'+
+      '<tr class="mt"><td>Doc No:&nbsp; '+H(F.doc)+'</td><td>Rev. No:&nbsp; '+H(F.rev)+'</td><td>Issue Date:&nbsp; '+H(F.issue)+'</td></tr></table>';
+    const body =
+    '<table class="bd"><colgroup>'+[1975,1260,2837,583,2251,3509,2753].map(w=>'<col style="width:'+tw(w)+'">').join('')+'</colgroup>'+
+      '<tr><td class="t0" colspan="7">EMPLOYEE TRAINING RECORD/<span class="ar">سجل تدريب الموظفين</span></td></tr>'+
+      '<tr class="r1"><td colspan="7">DETAILS OF TRAINING: FSMS (Food Safety Management System)/<span class="ar">تفاصيل التدريب (نظام إدارة سلامة الغذاء)</span>'+(title?' <span class="navy">— '+H(title)+'</span>':'')+'</td></tr>'+
+      '<tr class="r2"><td colspan="3">DATE OF TRAINING/<span class="ar">تاريخ التدريب</span>:<span class="blue">'+H(date)+'</span></td>'+
+        '<td colspan="4" rowspan="2">PURPOSE OF TRAINING/<span class="ar">الهدف من التدريب</span>: <span class="navy pur">'+H(purpose||'—')+'</span><br>Training Provider / <span class="navy" style="font-weight:400">'+H(prov||'—')+'</span></td></tr>'+
+      '<tr class="r3"><td colspan="3">DURATION OF TRAINING/<span class="ar">مدة التدريب</span>:'+H(s.duration_minutes||'—')+' min/<span class="ar">دقيقة</span></td></tr>'+
+      '<tr class="hh"><td>S.No</td><td class="c bg">Badge#/<small class="ar">الرقم الوظيفي</small></td><td class="c" colspan="2">Employee Name/<span class="ar">اسم الموظف</span></td>'+
+        '<td class="c">Internal <span class="ar">داخلي</span> /<br>External<span class="ar">خارجي</span></td><td class="c">Training Certificate/<span class="ar">اعتمادية التدريب</span></td>'+
+        '<td>*Training Evaluation (Good or Bad)/<small class="ar">*(تقييم التدريب (جيد أو سيء</small></td></tr>'+
+      rows+'</table>';
+    return [head, body];
+  }
+  function html(sess, F){ const p = parts(sess, F); return '<div class="rec">'+p[0]+p[1]+'</div>'; }
+  function fullDoc(sess, F){
+    const p = parts(sess, F);
+    // الهيدر داخل thead عشان يتكرر في كل صفحة زي هيدر الورقة في قالب الوورد
+    const inner = '<div class="rec"><table class="wrap"><thead><tr><td style="padding-bottom:'+tw(690)+'">'+p[0]+'</td></tr></thead><tbody><tr><td>'+p[1]+'</td></tr></tbody></table></div>';
+    return '<!doctype html><html><head><meta charset="utf-8"><title>Employee Training Record</title><meta name="viewport" content="width=device-width">'+
+      '<style>@page{size:11in 8.5in;margin:.5in 0}html,body{margin:0;padding:0;background:#fff}'+CSS+'.rec .hd{margin-top:0}'+
+      '.rec table.wrap{width:100%;table-layout:auto}.rec table.wrap>thead>tr>td,.rec table.wrap>tbody>tr>td{border:0;overflow:visible;padding-left:0}.rec table.wrap .bd{margin-top:0}@media print{.rec .bd tr{page-break-inside:avoid}}</style></head><body>'+inner+'</body></html>';
+  }
+  function fit(area){
+    const rec = area.querySelector('.rec'); if(!rec) return;
+    const k = Math.min(1, (area.clientWidth||1000) / (10.8*96));
+    area.style.overflow = 'hidden'; rec.style.zoom = k;
+  }
+  async function paintPreview(){
+    const area = $('onsite-print-area'); const sess = window._currentOnsiteSession;
+    if(!area || !sess) return;
+    const F = await loadForm();
+    area.dataset.v14 = '1';
+    area.innerHTML = '<style>'+CSS+'</style>'+html(sess, F);
+    fit(area);
+  }
+  const _v = window.viewOnsiteSessionDetail;
+  window.viewOnsiteSessionDetail = async function(){
+    const r = await _v.apply(this, arguments);
+    // الدالة القديمة بترسم الجدول القديم بعد تحميل الشعار؛ نستنى ونستبدله
+    for(let i=0;i<24;i++){ await new Promise(r=>setTimeout(r,250)); const a=$('onsite-print-area'); if(a && a.querySelector('table') && !a.querySelector('.rec')){ await paintPreview(); break; } }
+    return r;
+  };
+  window.printOnsiteSession = async function(){
+    const sess = window._currentOnsiteSession; if(!sess) return;
+    const F = await loadForm();
+    const doc = fullDoc(sess, F);
+    const fr = document.createElement('iframe');
+    fr.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';
+    document.body.appendChild(fr);
+    const d = fr.contentWindow.document; d.open(); d.write(doc); d.close();
+    setTimeout(()=>{ try{ fr.contentWindow.focus(); fr.contentWindow.print(); }catch(e){ const w=window.open('','_blank'); if(w){ w.document.write(doc); w.document.close(); setTimeout(()=>w.print(),400); } } setTimeout(()=>fr.remove(), 60000); }, 500);
+  };
+  window.V14 = { html, fullDoc, loadForm, CSS };
+  window.addEventListener('resize', ()=>{ const a=$('onsite-print-area'); if(a) fit(a); });
+})();
+
 </script>
 </body>
 </html>
