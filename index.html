@@ -1986,7 +1986,7 @@ function renderWorkerVideos(){
         '<div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px;">'+buttons+'</div>'+
         '<div id="topic-player-wrap-'+topic.id+'" class="video-thumb" style="border-radius:10px;overflow:hidden;position:relative;">'+
           '<div id="topic-player-'+topic.id+'" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:#fff;background:#0f172a;">'+
-            '<div style="font-size:30px;">▶️</div><div style="font-size:12px;">اضغط لبدء فيديو '+videoLanguageLabel(selectedVersion?.lang||currentLang)+'</div>'+
+            ''+
             '<button class="btn-primary" style="padding:7px 16px;font-size:11px;" onclick="startTopicVideo('+topic.id+')">تشغيل الفيديو</button>'+
           '</div>'+
         '</div>'+
@@ -2732,7 +2732,7 @@ renderWorkerCardsV22 = function(){const grid=$('worker-cards-grid'),empty=$('wor
 renderWorkerCards=renderWorkerCardsV22;
 // Video loading: only active/visible topics for this worker. No video player is created until user presses play.
 loadWorkerVideos = async function(){if(!currentUser)return;const [trr,vrr,prr]=await Promise.all([sb.from('training_topics').select('*').eq('is_visible',true).order('id'),sb.from('training_videos').select('*').eq('is_visible',true).order('id'),sb.from('training_progress').select('*').eq('worker_id',currentUser.id)]);if(trr.error||vrr.error){console.error(trr.error||vrr.error);showToast('تعذر تحميل التدريبات');return;}const topicMap={};(trr.data||[]).forEach(t=>{if(t.section_id&&String(t.section_id)!==String(currentUser.section_id))return;topicMap[t.id]={...t,versions:[]};});(vrr.data||[]).forEach(v=>{if(!topicMap[v.topic_id]||!v.video_url)return;topicMap[v.topic_id].versions.push({id:v.id,topic_id:v.topic_id,lang:v.video_lang||'ar',url:v.video_url,row:v});});workerTopics=Object.values(topicMap).filter(t=>t.versions.length);workerTopicProgress={};(prr.data||[]).forEach(p=>workerTopicProgress[String(p.topic_id)]=p);renderWorkerVideosV22();};
-renderWorkerVideosV22 = function(){const grid=$('worker-videos-grid'),empty=$('worker-videos-empty');if(!workerTopics.length){grid.innerHTML='';empty.textContent='لا توجد تدريبات فيديو متاحة لقسمك حالياً';empty.classList.remove('hidden');return;}empty.classList.add('hidden');grid.innerHTML=workerTopics.map(topic=>{const langs=topicLanguageOptions(topic),selected=activeTopicVideo[topic.id]||pickTopicVideo(topic,currentLang)?.lang||langs[0],ver=topic.versions.find(v=>v.lang===selected)||pickTopicVideo(topic,currentLang);const buttons=langs.map(l=>'<button class="topic-video-btn" style="width:auto;display:inline-flex;padding:7px 10px;font-size:11px;" onclick="selectTopicVideo('+topic.id+',\''+l+'\')">'+videoLanguageLabel(l)+(ver?.lang===l?' ✓':'')+'</button>').join('');return '<div class="topic-card"><div style="padding:13px 14px;border-bottom:1px solid var(--border);"><div style="font-weight:800;font-size:14px;">🎓 '+esc(tr(topic,'title')||topic.title_ar)+'</div></div><div style="padding:12px;"><div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px;">'+buttons+'</div><div id="topic-player-wrap-'+topic.id+'" class="video-thumb" style="border-radius:10px;overflow:hidden;position:relative;"><div id="topic-player-'+topic.id+'" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:#fff;background:#0f172a;"><div style="font-size:30px;">▶️</div><div style="font-size:12px;">اضغط لتشغيل فيديو '+videoLanguageLabel(ver?.lang||'ar')+'</div><button class="btn-primary" style="padding:7px 16px;font-size:11px;" onclick="startTopicVideo('+topic.id+')">تشغيل الفيديو</button></div></div><div id="topic-note-'+topic.id+'" class="muted" style="font-size:10px;margin-top:6px;">اللغة المختارة: '+videoLanguageLabel(ver?.lang||'ar')+'</div><div id="vq-'+topic.id+'" style="margin-top:8px;"></div><div style="margin-top:8px;"><input id="vcmt-topic-'+topic.id+'" type="text" class="input-field" style="font-size:12px;" placeholder="💬 اسأل أو علّق على هذا التدريب..."/><button class="btn-secondary btn-sm" style="margin-top:5px;font-size:11px;" onclick="addTopicComment('+topic.id+')">إرسال</button></div></div></div>';}).join('');loadTopicQuestions();};
+renderWorkerVideosV22 = function(){const grid=$('worker-videos-grid'),empty=$('worker-videos-empty');if(!workerTopics.length){grid.innerHTML='';empty.textContent='لا توجد تدريبات فيديو متاحة لقسمك حالياً';empty.classList.remove('hidden');return;}empty.classList.add('hidden');grid.innerHTML=workerTopics.map(topic=>{const langs=topicLanguageOptions(topic),selected=activeTopicVideo[topic.id]||pickTopicVideo(topic,currentLang)?.lang||langs[0],ver=topic.versions.find(v=>v.lang===selected)||pickTopicVideo(topic,currentLang);const buttons=langs.map(l=>'<button class="topic-video-btn" style="width:auto;display:inline-flex;padding:7px 10px;font-size:11px;" onclick="selectTopicVideo('+topic.id+',\''+l+'\')">'+videoLanguageLabel(l)+(ver?.lang===l?' ✓':'')+'</button>').join('');return '<div class="topic-card"><div style="padding:13px 14px;border-bottom:1px solid var(--border);"><div style="font-weight:800;font-size:14px;">🎓 '+esc(tr(topic,'title')||topic.title_ar)+'</div></div><div style="padding:12px;"><div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px;">'+buttons+'</div><div id="topic-player-wrap-'+topic.id+'" class="video-thumb" style="border-radius:10px;overflow:hidden;position:relative;"><div id="topic-player-'+topic.id+'" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:#fff;background:#0f172a;"><button class="btn-primary" style="padding:7px 16px;font-size:11px;" onclick="startTopicVideo('+topic.id+')">تشغيل الفيديو</button></div></div><div id="topic-note-'+topic.id+'" class="muted" style="font-size:10px;margin-top:6px;">اللغة المختارة: '+videoLanguageLabel(ver?.lang||'ar')+'</div><div id="vq-'+topic.id+'" style="margin-top:8px;"></div><div style="margin-top:8px;"><input id="vcmt-topic-'+topic.id+'" type="text" class="input-field" style="font-size:12px;" placeholder="💬 اسأل أو علّق على هذا التدريب..."/><button class="btn-secondary btn-sm" style="margin-top:5px;font-size:11px;" onclick="addTopicComment('+topic.id+')">إرسال</button></div></div></div>';}).join('');loadTopicQuestions();};
 renderWorkerVideos=renderWorkerVideosV22;
 // Player: YouTube API continues to 100%; 60% only writes completion state. No progress bar is shown to worker.
 startTopicVideo = function(topicId){const topic=workerTopics.find(t=>String(t.id)===String(topicId));if(!topic)return;const version=pickTopicVideo(topic,activeTopicVideo[topicId]||currentLang);if(!version)return showToast('لا يوجد فيديو متاح');activeTopicVideo[topicId]=version.lang;const wrap=$('topic-player-'+topicId);if(!wrap)return;const ytId=extractYTVideoId(version.url);if(!ytId){wrap.innerHTML='<div style="color:#fff;padding:20px;text-align:center;">رابط الفيديو غير صالح</div>';return;}wrap.innerHTML='<div id="yt-topic-'+topicId+'" style="width:100%;height:100%;"></div>';const create=()=>{try{const player=new YT.Player('yt-topic-'+topicId,{width:'100%',height:'100%',videoId:ytId,playerVars:{rel:0,playsinline:1,controls:1},events:{onStateChange:ev=>{if(ev.data===YT.PlayerState.PLAYING)startTopicTracking(topicId,version,player);}}});activeVideoPlayers[topicId]=player;}catch(e){console.error(e);showToast('تعذر تشغيل الفيديو');}};if(window.YT&&ytAPIReady)create();else pendingPlayers.push({customCreate:create});};
@@ -3714,7 +3714,7 @@ try{(function(){
         '<div style="padding:12px;">'+
           '<div id="topic-player-wrap-'+topic.id+'" class="video-thumb" style="border-radius:10px;overflow:hidden;position:relative;background:#0f172a;">'+
             '<div id="topic-player-'+topic.id+'" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:#fff;background:#0f172a;">'+
-              '<div style="font-size:30px;">▶️</div><div style="font-size:12px;">اضغط لتشغيل الفيديو</div>'+
+              ''+
               '<button class="btn-primary" style="padding:7px 16px;font-size:11px;" onclick="startTopicVideo('+topic.id+')">تشغيل الفيديو</button>'+ 
             '</div>'+ 
           '</div>'+ 
@@ -9022,6 +9022,21 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     ov.onclick = () => ov.remove();
     document.body.appendChild(ov);
   });
+})();
+
+
+
+/* V12 — مستطيل الفيديو: مفيش أيقونة مضللة، والضغط على المستطيل نفسه بيشغّل الفيديو */
+(function(){
+  document.addEventListener('click', function(e){
+    const box = e.target && e.target.closest && e.target.closest('#worker-videos-grid [id^="topic-player-"]');
+    if(!box || e.target.closest('button')) return;
+    const btn = box.querySelector('button.btn-primary');
+    if(btn) btn.click();
+  });
+  const st = document.createElement('style');
+  st.textContent = '#worker-videos-grid [id^="topic-player-"]:has(button.btn-primary){cursor:pointer}';
+  document.head.appendChild(st);
 })();
 
 </script>
