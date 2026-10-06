@@ -9419,7 +9419,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
 /* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
 (function(){
-  const VERSION = 'v9.21';
+  const VERSION = 'v9.23';
   const $ = id => document.getElementById(id);
   let running = false;
   async function tx(text, lang){
@@ -9889,6 +9889,266 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   const err = $('login-error');
   if(err) new MutationObserver(()=>{ if(!err.classList.contains('hidden') && /غير مسجل/.test(err.textContent)) { step = 'id'; ui(); } }).observe(err, {attributes:true, childList:true, characterData:true, subtree:true});
   ui();
+})();
+
+/* ===== V18 — ربط الاختبار بفيديو واحد: يفتح بعد وصول الموظف لنسبة المشاهدة المسجّلة، ويظهر تحت الفيديو، ويختفي بعد الحل ===== */
+(function(){
+  const $ = id => document.getElementById(id);
+  const L = () => { try{ return (typeof currentLang !== 'undefined' && currentLang) || 'ar'; }catch(e){ return 'ar'; } };
+  const T = {
+    locked:{ar:'🔒 اختبار هذا الفيديو يفتح بعد ما تخلّص مشاهدته',en:"🔒 This video's quiz unlocks after you finish watching it",bn:'🔒 ভিডিওটি দেখা শেষ করলে এর কুইজ খুলে যাবে',ne:'🔒 भिडियो हेरिसकेपछि यसको क्विज खुल्नेछ',hi:'🔒 वीडियो पूरा देखने के बाद इसका क्विज़ खुलेगा'},
+    start:{ar:'📝 ابدأ اختبار الفيديو',en:'📝 Start the video quiz',bn:'📝 ভিডিওর কুইজ শুরু করুন',ne:'📝 भिडियोको क्विज सुरु गर्नुहोस्',hi:'📝 वीडियो का क्विज़ शुरू करें'},
+    unlocked:{ar:'🎉 اتفتح اختبار الفيديو — هتلاقيه في صفحة الاختبارات',en:'🎉 The video quiz is unlocked — find it in the Quizzes page',bn:'🎉 ভিডিওর কুইজ খুলে গেছে — কুইজ পেজে দেখুন',ne:'🎉 भिडियोको क्विज खुल्यो — क्विज पेजमा हेर्नुहोस्',hi:'🎉 वीडियो का क्विज़ खुल गया — क्विज़ पेज में देखें'},
+    secLocked:{ar:'🔒 يفتح بعد مشاهدة الفيديو: {v}',en:'🔒 Unlocks after watching the video: {v}',bn:'🔒 ভিডিও দেখার পর খুলবে: {v}',ne:'🔒 भिडियो हेरेपछि खुल्छ: {v}',hi:'🔒 वीडियो देखने के बाद खुलेगा: {v}'},
+    goVid:{ar:'اذهب للفيديو',en:'Go to the video',bn:'ভিডিওতে যান',ne:'भिडियोमा जानुहोस्',hi:'वीडियो पर जाएं'},
+    secReady:{ar:'✅ جاهز — الاختبار تحت الفيديو: {v}',en:'✅ Ready — the quiz is under the video: {v}',bn:'✅ প্রস্তুত — কুইজ ভিডিওর নিচে আছে: {v}',ne:'✅ तयार — क्विज भिडियोमुनि छ: {v}',hi:'✅ तैयार — क्विज़ वीडियो के नीचे है: {v}'},
+    openQ:{ar:'افتح الاختبار',en:'Open the quiz',bn:'কুইজ খুলুন',ne:'क्विज खोल्नुहोस्',hi:'क्विज़ खोलें'},
+    submit:{ar:'إرسال إجابات هذا الاختبار',en:'Submit my answers',bn:'উত্তর জমা দিন',ne:'उत्तर पेश गर्नुहोस्',hi:'उत्तर जमा करें'},
+    newB:{ar:'جديد!',en:'New!',bn:'নতুন!',ne:'नयाँ!',hi:'नया!'},
+    loading:{ar:'جاري التحميل…',en:'Loading…',bn:'লোড হচ্ছে…',ne:'लोड हुँदैछ…',hi:'लोड हो रहा है…'}
+  };
+  const t = (k, v) => { const o = T[k] || {}; return String(o[L()] || o.ar || '').replace('{v}', v == null ? '' : v); };
+  const E = s => (typeof esc === 'function' ? esc(s) : String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])));
+  const TR = (o, b) => { try{ return (typeof tr === 'function' && tr(o, b)) || o[b + '_ar'] || ''; }catch(e){ return o[b + '_ar'] || ''; } };
+
+  const css = document.createElement('style');
+  css.textContent = `
+  .v18-slot{margin-top:10px}
+  .v18-lock{display:flex;align-items:center;gap:8px;background:#f1f5f9;border:1px dashed #cbd5e1;color:#475569;border-radius:12px;padding:10px 12px;font-size:12px;font-weight:700;line-height:1.6}
+  .v18-go{width:100%;padding:12px;font-size:14px;font-weight:800;border-radius:12px;background:#2563eb;color:#fff;border:none;cursor:pointer}
+  .v18-box{background:#fff;border:2px solid #2563eb;border-radius:14px;padding:12px;margin-top:8px}
+  .v18-box .qt{font-weight:800;font-size:14px;margin-bottom:10px;display:flex;justify-content:space-between;gap:8px;align-items:center}
+  .v18-sec{display:flex;flex-direction:column;gap:8px;font-size:13px;font-weight:700;line-height:1.7}
+  .v18-sec button{align-self:flex-start;padding:8px 14px;font-size:12px}
+  .v18-link{margin:8px 0 10px;padding:8px 10px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;font-size:12px}
+  .v18-link select{max-width:100%;margin-top:4px}
+  `;
+  document.head.appendChild(css);
+
+  /* ---------- حالة الموظف ---------- */
+  let ST = { at: 0, linked: [], done: {}, avail: {}, vtitle: {}, pending: {} };
+  async function refresh(){
+    if(typeof currentUser === 'undefined' || !currentUser || !currentUser.id) return ST;
+    const wid = currentUser.id;
+    let quizzes;
+    try{
+      const r = await sb.from('quizzes').select('*').eq('is_visible', true).order('id');
+      if(r.error) throw r.error; quizzes = (r.data || []).filter(q => q.topic_id != null);
+    }catch(e){ ST = { at: Date.now(), linked: [], done: {}, avail: {}, vtitle: {}, pending: {} }; return ST; }
+    if(!quizzes.length){ ST = { at: Date.now(), linked: [], done: {}, avail: {}, vtitle: {}, pending: {} }; return ST; }
+    const tids = [...new Set(quizzes.map(q => q.topic_id))], qids = quizzes.map(q => q.id);
+    const [tp, tt, tv, at, un, qs] = await Promise.all([
+      sb.from('training_progress').select('topic_id,completed').eq('worker_id', wid).in('topic_id', tids),
+      sb.from('training_topics').select('*').in('id', tids),
+      sb.from('training_videos').select('topic_id,video_url,is_visible').in('topic_id', tids),
+      sb.from('quiz_attempts').select('quiz_id,score,created_at').eq('worker_id', wid).order('created_at', {ascending:false}),
+      sb.from('quiz_unlocks').select('quiz_id').eq('worker_id', wid),
+      sb.from('quiz_questions').select('id,quiz_id,created_at').in('quiz_id', qids)
+    ]);
+    const done = {}; (tp.data || []).forEach(p => { if(p.completed) done[String(p.topic_id)] = true; });
+    const topics = {}; (tt.data || []).forEach(x => topics[String(x.id)] = x);
+    const hasVid = {}; (tv.data || []).forEach(v => { if(v.video_url && v.is_visible !== false) hasVid[String(v.topic_id)] = true; });
+    const last = {}; (at.data || []).forEach(a => { if(!last[a.quiz_id]) last[a.quiz_id] = a; });
+    const unl = {}; (un.data || []).forEach(u => unl[u.quiz_id] = true);
+    const qq = {}; (qs.data || []).forEach(x => (qq[x.quiz_id] = qq[x.quiz_id] || []).push(x));
+    const avail = {}, vtitle = {}, pending = {};
+    tids.forEach(id => {
+      const tp0 = topics[String(id)];
+      let ok = !!tp0 && tp0.is_visible !== false && hasVid[String(id)] && (!tp0.section_id || String(tp0.section_id) === String(currentUser.section_id));
+      try{ if(Array.isArray(workerTopics) && workerTopics.length) ok = workerTopics.some(w => String(w.id) === String(id)); }catch(e){}
+      avail[String(id)] = !!ok;
+      vtitle[String(id)] = tp0 ? (TR(tp0, 'title') || tp0.title_ar || '') : '';
+    });
+    quizzes.forEach(q => {
+      const a = last[q.id];
+      pending[q.id] = !a || !!unl[q.id] || (qq[q.id] || []).some(x => x.created_at && new Date(x.created_at) > new Date(a.created_at));
+    });
+    ST = { at: Date.now(), linked: quizzes.filter(q => avail[String(q.topic_id)]), done, avail, vtitle, pending };
+    return ST;
+  }
+  const quizFor = tid => ST.linked.find(q => String(q.topic_id) === String(tid));
+
+  /* ---------- تحت الفيديو ---------- */
+  function paintSlots(){
+    document.querySelectorAll('#worker-videos-grid .v18-slot').forEach(slot => {
+      const tid = slot.dataset.topic, q = quizFor(tid);
+      if(!q || !ST.pending[q.id]){ slot.innerHTML = ''; return; }       // اختفى بعد الحل
+      if(!ST.done[String(tid)]){ slot.innerHTML = '<div class="v18-lock">' + E(t('locked')) + '</div>'; return; }
+      if(slot.querySelector('.v18-box')) return;                         // الأسئلة مفتوحة حالياً
+      slot.innerHTML = '<button type="button" class="v18-go" data-q="' + q.id + '">' + E(t('start')) + '</button>';
+      slot.querySelector('.v18-go').onclick = () => openInline(slot, q);
+    });
+  }
+  async function openInline(slot, q){
+    slot.innerHTML = '<div class="v18-lock">' + E(t('loading')) + '</div>';
+    const {data: questions} = await sb.from('quiz_questions').select('*').eq('quiz_id', q.id).order('id');
+    const qs = questions || [];
+    const box = document.createElement('div'); box.className = 'v18-box'; box.dataset.quizId = q.id;
+    box.innerHTML = '<div class="qt"><span>' + E(TR(q, 'title') || ('#' + q.id)) + '</span><span class="badge badge-red">' + E(t('newB')) + '</span></div>' +
+      qs.map((qst, i) => '<div style="background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;"><div style="font-weight:700;font-size:13px;margin-bottom:8px;">' + (i + 1) + '. ' + E(TR(qst, 'question') || qst.question_ar) + '</div><div id="qopts-' + qst.id + '" style="display:flex;flex-direction:column;gap:6px;"></div></div>').join('');
+    slot.innerHTML = ''; slot.appendChild(box);
+    for(const qst of qs){
+      const {data: opts} = await sb.from('quiz_options').select('*').eq('question_id', qst.id).order('id');
+      const w = $('qopts-' + qst.id);
+      if(w) w.innerHTML = (opts || []).map(o => '<label style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--border);border-radius:8px;padding:8px 10px;cursor:pointer;font-size:13px;"><input type="radio" name="qz-' + qst.id + '" value="' + o.id + '"/> ' + E(TR(o, 'option')) + '</label>').join('');
+    }
+    const btn = document.createElement('button'); btn.className = 'btn-primary'; btn.style.cssText = 'width:100%;padding:11px;font-size:13px;margin-top:4px;'; btn.textContent = t('submit');
+    btn.onclick = async () => { btn.disabled = true; try{ await submitQuiz(q.id, qs); }finally{ btn.disabled = false; } await after(); };
+    box.appendChild(btn);
+    try{ box.scrollIntoView({behavior:'smooth', block:'center'}); }catch(e){}
+  }
+  async function after(){ await refresh(); paintSlots(); }
+
+  function addSlots(){
+    return; // الاختبار بيظهر في صفحة الاختبارات بس
+    (typeof workerTopics !== 'undefined' ? workerTopics : []).forEach(tp => {
+      if(document.querySelector('#worker-videos-grid .v18-slot[data-topic="' + tp.id + '"]')) return;
+      const note = $('topic-note-' + tp.id); if(!note || !note.parentNode) return;
+      const d = document.createElement('div'); d.className = 'v18-slot'; d.dataset.topic = tp.id; note.parentNode.appendChild(d);
+    });
+  }
+  const _rv = window.renderWorkerVideosV22;
+  if(typeof _rv === 'function'){
+    const W = function(){ const r = _rv.apply(this, arguments); try{ addSlots(); refresh().then(paintSlots); }catch(e){ console.error(e); } return r; };
+    window.renderWorkerVideosV22 = W; try{ renderWorkerVideos = W; }catch(e){}
+  }
+
+  /* فتح الاختبار فور وصول الموظف لنسبة المشاهدة */
+  const _stp = window.saveTopicProgress;
+  if(typeof _stp === 'function'){
+    const W2 = async function(topicId, version, pct, completed){
+      const r = await _stp.apply(this, arguments);
+      try{
+        if(completed || Number(pct) >= 60){
+          const was = !!ST.done[String(topicId)];
+          if(!was){ await refresh(); paintSlots(); try{ if(quizFor(topicId)) loadWorkerQuizzes(); }catch(e){} if(quizFor(topicId) && ST.done[String(topicId)] && ST.pending[quizFor(topicId).id]) showToast(t('unlocked')); }
+        }
+      }catch(e){}
+      return r;
+    };
+    window.saveTopicProgress = W2; try{ saveTopicProgress = W2; }catch(e){}
+  }
+
+  /* ---------- قسم الاختبارات عند الموظف ---------- */
+  const _lwq = window.loadWorkerQuizzes;
+  if(typeof _lwq === 'function'){
+    const W3 = async function(){
+      const r = await _lwq.apply(this, arguments);
+      try{
+        await refresh();
+        document.querySelectorAll('#worker-quizzes [data-quiz-id]').forEach(form => {
+          const qid = form.dataset.quizId, q = ST.linked.find(x => String(x.id) === String(qid)); if(!q) return;
+          const card = form.parentElement; if(!card) return;
+          const v = ST.vtitle[String(q.topic_id)] || '';
+          const ready = !!ST.done[String(q.topic_id)];
+          if(ready) return;   // الفيديو خلص: الاختبار يظهر عادي بأسئلته في صفحة الاختبارات
+          card.innerHTML = '<div style="font-weight:800;font-size:15px;margin-bottom:8px;">' + E(TR(q, 'title') || ('#' + q.id)) + '</div>' +
+            '<div class="v18-sec"><div>' + E(t(ready ? 'secReady' : 'secLocked', v)) + '</div><button type="button" class="btn-primary" data-t="' + q.topic_id + '">' + E(t(ready ? 'openQ' : 'goVid')) + '</button></div>';
+          card.querySelector('button').onclick = () => goVideo(q.topic_id, ready);
+        });
+        paintSlots();
+      }catch(e){ console.error('v18 quizzes', e); }
+      return r;
+    };
+    window.loadWorkerQuizzes = W3; try{ loadWorkerQuizzes = W3; }catch(e){}
+  }
+  function goVideo(tid, open){
+    try{ toggleWorkerSection('videos'); }catch(e){}
+    setTimeout(() => {
+      const slot = document.querySelector('#worker-videos-grid .v18-slot[data-topic="' + tid + '"]');
+      const card = slot ? (slot.closest('.video-topic-slide') || slot) : null;
+      if(card) try{ card.scrollIntoView({behavior:'smooth', block:'center'}); }catch(e){}
+      if(open && slot){ const b = slot.querySelector('.v18-go'); if(b) b.click(); }
+    }, 450);
+  }
+
+  /* ---------- الأدمن: اختيار الفيديو المربوط ---------- */
+  let TOPICS = null;
+  async function topics(){
+    if(TOPICS) return TOPICS;
+    const {data} = await sb.from('training_topics').select('id,title_ar').order('id');
+    return TOPICS = (data || []);
+  }
+  const opts = (list, sel) => '<option value="">— بدون ربط (يظهر في قسم الاختبارات عادي) —</option>' + list.map(x => '<option value="' + x.id + '"' + (String(x.id) === String(sel) ? ' selected' : '') + '>' + E(x.title_ar || ('#' + x.id)) + '</option>').join('');
+
+  // تمرير topic_id عند الحفظ (اختبار جديد)
+  window.__v18pending = null;
+  const _from = sb.from.bind(sb);
+  sb.from = function(table){
+    const q = _from(table);
+    if(table !== 'quizzes' || !window.__v18pending) return q;
+    const inj = p => { const pend = window.__v18pending; if(pend && p && typeof p === 'object' && !Array.isArray(p)){ window.__v18pending = null; return {...p, topic_id: pend.topic_id}; } return p; };
+    const oi = q.insert && q.insert.bind(q); if(oi) q.insert = (p, ...r) => oi(inj(p), ...r);
+    return q;
+  };
+  const hint = e => /topic_id/i.test(String(e && e.message || '')) ? 'لازم تشغّل ملف phase10.sql في Supabase الأول' : (e && e.message || e);
+
+  // النموذج القديم (تبويب الاختبارات)
+  async function legacyForm(){
+    const vis = $('qz-visible'); if(!vis || $('v18-qz-topic')) return;
+    const list = await topics();
+    const row = document.createElement('div'); row.className = 'v18-link'; row.style.marginTop = '10px';
+    row.innerHTML = '<label class="field-label">🔗 الفيديو المرتبط بالاختبار (يفتح للموظف بعد ما يخلص الفيديو)</label><select id="v18-qz-topic" class="input-field">' + opts(list) + '</select>';
+    const host = vis.closest('label') || vis.parentElement; host.parentNode.insertBefore(row, host);
+  }
+  const _sq = window.saveQuiz;
+  if(typeof _sq === 'function'){
+    const W4 = async function(){
+      const s = $('v18-qz-topic'), v = s && s.value ? Number(s.value) : null;
+      window.__v18pending = v ? {topic_id: v} : null;
+      try{ return await _sq.apply(this, arguments); }
+      finally{ setTimeout(() => { window.__v18pending = null; }, 4000); try{ if(s) s.value = ''; }catch(e){} }
+    };
+    window.saveQuiz = W4; try{ saveQuiz = W4; }catch(e){}
+  }
+
+  // لكل اختبار في الإدارة المتقدمة
+  async function perQuiz(){
+    const box = $('admin-quizzes-list'); if(!box) return;
+    const r = await sb.from('quizzes').select('id,topic_id');
+    if(r.error){ if(!box.querySelector('.v18-hint')){ const d = document.createElement('div'); d.className = 'v18-link v18-hint'; d.textContent = '⚠️ ربط الاختبار بفيديو محتاج تشغيل ملف phase10.sql في Supabase (مرة واحدة).'; box.prepend(d); } return; }
+    const map = {}; (r.data || []).forEach(x => map[x.id] = x.topic_id);
+    const list = await topics();
+    box.querySelectorAll(':scope > .card').forEach(card => {
+      if(card.querySelector('.v18-link')) return;
+      const del = card.querySelector('button[onclick^="deleteQuiz"]'); const m = del && del.getAttribute('onclick').match(/deleteQuiz\((\d+)\)/); if(!m) return;
+      const id = Number(m[1]);
+      const d = document.createElement('div'); d.className = 'v18-link';
+      d.innerHTML = '🔗 <b>الفيديو المرتبط:</b><br><select class="input-field">' + opts(list, map[id]) + '</select>';
+      d.querySelector('select').onchange = async e => {
+        const v = e.target.value ? Number(e.target.value) : null;
+        const u = await sb.from('quizzes').update({topic_id: v}).eq('id', id);
+        showToast(u.error ? ('⚠️ ' + hint(u.error)) : (v ? 'تم ربط الاختبار بالفيديو ✅' : 'تم فك الربط ✅'));
+      };
+      const head = card.firstElementChild; head.insertAdjacentElement('afterend', d);
+    });
+  }
+  const _laq = window.loadAdminQuizzes;
+  if(typeof _laq === 'function'){
+    const W5 = async function(){ const r = await _laq.apply(this, arguments); try{ await legacyForm(); await perQuiz(); }catch(e){ console.error('v18 admin', e); } return r; };
+    window.loadAdminQuizzes = W5; try{ loadAdminQuizzes = W5; }catch(e){}
+  }
+
+  // مركز المحتوى (نموذج اختبار جديد)
+  new MutationObserver(() => {
+    document.querySelectorAll('.v6-mh b').forEach(b => {
+      if(!/^➕/.test(b.textContent) || !/اختبار/.test(b.textContent)) return;
+      const mb = b.closest('div').parentElement && b.closest('div').parentElement.querySelector('.v6-mb'); if(!mb || mb.querySelector('#v18-hub-topic')) return;
+      const sec = mb.querySelector('.v6-sec-t'); if(!sec) return;
+      topics().then(list => {
+        const row = document.createElement('div'); row.className = 'v18-link';
+        row.innerHTML = '<label class="field-label">🔗 الفيديو المرتبط بالاختبار (اختياري — يفتح للموظف بعد ما يخلص الفيديو)</label><select id="v18-hub-topic" class="input-field">' + opts(list) + '</select><div class="muted" style="font-size:10px;margin-top:4px">تقدر تغيّر الربط بعد كده من "الإدارة المتقدمة" لكل اختبار.</div>';
+        sec.parentNode.insertBefore(row, sec);
+      });
+    });
+  }).observe(document.body, {childList:true, subtree:true});
+  document.addEventListener('click', e => {
+    const b = e.target.closest && e.target.closest('#v6-save'); if(!b) return;
+    const s = $('v18-hub-topic'); window.__v18pending = (s && s.value) ? {topic_id: Number(s.value)} : null;
+    setTimeout(() => { window.__v18pending = null; }, 6000);
+  }, true);
+
+  window.V18 = { refresh, paintSlots, state: () => ST };
 })();
 
 </script>
