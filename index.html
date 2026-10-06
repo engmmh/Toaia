@@ -9416,7 +9416,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
 /* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
 (function(){
-  const VERSION = 'v9.18';
+  const VERSION = 'v9.19';
   const $ = id => document.getElementById(id);
   let running = false;
   async function tx(text, lang){
@@ -9451,6 +9451,414 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     });
   }
   setInterval(stamp, 2500); stamp();
+})();
+
+
+
+/* ===== V17 — مراجعة الترجمة (سياق سلامة الغذاء) + ترجمة نصوص الموظف الثابتة + قاموس للترجمة التلقائية ===== */
+(function(){
+  const $ = id => document.getElementById(id);
+  const LANGS = ['en','bn','ne','hi'];
+
+  /* ---------- 1) تصحيحات للقواميس الموجودة (بدل الترجمة الحرفية) ---------- */
+  function patch(obj, lang, kv){ if(!obj || !obj[lang]) return; Object.keys(kv).forEach(k => { if(k in obj[lang] || true) obj[lang][k] = kv[k]; }); }
+  try{
+    patch(WORKER_UI_I18N,'bn',{
+      welcome:'ফিরে আসায় স্বাগতম', cardsTitle:'ফুড সেফটি কার্ড', quizzesTitle:'মূল্যায়ন কুইজ (পরীক্ষা)',
+      violationsTitle:'আমার নিয়মভঙ্গ', iconViolations:'আমার নিয়মভঙ্গ', iconOnsite:'অন-সাইট প্রশিক্ষণ',
+      onsiteEmpty:'আপনার জন্য এখনও কোনো অন-সাইট প্রশিক্ষণ নথিভুক্ত হয়নি' });
+    patch(WORKER_UI_I18N,'hi',{ violationsTitle:'मेरे नियम उल्लंघन', iconViolations:'मेरे नियम उल्लंघन' });
+    patch(WORKER_UI_I18N,'ne',{ violationsTitle:'मेरा नियम उल्लङ्घन', iconViolations:'मेरा नियम उल्लङ्घन' });
+    patch(VIOLATION_I18N,'bn',{ waived:'প্রযোজ্য হয়নি', enforced:'পয়েন্ট কাটা হয়েছে', empty:'কোনো নিয়মভঙ্গ নেই — দারুণ! 🎉', replyExpired:'উত্তর দেওয়ার সময় শেষ (২৪ ঘণ্টা)' });
+    patch(VIOLATION_I18N,'ne',{ enforced:'अंक कटौती गरियो' });
+    patch(VIOLATION_I18N,'hi',{ enforced:'अंक काटे गए', empty:'कोई नियम उल्लंघन नहीं — बहुत बढ़िया! 🎉' });
+    if(window.V9_N){
+      patch(V9_N,'bn',{ overdueN:'এর মধ্যে {a}টির সময় পার হয়ে গেছে', rTitle:'যা দেখেছেন সেই অনিয়ম বা সমস্যার রিপোর্ট',
+        c_storage:'সংরক্ষণ ও কোল্ড স্টোরেজ', c_equipment:'মেশিন ও যন্ত্রপাতি', c_pests:'পোকামাকড় ও পেস্ট',
+        c_hygiene:'পরিচ্ছন্নতা ও ব্যক্তিগত স্বাস্থ্যবিধি', b_clean:'কোনো নিয়মভঙ্গ নেই', certLocked:'সব প্রশিক্ষণ ও কুইজ শেষ হলে সনদ পাবেন' });
+      patch(V9_N,'ne',{ c_storage:'भण्डारण र कोल्ड स्टोरेज', c_hygiene:'सरसफाइ र व्यक्तिगत स्वच्छता' });
+      patch(V9_N,'hi',{ c_storage:'भंडारण और कोल्ड स्टोरेज', c_hygiene:'साफ़-सफ़ाई और व्यक्तिगत स्वच्छता', overdueN:'इनमें से {a} की समय सीमा निकल चुकी है' });
+    }
+  }catch(e){ console.error('V17 dict patch', e); }
+
+  /* ---------- 2) النصوص الثابتة اللي كانت بتظهر عربي عند الموظف ---------- */
+  // [ar] : [en, bn, ne, hi]
+  const S = {
+    'تشغيل الفيديو':['Play video','ভিডিও চালান','भिडियो चलाउनुहोस्','वीडियो चलाएँ'],
+    'إعادة المشاهدة':['Watch again','আবার দেখুন','फेरि हेर्नुहोस्','दोबारा देखें'],
+    'إرسال':['Send','পাঠান','पठाउनुहोस्','भेजें'],
+    'جديد!':['New!','নতুন!','नयाँ!','नया!'],
+    'إرسال إجابات هذا الاختبار':['Submit answers','উত্তর জমা দিন','उत्तर बुझाउनुहोस्','उत्तर जमा करें'],
+    'تمت الإجابة مسبقًا':['Already answered','আগেই উত্তর দেওয়া হয়েছে','पहिले नै उत्तर दिइसकेको','पहले ही उत्तर दिया जा चुका'],
+    'إرسال إجابتي':['Send my answer','আমার উত্তর পাঠান','मेरो उत्तर पठाउनुहोस्','मेरा उत्तर भेजें'],
+    'أحسنت!':['Well done!','চমৎকার!','राम्रो!','शाबाश!'],
+    'مكتمل ✅':['Completed ✅','সম্পন্ন ✅','पूरा भयो ✅','पूर्ण ✅'],
+    'مكتمل':['Completed','সম্পন্ন','पूरा भयो','पूर्ण'],
+    'لا توجد تعليقات بعد':['No comments yet','এখনও কোনো মন্তব্য নেই','अहिलेसम्म कुनै टिप्पणी छैन','अभी तक कोई टिप्पणी नहीं']
+  };
+  const P = [   // عبارات تتبدّل جوه النص (الأطول الأول)
+    ['حصل خطأ ولم يتم حفظ نتيجتك، حاول تاني أو كلّم الأدمن:',['An error occurred and your result was not saved. Try again or tell the admin:','ত্রুটি হয়েছে, আপনার ফলাফল সংরক্ষিত হয়নি। আবার চেষ্টা করুন বা অ্যাডমিনকে জানান:','त्रुटि भयो, तपाईंको नतिजा सुरक्षित भएन। फेरि प्रयास गर्नुहोस् वा एडमिनलाई भन्नुहोस्:','त्रुटि हुई, आपका परिणाम सहेजा नहीं गया। दोबारा कोशिश करें या एडमिन को बताएँ:']],
+    ['فشل حفظ نتيجة الاختبار:',['Failed to save the quiz result:','কুইজের ফলাফল সংরক্ষণ করা যায়নি:','क्विजको नतिजा सुरक्षित गर्न सकिएन:','क्विज़ का परिणाम सहेजा नहीं जा सका:']],
+    ['لا توجد تدريبات فيديو متاحة لقسمك حالياً',['No video trainings are available for your section right now','এই মুহূর্তে আপনার বিভাগের জন্য কোনো ভিডিও প্রশিক্ষণ নেই','अहिले तपाईंको विभागका लागि कुनै भिडियो तालिम उपलब्ध छैन','अभी आपके विभाग के लिए कोई वीडियो प्रशिक्षण उपलब्ध नहीं है']],
+    ['لا توجد بطاقات متاحة لقسمك حالياً',['No cards are available for your section right now','এই মুহূর্তে আপনার বিভাগের জন্য কোনো কার্ড নেই','अहिले तपाईंको विभागका लागि कुनै कार्ड उपलब्ध छैन','अभी आपके विभाग के लिए कोई कार्ड उपलब्ध नहीं है']],
+    ['لا توجد اختبارات متاحة لك حاليًا',['No quizzes available for you right now','এই মুহূর্তে আপনার জন্য কোনো কুইজ নেই','अहिले तपाईंका लागि कुनै क्विज उपलब्ध छैन','अभी आपके लिए कोई क्विज़ उपलब्ध नहीं है']],
+    ['لا توجد اختبارات حالياً',['No quizzes right now','এখন কোনো কুইজ নেই','अहिले कुनै क्विज छैन','अभी कोई क्विज़ नहीं']],
+    ['تم إكمال التدريب بنسبة 60% أو أكثر ✅',['Training completed (60% or more watched) ✅','প্রশিক্ষণ সম্পন্ন (৬০% বা তার বেশি দেখা হয়েছে) ✅','तालिम पूरा भयो (६०% वा बढी हेरियो) ✅','प्रशिक्षण पूरा (60% या अधिक देखा) ✅']],
+    ['تم إكمال التدريب عند تجاوز 60% ✅',['Training completed after passing 60% ✅','৬০% পার হলে প্রশিক্ষণ সম্পন্ন হয়েছে ✅','६०% नाघेपछि तालिम पूरा भयो ✅','60% पार होते ही प्रशिक्षण पूरा हुआ ✅']],
+    ['يكفي 60% لإكمال التدريب',['60% is enough to complete the training','প্রশিক্ষণ সম্পন্ন করতে ৬০% দেখাই যথেষ্ট','तालिम पूरा गर्न ६०% हेरे पुग्छ','प्रशिक्षण पूरा करने के लिए 60% देखना काफ़ी है']],
+    ['تم إنجاز هذا الاختبار بنتيجة',['You completed this quiz with a score of','আপনি এই কুইজে পেয়েছেন','तपाईंले यो क्विजमा पाउनुभयो','आपने इस क्विज़ में प्राप्त किया']],
+    ['لقد أجبت على هذا السؤال من قبل',['You already answered this question','আপনি আগেই এই প্রশ্নের উত্তর দিয়েছেন','तपाईंले यो प्रश्नको उत्तर पहिले नै दिनुभएको छ','आप इस प्रश्न का उत्तर पहले दे चुके हैं']],
+    ['تم إرسال تعليقك للأدمن ✅',['Your comment was sent to the admin ✅','আপনার মন্তব্য অ্যাডমিনের কাছে পাঠানো হয়েছে ✅','तपाईंको टिप्पणी एडमिनलाई पठाइयो ✅','आपकी टिप्पणी एडमिन को भेज दी गई ✅']],
+    ['تم حفظ إجابتك ✅',['Your answer was saved ✅','আপনার উত্তর সংরক্ষিত হয়েছে ✅','तपाईंको उत्तर सुरक्षित भयो ✅','आपका उत्तर सहेज लिया गया ✅']],
+    ['اختر إجابة أولاً',['Choose an answer first','আগে একটি উত্তর বেছে নিন','पहिले उत्तर छान्नुहोस्','पहले एक उत्तर चुनें']],
+    ['تعذر حفظ الإجابة',['Could not save the answer','উত্তর সংরক্ষণ করা যায়নি','उत्तर सुरक्षित गर्न सकिएन','उत्तर सहेजा नहीं जा सका']],
+    ['تعذر إرسال التعليق',['Could not send the comment','মন্তব্য পাঠানো যায়নি','टिप्पणी पठाउन सकिएन','टिप्पणी भेजी नहीं जा सकी']],
+    ['اكتب تعليقك',['Write your comment','আপনার মন্তব্য লিখুন','तपाईंको टिप्पणी लेख्नुहोस्','अपनी टिप्पणी लिखें']],
+    ['لا يوجد رابط فيديو',['No video link','ভিডিওর লিংক নেই','भिडियो लिङ्क छैन','वीडियो लिंक उपलब्ध नहीं']],
+    ['لا يوجد فيديو متاح',['No video available','কোনো ভিডিও পাওয়া যাচ্ছে না','कुनै भिडियो उपलब्ध छैन','कोई वीडियो उपलब्ध नहीं']],
+    ['رابط الفيديو غير صالح',['Invalid video link','ভিডিওর লিংক সঠিক নয়','भिडियो लिङ्क मान्य छैन','वीडियो लिंक मान्य नहीं है']],
+    ['تعذر تشغيل الفيديو',['Could not play the video','ভিডিও চালানো যায়নি','भिडियो चलाउन सकिएन','वीडियो नहीं चल सका']],
+    ['اللغة المختارة:',['Selected language:','নির্বাচিত ভাষা:','छानिएको भाषा:','चुनी गई भाषा:']],
+    ['المشاهدة:',['Watched:','দেখা হয়েছে:','हेरिएको:','देखा गया:']],
+    ['التقدم:',['Progress:','অগ্রগতি:','प्रगति:','प्रगति:']],
+    ['نتيجتك:',['Your score:','আপনার স্কোর:','तपाईंको अंक:','आपका स्कोर:']],
+    ['النتيجة:',['Score:','স্কোর:','अंक:','स्कोर:']]
+  ];
+  P.sort((a,b)=>b[0].length-a[0].length);
+  const li = l => LANGS.indexOf(l);
+  function trText(t, l){
+    const i = li(l); if(i < 0) return t;
+    const k = t.trim();
+    if(S[k]) return t.replace(k, S[k][i]);
+    let out = t;
+    for(const [ar, arr] of P){ if(out.indexOf(ar) >= 0) out = out.split(ar).join(arr[i]); }
+    return out;
+  }
+  const AR = /[؀-ۿ]/;
+  const lang = () => { try{ return currentLang || 'ar'; }catch(e){ return 'ar'; } };
+  function walk(root){
+    const l = lang(); if(l === 'ar' || !root) return;
+    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    let n; const todo = [];
+    while((n = w.nextNode())){ if(AR.test(n.nodeValue)) todo.push(n); }
+    todo.forEach(n => { const p = n.parentElement; if(p && /^(SCRIPT|STYLE|TEXTAREA)$/.test(p.tagName)) return; const v = trText(n.nodeValue, l); if(v !== n.nodeValue) n.nodeValue = v; });
+    root.querySelectorAll && root.querySelectorAll('[placeholder]').forEach(e => { if(AR.test(e.placeholder)){ const v = trText(e.placeholder, l); if(v !== e.placeholder) e.placeholder = v; } });
+  }
+  let tm = null;
+  function schedule(){ clearTimeout(tm); tm = setTimeout(()=>{ try{ if(typeof currentUser !== 'undefined' && currentUser && !(typeof adminUser !== 'undefined' && adminUser)) walk($('worker-section')); }catch(e){} }, 90); }
+  const ws = $('worker-section');
+  if(ws) new MutationObserver(schedule).observe(ws, {childList:true, subtree:true, characterData:true});
+  setInterval(schedule, 2500);
+  // الرسائل المنبثقة (toast) للموظف
+  const _t = window.showToast || (typeof showToast === 'function' ? showToast : null);
+  if(_t){
+    showToast = function(msg){
+      try{ if(typeof currentUser !== 'undefined' && currentUser && !(typeof adminUser !== 'undefined' && adminUser) && lang() !== 'ar') msg = trText(String(msg), lang()); }catch(e){}
+      return _t.call(this, msg);
+    };
+  }
+  window.V17T = { trText, walk };
+
+  /* ---------- 3) الترجمة التلقائية: قاموس لكلمات ثابتة (نعم/لا/صح/غلط...) + تصحيح مصطلحات ---------- */
+  const G = {  // [en, bn, ne, hi]
+    'نعم':['Yes','হ্যাঁ','हो','हाँ'], 'لا':['No','না','होइन','नहीं'],
+    'صح':['Correct','সঠিক','सही','सही'], 'صحيح':['Correct','সঠিক','सही','सही'], 'خطأ':['Wrong','ভুল','गलत','गलत'], 'غلط':['Wrong','ভুল','गलत','गलत'],
+    'كل ما سبق':['All of the above','উপরের সবগুলো','माथिका सबै','ऊपर के सभी'], 'جميع ما سبق':['All of the above','উপরের সবগুলো','माथिका सबै','ऊपर के सभी'],
+    'لا شيء مما سبق':['None of the above','উপরের কোনোটিই নয়','माथिका कुनै पनि होइनन्','ऊपर में से कोई नहीं'],
+    'دائما':['Always','সবসময়','सधैं','हमेशा'], 'أحيانا':['Sometimes','মাঝে মাঝে','कहिलेकाहीं','कभी-कभी'], 'ابدا':['Never','কখনোই না','कहिल्यै होइन','कभी नहीं'],
+    'مسموح':['Allowed','অনুমোদিত','अनुमति छ','अनुमति है'], 'ممنوع':['Not allowed','নিষিদ্ধ','निषेध छ','मना है'],
+    'غسل اليدين':['Hand washing','হাত ধোয়া','हात धुनु','हाथ धोना'], 'ارتداء القفازات':['Wearing gloves','গ্লাভস পরা','पञ्जा लगाउनु','दस्ताने पहनना'],
+    'تغطية الشعر':['Covering the hair','চুল ঢেকে রাখা','कपाल छोप्नु','बाल ढकना'], 'التلوث المتبادل':['Cross-contamination','ক্রস-কনটামিনেশন (একটি থেকে অন্যটিতে দূষণ)','क्रस-कन्ट्यामिनेसन (एकबाट अर्कोमा दूषण)','क्रॉस-कंटैमिनेशन (एक से दूसरे में दूषण)'],
+    'سلامة الغذاء':['Food safety','ফুড সেফটি','फुड सेफ्टी','फूड सेफ्टी'], 'النظافة الشخصية':['Personal hygiene','ব্যক্তিগত পরিচ্ছন্নতা','व्यक्तिगत सरसफाइ','व्यक्तिगत स्वच्छता'],
+    'درجة الحرارة':['Temperature','তাপমাত্রা','तापक्रम','तापमान'], 'تاريخ الانتهاء':['Expiry date','মেয়াদ শেষের তারিখ','म्याद सकिने मिति','समाप्ति तिथि'], 'تاريخ الصلاحية':['Expiry date','মেয়াদ শেষের তারিখ','म्याद सकिने मिति','समाप्ति तिथि']
+  };
+  const norm = s => String(s||'').replace(/[ً-ٰٟ]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/[؟?!.,،:؛\-–—"'«»()\s]+/g,' ').trim();
+  const GN = {}; Object.keys(G).forEach(k => GN[norm(k)] = G[k]);
+  const FIX = { bn:[[/খাদ্য নিরাপত্তা/g,'ফুড সেফটি'],[/নিরাপদ খাদ্য সুরক্ষা/g,'ফুড সেফটি']] };
+  window.v17Gloss = function(text, lang){ const i = li(lang); const g = GN[norm(text)]; return (g && i >= 0) ? g[i] : null; };
+  window.v17Fix = function(txt, lang){ (FIX[lang]||[]).forEach(([a,b]) => { txt = txt.replace(a,b); }); return txt; };
+  const _a = window.autoTranslateGroup;
+  if(typeof _a === 'function'){
+    window.autoTranslateGroup = async function(sourceId, map){
+      const src = $(sourceId); const text = src ? src.value.trim() : '';
+      const rest = {};
+      Object.keys(map).forEach(l => {
+        const tgt = $(map[l]); if(!tgt) return;
+        const g = text && !tgt.value.trim() ? window.v17Gloss(text, l) : null;
+        if(g) tgt.value = g; else rest[l] = map[l];
+      });
+      await _a.call(this, sourceId, rest);
+      Object.keys(rest).forEach(l => { const tgt = $(rest[l]); if(tgt && tgt.value && FIX[l]){ const f = window.v17Fix(tgt.value, l); if(f !== tgt.value) tgt.value = f; } });
+    };
+  }
+})();
+
+
+
+/* ===== V17 — تحكم الأدمن في أيقونتي المخالفات/الكروت + تصميم جديد لعرض كروت السلامة + تصدير النصوص للمراجعة ===== */
+(function(){
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const lang = () => { try{ return currentLang || 'ar'; }catch(e){ return 'ar'; } };
+  const T = {
+    got:   {ar:'فهمت',en:'Got it',bn:'বুঝেছি',ne:'बुझेँ',hi:'समझ गया'},
+    seen:  {ar:'تم الاطلاع',en:'Seen',bn:'দেখা হয়েছে',ne:'हेरियो',hi:'देख लिया'},
+    prog:  {ar:'اطلعت على {a} من {b}',en:'You viewed {a} of {b}',bn:'আপনি {b}টির মধ্যে {a}টি দেখেছেন',ne:'तपाईंले {b} मध्ये {a} हेर्नुभयो',hi:'आपने {b} में से {a} देखे'},
+    ask:   {ar:'سؤال أو تعليق',en:'Question or comment',bn:'প্রশ্ন বা মন্তব্য',ne:'प्रश्न वा टिप्पणी',hi:'प्रश्न या टिप्पणी'}
+  };
+  const t = (k, o) => { let s = (T[k][lang()] || T[k].ar); if(o) Object.keys(o).forEach(x => s = s.replace('{'+x+'}', o[x])); return s; };
+
+  /* ---------- 1) إظهار/إخفاء أيقونتين الموظف ---------- */
+  let cfg = { vio:'auto', cards:'on', at:0 };
+  window.V17 = { cfg };
+  async function loadCfg(){
+    if(Date.now() - cfg.at < 20000) return;
+    cfg.at = Date.now();
+    try{
+      const r = await sb.from('app_settings').select('key,value').in('key',['worker_violations_icon','worker_cards_icon']);
+      (r.data||[]).forEach(x => { if(x.key==='worker_violations_icon') cfg.vio = x.value; if(x.key==='worker_cards_icon') cfg.cards = x.value; });
+    }catch(e){}
+  }
+  async function applyIcons(){
+    if(typeof currentUser === 'undefined' || !currentUser || (typeof adminUser !== 'undefined' && adminUser && !$('worker-section').offsetParent)) return;
+    await loadCfg();
+    const vb = $('wicon-btn-violations'), cb = $('wicon-btn-cards');
+    const hideV = cfg.vio === 'off' || (cfg.vio !== 'on' && !(Number(workerViolationsTotal) > 0));
+    const hideC = cfg.cards === 'off';
+    if(vb) vb.classList.toggle('hidden', hideV);
+    if(cb) cb.classList.toggle('hidden', hideC);
+    try{
+      if((hideV && workerActiveSection === 'violations') || (hideC && workerActiveSection === 'cards')) toggleWorkerSection('videos');
+    }catch(e){}
+  }
+  setInterval(()=>{ applyIcons().catch(()=>{}); }, 1500);
+
+  async function buildAdminCard(){
+    if(typeof adminUser === 'undefined' || !adminUser || !adminUser.isSuper) return;
+    const tab = $('tab-passwords'); if(!tab || $('v17-icons-card')) return;
+    const box = document.createElement('div'); box.className = 'card v9-adm'; box.id = 'v17-icons-card';
+    box.innerHTML = '<h3>🎛️ التحكم في أيقونات الموظف</h3><div class="v9-sub">تحكّم في ظهور أيقونتي «مخالفاتي» و«كروت السلامة» عند الموظفين.</div>'+
+      '<label class="v9-row">أيقونة المخالفات<select id="v17-vio" class="input-field"><option value="auto">تلقائي — تظهر بس لما الموظف يبقى عنده مخالفة</option><option value="on">ظاهرة دايماً</option><option value="off">مخفية للجميع</option></select></label>'+
+      '<label class="v9-row">أيقونة كروت السلامة<select id="v17-cards" class="input-field"><option value="on">ظاهرة</option><option value="off">مخفية للجميع</option></select></label>'+
+      '<button class="btn-primary" id="v17-save">حفظ</button> <span id="v17-msg" class="v9-sm"></span>'+
+      '<hr style="margin:14px 0;border:0;border-top:1px dashed var(--border)">'+
+      '<div style="font-weight:800;font-size:13px;margin-bottom:4px">🌐 مراجعة الترجمة</div><div class="v9-sub">بيطلّع ملف فيه كل نصوص المحتوى (الكروت، الاختبارات، التدريبات…) بكل اللغات، ابعته لي وأنا أراجعها وأصحّحها لك بمصطلحات سلامة الغذاء.</div>'+
+      '<button class="btn-secondary" id="v17-export">📤 تصدير النصوص للمراجعة</button> <span id="v17-exmsg" class="v9-sm"></span>';
+    tab.appendChild(box);
+    try{
+      const r = await sb.from('app_settings').select('key,value').in('key',['worker_violations_icon','worker_cards_icon']);
+      (r.data||[]).forEach(x => { if(x.key==='worker_violations_icon') $('v17-vio').value = x.value; if(x.key==='worker_cards_icon') $('v17-cards').value = x.value; });
+    }catch(e){}
+    $('v17-save').onclick = async () => {
+      const rows = [{key:'worker_violations_icon', value:$('v17-vio').value},{key:'worker_cards_icon', value:$('v17-cards').value}];
+      const r = await sb.from('app_settings').upsert(rows);
+      $('v17-msg').textContent = r.error ? ('تعذر الحفظ: ' + r.error.message) : 'تم الحفظ ✅';
+    };
+    $('v17-export').onclick = exportTexts;
+  }
+  const KEEP = /^(id|title|description|question|option|purpose|name|text|content)(_(ar|en|bn|ne|hi))?$/;
+  async function exportTexts(){
+    const m = $('v17-exmsg'); m.textContent = 'جاري التجميع…';
+    const tables = ['safety_cards','training_topics','quizzes','quiz_questions','quiz_options','violation_library','onsite_trainings','content_questions'];
+    const out = { exported_at: new Date().toISOString(), tables: {} };
+    for(const tb of tables){
+      try{
+        const r = await sb.from(tb).select('*').limit(3000);
+        if(r.error) continue;
+        out.tables[tb] = (r.data||[]).map(row => { const o = {}; Object.keys(row).forEach(k => { if(KEEP.test(k) && row[k] != null) o[k] = row[k]; }); return o; });
+      }catch(e){}
+    }
+    const blob = new Blob([JSON.stringify(out, null, 1)], {type:'application/json'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'translations-review.json';
+    document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+    m.textContent = 'تم التحميل ✅ (' + Object.keys(out.tables).map(k => k + ':' + out.tables[k].length).join('، ') + ')';
+  }
+  const _at = adminTab;
+  adminTab = function(tab){ const r = _at.apply(this, arguments); if(tab === 'passwords') setTimeout(()=>buildAdminCard().catch(()=>{}), 500); return r; };
+
+  /* ---------- 2) تصميم جديد لعرض كروت السلامة ---------- */
+  const css = document.createElement('style');
+  css.textContent = `
+  #worker-cards-grid .safety-card-slide{flex:0 0 min(90vw,420px)!important;width:min(90vw,420px)!important}
+  #worker-cards-grid .safety-card-slide>.card{border-radius:22px;padding:0!important;overflow:hidden;box-shadow:0 10px 30px rgba(15,23,42,.10);border:1px solid rgba(148,163,184,.25);position:relative}
+  #worker-cards-grid .safety-card-slide .card-img{border-radius:0!important;border:0!important;max-height:62vh!important}
+  #worker-cards-grid .safety-card-slide .v17-body{padding:14px 16px 16px}
+  .v17-ch{position:absolute;top:12px;inset-inline:12px;display:flex;justify-content:space-between;align-items:center;z-index:2;pointer-events:none}
+  .v17-no{direction:ltr;unicode-bidi:isolate}
+  .v17-no,.v17-seen{background:rgba(15,23,42,.72);color:#fff;font-size:12px;font-weight:800;border-radius:999px;padding:4px 11px;backdrop-filter:blur(4px)}
+  .v17-seen{background:rgba(22,163,74,.92);display:none}
+  .v17-card.is-seen .v17-seen{display:inline-block}
+  .v17-ttl{font-size:17px;font-weight:900;line-height:1.5;margin:0 0 6px}
+  .v17-got{width:100%;margin:10px 0 4px;padding:12px;border:0;border-radius:14px;font-size:15px;font-weight:800;color:#fff;background:linear-gradient(135deg,#16a34a,#22c55e);box-shadow:0 6px 16px rgba(22,163,74,.3)}
+  .v17-card.is-seen .v17-got{background:#e2e8f0;color:#15803d;box-shadow:none}
+  .v17-cm{margin-top:8px;border-top:1px dashed var(--border);padding-top:8px}
+  .v17-cm summary{cursor:pointer;font-size:12.5px;font-weight:700;color:#475569;list-style:none}
+  .v17-cm summary::-webkit-details-marker{display:none}
+  #v17-cprog{margin:0 0 10px}
+  #v17-cprog .t{font-size:12.5px;font-weight:700;margin-bottom:5px}
+  #v17-cprog .b{height:7px;border-radius:7px;background:#e2e8f0;overflow:hidden}
+  #v17-cprog .b i{display:block;height:100%;background:linear-gradient(90deg,#16a34a,#4ade80);transition:width .4s}
+  `;
+  document.head.appendChild(css);
+  const wid = () => (typeof currentUser !== 'undefined' && currentUser) ? currentUser.id : 'x';
+  const key = id => 'v17_seen_' + wid() + '_' + id;
+  const isSeen = id => { try{ return localStorage.getItem(key(id)) === '1'; }catch(e){ return false; } };
+  function progress(){
+    const g = $('worker-cards-grid'); if(!g) return;
+    const slides = g.querySelectorAll('.safety-card-slide.v17-card'); if(!slides.length) return;
+    let p = $('v17-cprog');
+    if(!p){ p = document.createElement('div'); p.id = 'v17-cprog'; g.parentNode.insertBefore(p, g); }
+    const done = g.querySelectorAll('.safety-card-slide.v17-card.is-seen').length;
+    p.innerHTML = '<div class="t">'+esc(t('prog',{a:done,b:slides.length}))+'</div><div class="b"><i style="width:'+Math.round(done/slides.length*100)+'%"></i></div>';
+  }
+  window.v17Got = function(id, btn){
+    try{ localStorage.setItem(key(id), '1'); }catch(e){}
+    const s = btn.closest('.safety-card-slide'); if(s) s.classList.add('is-seen');
+    btn.textContent = '✅ ' + t('seen');
+    progress();
+    try{ if(currentUser) logActivityV22('worker', currentUser.id, 'اطلاع على بطاقة', 'card', id); }catch(e){}
+  };
+  function upgrade(){
+    const g = $('worker-cards-grid'); if(!g) return;
+    const slides = g.querySelectorAll('.safety-card-slide:not(.v17-card)'); if(!slides.length) return;
+    const total = g.querySelectorAll('.safety-card-slide').length;
+    g.querySelectorAll('.safety-card-slide').forEach((s, i) => {
+      if(s.classList.contains('v17-card')) return;
+      const card = s.querySelector('.card') || s.firstElementChild; if(!card) return;
+      const inp = card.querySelector('input[id^="ccmt-"]'); const id = inp ? inp.id.replace('ccmt-','') : String(i);
+      s.classList.add('v17-card'); if(isSeen(id)) s.classList.add('is-seen');
+      // اللي بعد الصورة يتحط في body
+      const img = card.querySelector('.card-img, .img-fallback, div[style*="height:170px"]');
+      const body = document.createElement('div'); body.className = 'v17-body';
+      Array.from(card.childNodes).forEach(n => { if(n !== img) body.appendChild(n); });
+      card.appendChild(body);
+      const ttl = body.querySelector('div[style*="font-weight:800"]'); if(ttl){ ttl.classList.add('v17-ttl'); ttl.removeAttribute('style'); }
+      // التعليقات في قسم قابل للطي
+      const cq = body.querySelector('#cq-'+id), btn = inp ? inp.nextElementSibling : null;
+      const det = document.createElement('details'); det.className = 'v17-cm';
+      det.innerHTML = '<summary>💬 '+esc(t('ask'))+'</summary>';
+      [cq, inp, btn].forEach(el => { if(el) det.appendChild(el); });
+      const got = document.createElement('button'); got.type = 'button'; got.className = 'v17-got';
+      got.textContent = s.classList.contains('is-seen') ? '✅ ' + t('seen') : '✅ ' + t('got');
+      got.onclick = () => window.v17Got(id, got);
+      body.appendChild(got); body.appendChild(det);
+      const head = document.createElement('div'); head.className = 'v17-ch';
+      head.innerHTML = '<span class="v17-no">'+(i+1)+' / '+total+'</span><span class="v17-seen">✅ '+esc(t('seen'))+'</span>';
+      card.insertBefore(head, card.firstChild);
+    });
+    progress();
+  }
+  let bz = false;
+  function arm(){
+    const g = $('worker-cards-grid'); if(!g || g.dataset.v17obs) return; g.dataset.v17obs = '1';
+    new MutationObserver(()=>{ if(bz) return; bz = true; setTimeout(()=>{ try{ upgrade(); }finally{ bz = false; } }, 60); }).observe(g, {childList:true});
+    upgrade();
+  }
+  setInterval(arm, 1500); arm();
+})();
+
+
+
+/* ===== V17 — دخول على خطوتين: الرقم ← شاشة الشعار + ترحيب باسم الموظف (أقل من ثانيتين) ← كلمة السر ===== */
+(function(){
+  const $ = id => document.getElementById(id);
+  const WELCOME = {
+    ar:'أهلاً بك يا {n} 👋', en:'Welcome, {n} 👋', bn:'স্বাগতম, {n} 👋', ne:'स्वागत छ, {n} 👋', hi:'स्वागत है, {n} 👋'
+  };
+  const NEXT = { ar:'التالي / Next', en:'Next', bn:'পরবর্তী / Next', ne:'अर्को / Next', hi:'आगे / Next' };
+  const CHANGE = { ar:'تغيير الرقم', en:'Change ID', bn:'আইডি পরিবর্তন', ne:'आईडी परिवर्तन', hi:'आईडी बदलें' };
+  const lang = () => { try{ return (typeof currentLang !== 'undefined' && WELCOME[currentLang]) ? currentLang : 'ar'; }catch(e){ return 'ar'; } };
+  const SHOW_MS = 1500;                  // مدة ظهور الشاشة (الإجمالي مع التلاشي < 2 ثانية)
+  let step = 'id', busy = false;
+
+  const css = document.createElement('style');
+  css.textContent = `
+  #v17-splash{position:fixed;inset:0;z-index:100000;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;opacity:0;transition:opacity .25s ease;padding:24px;text-align:center}
+  #v17-splash.on{opacity:1}
+  #v17-splash img{width:min(46vw,190px);height:auto;max-height:34vh;object-fit:contain;animation:v17pop .55s ease both;mix-blend-mode:multiply}
+  #v17-splash .emo{font-size:84px}
+  #v17-splash .msg{font-size:clamp(20px,5.4vw,28px);font-weight:800;color:#0f172a;animation:v17up .6s .15s ease both}
+  #v17-splash .bar{width:min(46vw,190px);height:3px;border-radius:3px;background:#e2e8f0;overflow:hidden}
+  #v17-splash .bar i{display:block;height:100%;width:0;background:#16a34a;animation:v17bar ${SHOW_MS}ms linear forwards}
+  body.v9-dark #v17-splash{background:#0f172a}body.v9-dark #v17-splash .msg{color:#f8fafc}
+  @keyframes v17pop{from{transform:scale(.86);opacity:0}to{transform:scale(1);opacity:1}}
+  @keyframes v17up{from{transform:translateY(10px);opacity:0}to{transform:none;opacity:1}}
+  @keyframes v17bar{to{width:100%}}
+  #v17-who{display:none;align-items:center;justify-content:space-between;gap:8px;background:rgba(22,163,74,.09);border:1px solid rgba(22,163,74,.25);border-radius:12px;padding:9px 12px;margin-bottom:12px;font-weight:700;font-size:14px}
+  #v17-who a{font-size:11px;font-weight:600;color:#15803d;text-decoration:underline;cursor:pointer;white-space:nowrap}
+  `;
+  document.head.appendChild(css);
+
+  function firstName(n){ return String(n||'').trim().split(/\s+/)[0] || ''; }
+  function logoSrc(){ const im = $('login-img'); return (im && im.src && !im.classList.contains('hidden')) ? im.src : ''; }
+  function showSplash(name, l){
+    return new Promise(res=>{
+      const d = document.createElement('div'); d.id = 'v17-splash';
+      const src = logoSrc();
+      d.innerHTML = (src ? '<img alt="" src="'+src.replace(/"/g,'&quot;')+'">' : '<div class="emo">🛡️</div>') +
+        '<div class="msg"></div><div class="bar"><i></i></div>';
+      d.querySelector('.msg').textContent = (WELCOME[l]||WELCOME.ar).replace('{n}', firstName(name));
+      document.body.appendChild(d);
+      requestAnimationFrame(()=>d.classList.add('on'));
+      setTimeout(()=>{ d.classList.remove('on'); setTimeout(()=>{ d.remove(); res(); }, 260); }, SHOW_MS);
+    });
+  }
+  function ui(){
+    const idEl = $('login-id'), pwEl = $('login-password'), card = $('login-form-card'); if(!idEl || !pwEl || !card) return;
+    const btn = card.querySelector('button.btn-primary');
+    if(!$('v17-who')){ const w = document.createElement('div'); w.id = 'v17-who'; idEl.parentNode.insertBefore(w, idEl); }
+    if(!btn.dataset.v17orig) btn.dataset.v17orig = btn.innerHTML;
+    if(step === 'id'){
+      idEl.style.display = ''; pwEl.style.display = 'none'; $('v17-who').style.display = 'none';
+      btn.innerHTML = NEXT[lang()] || NEXT.ar;
+    } else {
+      idEl.style.display = 'none'; pwEl.style.display = ''; $('v17-who').style.display = 'flex';
+      btn.innerHTML = btn.dataset.v17orig;
+    }
+  }
+  function toStep(s, name){
+    step = s;
+    ui();
+    if(s === 'pw'){
+      const w = $('v17-who');
+      w.innerHTML = '<span></span><a></a>';
+      w.firstChild.textContent = '👤 ' + name + ' (#' + $('login-id').value.trim() + ')';
+      w.lastChild.textContent = CHANGE[lang()] || CHANGE.ar;
+      w.lastChild.onclick = () => { $('login-password').value = ''; $('login-error').classList.add('hidden'); toStep('id'); setTimeout(()=>$('login-id').focus(), 30); };
+      setTimeout(()=>$('login-password').focus(), 60);
+    }
+  }
+  async function needsPassword(worker){
+    if(worker.password) return true;
+    try{ const r = await sb.from('app_settings').select('value').eq('key','default_worker_password').maybeSingle(); return !!(r.data && r.data.value); }catch(e){ return false; }
+  }
+
+  const _dl = doLogin;
+  doLogin = async function(){
+    const idEl = $('login-id'), val = idEl ? idEl.value.trim() : '';
+    if(step === 'pw' || !val || val === '592001' || !navigator.onLine || !/^\d+$/.test(val)) return _dl.apply(this, arguments);
+    if(busy) return; busy = true;
+    try{
+      let worker = null;
+      try{ const r = await sb.from('workers_evaluations').select('id,worker_name,password,preferred_lang').eq('id', parseInt(val,10)).maybeSingle(); worker = r.data; }catch(e){}
+      if(!worker) return await _dl.apply(this, arguments);       // رقم غير مسجل / أدمن: نفس الرسائل القديمة
+      const l = (worker.preferred_lang && WELCOME[worker.preferred_lang]) ? worker.preferred_lang : lang();
+      $('login-error').classList.add('hidden');
+      await showSplash(worker.worker_name, l);
+      if(await needsPassword(worker)) toStep('pw', worker.worker_name);
+      else { step = 'pw'; return await _dl.apply(this, arguments); } // مفيش كلمة سر: يدخل علطول
+    } finally { busy = false; }
+  };
+
+  const _lo = window.logout;
+  window.logout = function(){ const r = _lo.apply(this, arguments); step = 'id'; try{ ui(); }catch(e){} return r; };
+  const _sl = window.setLang;
+  if(typeof _sl === 'function') window.setLang = function(){ const r = _sl.apply(this, arguments); try{ if(step === 'id') ui(); }catch(e){} return r; };
+
+  // رجوع لخطوة الرقم لو الدخول فشل لسبب غير كلمة السر (مثلاً رقم اتغيّر)
+  const err = $('login-error');
+  if(err) new MutationObserver(()=>{ if(!err.classList.contains('hidden') && /غير مسجل/.test(err.textContent)) { step = 'id'; ui(); } }).observe(err, {attributes:true, childList:true, characterData:true, subtree:true});
+  ui();
 })();
 
 </script>
