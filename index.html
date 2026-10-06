@@ -2885,6 +2885,7 @@ window.openVideoWatchersPanel = async function(topicId, topicTitle){
   let ids=[]; try{ ids=(typeof getAdminScopeIds==='function')?getAdminScopeIds():(adminUser?.section_ids||(adminUser?.section_id?[adminUser.section_id]:[])); }catch(e){}
   let wq=sb.from('workers_evaluations').select('id,worker_name,section_id').order('id');
   if(!(adminUser?.isSuper) && ids.length) wq=wq.in('section_id',ids);
+  try{ const _x=[...await window.V19.excludedWorkers()]; if(_x.length) wq=wq.not('id','in','('+_x.join(',')+')'); }catch(e){}
   const [{data:workers},{data:progress}]=await Promise.all([
     wq,
     sb.from('training_progress').select('worker_id,progress_percent,completed,language,updated_at').eq('topic_id',topicId)
@@ -3941,6 +3942,7 @@ try{(function(){
     const ids=getAdminScopeIdsSafe();
     let wq=sb.from('workers_evaluations').select('id,worker_name,section_id').order('id');
     if(!(adminUser?.isSuper) && ids.length) wq=wq.in('section_id',ids);
+    try{ const _x=[...await window.V19.excludedWorkers()]; if(_x.length) wq=wq.not('id','in','('+_x.join(',')+')'); }catch(e){}
     const [{data:workers},{data:attempts}]=await Promise.all([
       wq,
       sb.from('quiz_attempts').select('worker_id,score,created_at,is_current').eq('quiz_id',quizId).order('created_at',{ascending:false})
@@ -4223,10 +4225,11 @@ try{(function(){
       sb.from('quiz_attempts').select('worker_id,score,is_current'),
       sb.from('onsite_training_participants').select('worker_id,admin_evaluation').then(r=>r).catch(()=>({data:[]}))
     ]);
-    const list=workers||[];
+    let list=workers||[];
     const roleIds=[...new Set(list.map(w=>w.job_role_id).filter(Boolean))];
     let roleDeptMap={};
     if(roleIds.length){ try{ const {data:roles}=await sb.from('job_roles').select('id,target_department_id').in('id',roleIds); (roles||[]).forEach(r=>roleDeptMap[r.id]=r.target_department_id); }catch(e){} }
+    try{ const _exw=await window.V19.excludedWorkers(); if(_exw.size) list=list.filter(w=>!_exw.has(Number(w.id))); }catch(e){}   // v9.26: استبعاد الأدمن وفريق الجودة من الإحصائيات
 
     const progressByWorker={};
     (progress||[]).forEach(p=>{ if(!p.completed) return; (progressByWorker[p.worker_id] ||= new Set()).add(p.topic_id); });
@@ -6083,7 +6086,8 @@ try{(function(){
     onsite.forEach(p => { const v = OS[p.admin_evaluation]; if(v != null) (on[p.worker_id] ||= []).push(v); });
     const vis = topics.filter(t => t.is_visible);
     const mean = a => a.reduce((x, y) => x + y, 0) / a.length;
-    return workers.map(w => {
+    let _exS = new Set(); try{ _exS = await window.V19.excludedWorkers(); }catch(e){}   // v9.26
+    return workers.filter(w => !_exS.has(Number(w.id))).map(w => {
       const d = roleDept[w.job_role_id];
       const cx = window.V6 ? window.V6.workerCtx(w, d) : null;
       const rel = vis.filter(t => t.audience_restricted && cx ? window.V6.audAllowed('video', t, cx)
@@ -7624,7 +7628,8 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   async function computeRank(){
     if(S.board === 'off' || !currentUser || !currentUser.section_id) return null;
     const sid = currentUser.section_id;
-    const ws = await pages(() => sb.from('workers_evaluations').select('id,worker_name').eq('section_id', sid).order('id'));
+    let ws = await pages(() => sb.from('workers_evaluations').select('id,worker_name').eq('section_id', sid).order('id'));
+    try{ const _exw = await window.V19.excludedWorkers(); if(_exw.size) ws = ws.filter(x => !_exw.has(Number(x.id))); }catch(e){}   // v9.26: الأدمن وفريق الجودة خارج الترتيب
     if(ws.length < 3 || ws.length > 600) return { few: ws.length < 3 };
     const ids = ws.map(x => x.id), vids = {}, ons = {}, att = [];
     for(let i = 0; i < ids.length; i += CH){
@@ -8362,6 +8367,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     }finally{ currentUser = prev; }
   }
   async function buildDualCard(){
+    return;   // v9.26: الأدمن مالوش صفحة موظف
     const tab = $q('tab-dashboard'); if(!tab || !V.dual) return;
     let c = $q('v9-dualcard');
     if(!c){ tab.insertAdjacentHTML('beforebegin', '<div class="card v9-dualcard" id="v9-dualcard"></div>'); c = $q('v9-dualcard'); }
@@ -8816,7 +8822,8 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
         if(item && item.target_department_id && Number(roles[w.job_role_id]) !== Number(item.target_department_id)) return false;
         return true;
       };
-      const list = workers.filter(eligible);
+      let _exw = new Set(); try{ _exw = await window.V19.excludedWorkers(); }catch(e){}
+      const list = workers.filter(eligible).filter(w => !_exw.has(Number(w.id)));
       const since = item && item.visible_since ? new Date(item.visible_since).getTime() : 0;
       const rec = {};
       if(type === 'video'){
@@ -9410,7 +9417,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
 /* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
 (function(){
-  const VERSION = 'v9.24';
+  const VERSION = 'v9.26';
   const $ = id => document.getElementById(id);
   let running = false;
   async function tx(text, lang){
@@ -10140,6 +10147,199 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   }, true);
 
   window.V18 = { refresh, paintSlots, state: () => ST };
+})();
+
+/* ===== V19 — استبعاد إدارة (الجودة) من إحصائيات الداشبورد + شجرة الهيكل الوظيفي ===== */
+(function(){
+  const $ = id => document.getElementById(id);
+  const E = s => (typeof esc === 'function' ? esc(s) : String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])));
+
+  /* ---------- الإدارات المستبعدة (كاش 30 ثانية) ---------- */
+  let cache = null, cAt = 0, hasCol = true;
+  async function excluded(force){
+    if(!force && cache && Date.now() - cAt < 30000) return cache;
+    const s = new Set();
+    try{
+      const r = await sb.from('target_departments').select('id,exclude_from_stats');
+      if(r.error){ hasCol = false; }
+      else { hasCol = true; (r.data || []).forEach(d => { if(d.exclude_from_stats) s.add(Number(d.id)); }); }
+    }catch(e){ hasCol = false; }
+    cache = s; cAt = Date.now(); return s;
+  }
+  async function pagedAll(table, cols){
+    let out = [], from = 0;
+    for(;;){ const {data, error} = await sb.from(table).select(cols).order('id').range(from, from + 999); if(error) throw error; out = out.concat(data || []); if(!data || data.length < 1000) break; from += 1000; }
+    return out;
+  }
+  /* كل موظف يتحسب "خارج الإحصائيات والترتيب": (1) أي أدمن (جدول الأدمن)  (2) أدمن تلقائي (إدارة إدارية) (3) موظف إدارة معلّمة "خارج الإحصائيات" (الجودة) */
+  let exW = null, exWAt = 0;
+  async function excludedWorkers(force){
+    if(!force && exW && Date.now() - exWAt < 30000) return exW;
+    const s = new Set();
+    try{
+      const [dep, adm, roles] = await Promise.all([
+        sb.from('target_departments').select('*'),
+        sb.from('admins').select('worker_id'),
+        pagedAll('job_roles', 'id,target_department_id').catch(() => [])
+      ]);
+      let ws; try{ ws = await pagedAll('workers_evaluations', 'id,job_role_id,admin_auto_excluded'); }catch(e){ ws = await pagedAll('workers_evaluations', 'id,job_role_id'); }
+      const statsDept = new Set(), adminDept = new Set();
+      ((dep && dep.data) || []).forEach(d => { if(d.exclude_from_stats) statsDept.add(Number(d.id)); if(d.is_admin_department) adminDept.add(Number(d.id)); });
+      const admIds = new Set(((adm && adm.data) || []).map(a => a.worker_id).filter(x => x != null).map(Number));
+      const roleDept = {}; roles.forEach(r => roleDept[r.id] = Number(r.target_department_id));
+      ws.forEach(w => {
+        const d = roleDept[w.job_role_id];
+        if(admIds.has(Number(w.id)) || statsDept.has(d) || (adminDept.has(d) && !w.admin_auto_excluded)) s.add(Number(w.id));
+      });
+    }catch(e){ console.error('v19 excludedWorkers', e); }
+    exW = s; exWAt = Date.now(); return s;
+  }
+  window.V19 = { excluded, excludedWorkers, has: () => hasCol };
+
+  /* ---------- الإدارات المستهدفة: زر الاستبعاد ---------- */
+  async function toggleEx(id, val){
+    const r = await sb.from('target_departments').update({exclude_from_stats: val}).eq('id', id);
+    if(r.error){ showToast(/exclude_from_stats/i.test(r.error.message || '') ? 'لازم تشغّل ملف phase11.sql في Supabase الأول' : r.error.message); return; }
+    cache = null; exW = null;
+    try{ await loadV23Meta(); }catch(e){}
+    showToast(val ? '🔎 الإدارة دي بقت خارج إحصائيات الداشبورد ✅' : 'الإدارة دي رجعت تدخل في الإحصائيات ✅');
+  }
+  window.v19ToggleEx = toggleEx;
+  const _rt = window.renderTargetDepartmentsV22 || (typeof renderTargetDepartmentsV22 === 'function' ? renderTargetDepartmentsV22 : null);
+  if(_rt){
+    const W = function(){
+      const r = _rt.apply(this, arguments);
+      try{
+        const b = $('targets-list'); if(!b) return r;
+        const byId = {}; (typeof targetDepartmentsV22 !== 'undefined' ? targetDepartmentsV22 : []).forEach(d => byId[d.id] = d);
+        b.querySelectorAll(':scope > .card').forEach(card => {
+          const m = (card.innerHTML.match(/editTargetDepartmentV22\((\d+)\)/) || []); const id = Number(m[1]); const d = byId[id]; if(!d || card.querySelector('.v19-ex')) return;
+          const on = !!d.exclude_from_stats;
+          const nameSpan = card.querySelector('span'); if(on && nameSpan) nameSpan.insertAdjacentHTML('beforeend', ' <span class="badge badge-yellow v19-ex" style="font-size:9px;">🔎 خارج إحصائيات الداشبورد</span>');
+          const btns = card.querySelectorAll('span')[card.querySelectorAll('span').length - 1];
+          const b2 = document.createElement('button'); b2.className = 'btn-secondary btn-sm v19-ex'; b2.textContent = on ? 'إدخالها في الإحصائيات' : 'استبعادها من الإحصائيات (فريق الجودة)';
+          b2.onclick = () => toggleEx(id, !on);
+          const lastSpan = card.lastElementChild; (lastSpan && lastSpan.querySelector('button') ? lastSpan : card).prepend(b2);
+        });
+      }catch(e){ console.error('v19 depts', e); }
+      return r;
+    };
+    window.renderTargetDepartmentsV22 = W; try{ renderTargetDepartmentsV22 = W; }catch(e){}
+  }
+
+  /* ---------- شجرة الهيكل ---------- */
+  const css = document.createElement('style');
+  css.textContent = `
+  .v19-tree details{margin:6px 0 6px 0;border:1px solid var(--border);border-radius:12px;background:#fff}
+  .v19-tree details details{margin:6px 10px;background:#f8fafc}
+  .v19-tree summary{cursor:pointer;padding:9px 12px;font-weight:800;font-size:13px;display:flex;justify-content:space-between;gap:8px;align-items:center;list-style:none}
+  .v19-tree summary::-webkit-details-marker{display:none}
+  .v19-tree .cnt{background:#e0f2fe;color:#0369a1;border-radius:999px;padding:2px 9px;font-size:11px;font-weight:800}
+  .v19-tree .q{background:#fef3c7;color:#92400e}
+  .v19-tree .role{display:flex;justify-content:space-between;padding:6px 14px;font-size:12px;border-top:1px dashed var(--border)}
+  .v19-sum{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+  .v19-sum div{background:#f1f5f9;border-radius:12px;padding:10px;text-align:center;font-size:11px;font-weight:700}
+  .v19-sum b{display:block;font-size:20px}
+  `;
+  document.head.appendChild(css);
+
+  async function allRows(table, cols){
+    let out = [], from = 0;
+    for(;;){ const {data, error} = await sb.from(table).select(cols).order('id').range(from, from + 999); if(error) throw error; out = out.concat(data || []); if(!data || data.length < 1000) break; from += 1000; }
+    return out;
+  }
+  async function buildTree(){
+    const host = $('v19-tree-body'); if(!host) return;
+    host.innerHTML = '<div class="muted" style="padding:14px;text-align:center">جاري التحميل…</div>';
+    try{
+      const [regions, sections, depts, roles, workers, ex, exWorkers] = await Promise.all([
+        allRows('regions','id,name_ar').catch(() => []), allRows('sections','id,name_ar,region_id'), allRows('target_departments','id,name_ar'),
+        allRows('job_roles','id,name_ar,target_department_id'), allRows('workers_evaluations','id,section_id,job_role_id'), excluded(true), excludedWorkers(true)]);
+      const ids = (typeof getAdminScopeIds === 'function' && !(adminUser && adminUser.isSuper)) ? getAdminScopeIds().map(Number) : null;
+      const W = ids && ids.length ? workers.filter(w => ids.includes(Number(w.section_id))) : workers;
+      const roleBy = {}; roles.forEach(r => roleBy[r.id] = r);
+      const deptBy = {}; depts.forEach(d => deptBy[d.id] = d);
+      const secBy = {}; sections.forEach(s => secBy[s.id] = s);
+      const regBy = {}; regions.forEach(r => regBy[r.id] = r);
+      // region -> section -> dept -> role -> count
+      const T = {};
+      let inStats = 0, qual = 0;
+      W.forEach(w => {
+        const s = secBy[w.section_id], rid = s && s.region_id ? s.region_id : 0, sid = s ? s.id : 0;
+        const r = roleBy[w.job_role_id], did = r && r.target_department_id ? r.target_department_id : 0, roid = r ? r.id : 0;
+        if(exWorkers.has(Number(w.id))) qual++; else inStats++;
+        const reg = (T[rid] ||= {n:0, s:{}}); reg.n++;
+        const sec = (reg.s[sid] ||= {n:0, d:{}}); sec.n++;
+        const dep = (sec.d[did] ||= {n:0, r:{}}); dep.n++;
+        dep.r[roid] = (dep.r[roid] || 0) + 1;
+      });
+      const nm = {
+        reg: id => id ? (regBy[id] ? regBy[id].name_ar : 'منطقة') : 'بدون منطقة',
+        sec: id => id ? (secBy[id] ? secBy[id].name_ar : 'وحدة') : 'بدون وحدة',
+        dep: id => id ? (deptBy[id] ? deptBy[id].name_ar : 'إدارة') : 'بدون إدارة',
+        rol: id => id ? (roleBy[id] ? roleBy[id].name_ar : 'وظيفة') : 'بدون وظيفة'
+      };
+      let h = '<div class="v19-sum"><div><b>' + W.length + '</b>إجمالي الموظفين</div><div><b>' + inStats + '</b>داخل الإحصائيات</div><div><b>' + qual + '</b>🔎 خارج الإحصائيات (أدمن / جودة)</div></div>';
+      Object.keys(T).sort((a, b) => nm.reg(a).localeCompare(nm.reg(b), 'ar')).forEach(rid => {
+        const reg = T[rid];
+        h += '<details open><summary><span>🌍 ' + E(nm.reg(rid)) + '</span><span class="cnt">' + reg.n + '</span></summary>';
+        Object.keys(reg.s).forEach(sid => {
+          const sec = reg.s[sid];
+          h += '<details><summary><span>🏭 ' + E(nm.sec(sid)) + '</span><span class="cnt">' + sec.n + '</span></summary>';
+          Object.keys(sec.d).forEach(did => {
+            const dep = sec.d[did], isEx = ex.has(Number(did));
+            h += '<details><summary><span>🏬 ' + E(nm.dep(did)) + (isEx ? ' <span class="cnt q">🔎 خارج الإحصائيات</span>' : '') + '</span><span class="cnt' + (isEx ? ' q' : '') + '">' + dep.n + '</span></summary>';
+            Object.keys(dep.r).forEach(roid => { h += '<div class="role"><span>👷 ' + E(nm.rol(roid)) + '</span><b>' + dep.r[roid] + '</b></div>'; });
+            h += '</details>';
+          });
+          h += '</details>';
+        });
+        h += '</details>';
+      });
+      if(!W.length) h += '<div class="muted" style="padding:14px;text-align:center">لا يوجد موظفين</div>';
+      host.innerHTML = '<div class="v19-tree">' + h + '</div>';
+    }catch(e){ host.innerHTML = '<div class="muted" style="padding:14px">تعذر تحميل الشجرة: ' + E(e.message || e) + '</div>'; }
+  }
+  function ensureTreeUI(){
+    const btnRow = document.querySelector('#orgtabbtn-targets') && document.querySelector('#orgtabbtn-targets').parentElement;
+    if(btnRow && !$('orgtabbtn-tree')){
+      const b = document.createElement('button'); b.className = 'wm-tab-btn'; b.id = 'orgtabbtn-tree'; b.textContent = '🌳 شجرة الهيكل'; b.onclick = () => toggleOrgTab('tree');
+      btnRow.appendChild(b);
+    }
+    const tab = $('tab-org');
+    if(tab && !$('orgpanel-tree')){
+      const p = document.createElement('div'); p.className = 'wm-panel hidden'; p.id = 'orgpanel-tree';
+      p.innerHTML = '<div class="card" style="padding:16px"><div class="section-title" style="margin-bottom:6px">🌳 شجرة الهيكل الوظيفي</div><p class="muted" style="font-size:11.5px;margin-bottom:10px">المنطقة ← الوحدة ← الإدارة ← الوظيفة، وعدد الموظفين في كل مستوى. الإدارات المعلّمة 🔎 (زي الجودة) خارج إحصائيات الداشبورد.</p><div id="v19-tree-body"></div></div>';
+      tab.appendChild(p);
+    }
+  }
+  const _tot = window.toggleOrgTab || (typeof toggleOrgTab === 'function' ? toggleOrgTab : null);
+  if(_tot){
+    const W2 = function(name){
+      ensureTreeUI();
+      const r = _tot.apply(this, arguments);
+      const on = name === 'tree';
+      $('orgpanel-tree')?.classList.toggle('hidden', !on); $('orgpanel-tree')?.classList.toggle('active', on);
+      $('orgtabbtn-tree')?.classList.toggle('active', on);
+      if(on) buildTree();
+      return r;
+    };
+    window.toggleOrgTab = W2; try{ toggleOrgTab = W2; }catch(e){}
+  }
+  const _at = window.adminTab || adminTab;
+  const W3 = function(tab){ const r = _at.apply(this, arguments); if(tab === 'org') try{ ensureTreeUI(); }catch(e){} return r; };
+  window.adminTab = W3; try{ adminTab = W3; }catch(e){}
+
+  /* ---------- الأدمن (حتى لو موظف في الأصل) مالوش صفحة موظف ---------- */
+  const noW = document.createElement('style');
+  noW.textContent = '#v9-switch-a,#v9-dualcard{display:none!important}';
+  document.head.appendChild(noW);
+  try{
+    if(window.V9 && typeof window.V9.switchTo === 'function'){
+      const _sw = window.V9.switchTo;
+      window.V9.switchTo = function(role){ if(role === 'worker') return; return _sw.apply(this, arguments); };
+    }
+  }catch(e){}
 })();
 
 </script>
