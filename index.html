@@ -2782,10 +2782,13 @@ const oldLoadSections=loadSections;loadSections=async function(){await oldLoadSe
 loadAdminQuizzes = async function(){
   const {data:quizzes,error}=await sb.from('quizzes').select('*').order('id');
   const box=$('admin-quizzes-list'); if(!box)return;
+  const _tok=window.__aqTok=(window.__aqTok||0)+1;   // v9.21: منع تكرار المحتوى عند فتح/تحديث التبويب أكثر من مرة
   if(error){box.innerHTML='<div class="muted">تعذر تحميل الاختبارات</div>';return;}
+  box.innerHTML='';
   if(!quizzes?.length){box.innerHTML='<div class="muted" style="font-size:12px;text-align:center;padding:10px;">لا توجد اختبارات</div>';return;}
   for(const q of quizzes){
     const {data:questions}=await sb.from('quiz_questions').select('*').eq('quiz_id',q.id).order('id');
+    if(_tok!==window.__aqTok) return;
     const sec=sections.find(s=>String(s.id)===String(q.section_id));
     const target=targetDepartmentsV22.find(d=>String(d.id)===String(q.target_department_id));
     const w=document.createElement('div'); w.className='card'; w.style.cssText='padding:16px;margin-bottom:12px;';
@@ -9416,7 +9419,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
 /* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
 (function(){
-  const VERSION = 'v9.20';
+  const VERSION = 'v9.21';
   const $ = id => document.getElementById(id);
   let running = false;
   async function tx(text, lang){
