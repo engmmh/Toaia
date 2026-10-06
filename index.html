@@ -1366,6 +1366,9 @@ body.v9-login-en .login-hero *{text-align:left!important}
 <script src="https://www.youtube.com/iframe_api"></script>
 
 <script>
+/* v9.24: مؤقت واحد مشترك بدل عدة مؤقتات — بيقف تلقائياً لما الصفحة تكون في الخلفية (توفير بطارية) */
+window.__tick=(function(){ const T=[]; setInterval(function(){ if(document.hidden) return; const n=Date.now(); for(const t of T){ if(n-t.l>=t.m-100){ t.l=n; try{ const r=t.f(); if(r&&r.catch) r.catch(function(){}); }catch(e){} } } },500); return function(f,m){ T.push({f:f,m:m,l:0}); }; })();
+
 // ==================== SUPABASE ====================
 const SUPABASE_URL = 'https://aljtbakbfhgmpxslbzaw.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFsanRiYWtiZmhnbXB4c2xiemF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2MTAyODAsImV4cCI6MjEwMzE4NjI4MH0.MCYHzFUNgnSrNIaoS0lyFNMBSG-Wu7YvH4Jz9TY83M4';
@@ -1672,11 +1675,8 @@ function renderServesLangsCheckboxes(){
   const box=$('vd-serves-langs'); if(!box) return;
   box.innerHTML=LANGS.map(l=>'<label style="display:flex;align-items:center;gap:5px;font-size:12px;"><input type="checkbox" class="serve-lang" value="'+l+'" '+(servesLangSelection.includes(l)?'checked':'')+'/> '+LANG_NAMES[l]+'</label>').join('');
 }
-function getSelectedServesLangs(){ return servesLangSelection.filter(l=>l).join(','); }
-function updateServesLangSelection(){
-  servesLangSelection = Array.from(document.querySelectorAll('.serve-lang:checked')).map(c=>c.value);
-  if(!servesLangSelection.length) servesLangSelection=['ar'];
-}
+
+
 async function saveSection(){
   const name_ar=$('sec-ar').value.trim(); if(!name_ar) return showToast('اكتب اسم القسم');
   await sb.from('sections').insert({ name_ar, name_en:$('sec-en').value.trim(), name_bn:$('sec-bn').value.trim(), name_ne:$('sec-ne').value.trim(), name_hi:$('sec-hi').value.trim() });
@@ -2276,8 +2276,8 @@ let contentOptCount={};
 function addCO(type,itemId){ const pf=type+'_'+itemId; contentOptCount[pf]=(contentOptCount[pf]||2)+1; const idx=contentOptCount[pf]; const formId=(type==='card'?'cq-form-':type==='video'?'vq-form-':'vqt-form-')+itemId; const anchor=document.querySelector('#'+formId+' .btn-primary'); if(anchor) anchor.insertAdjacentHTML('beforebegin',coInput(pf,idx)); }
 function removeCO(pf,idx){ const r=$('co-row-'+pf+'-'+idx); const l=$('col-'+pf+'-'+idx); if(r)r.remove(); if(l)l.remove(); }
 function addCardQuestion(id){ const f=$('cq-form-'+id); f.innerHTML=contentQFormHTML('card',id); f.classList.toggle('open'); }
-function addVideoQuestion(id){ const f=$('vq-form-'+id); f.innerHTML=contentQFormHTML('video',id); f.classList.toggle('open'); }
-function addTopicQuestion(topicId){ const f=$('vqt-form-'+topicId); f.innerHTML=contentQFormHTML('topic',topicId); f.classList.toggle('open'); }
+
+
 async function saveContentQuestion(type,itemId){
   const pf=type+'_'+itemId;
   const qar=$('cq-ar-'+pf).value.trim(); if(!qar) return showToast('اكتب السؤال بالعربية');
@@ -2673,7 +2673,7 @@ function adminTab(tab){
   if(tab==='vio-lib') loadViolationLib();
   if(tab==='admins') renderAdminAdmins();
 }
-function loadAdminData(){ adminTab('dashboard'); }
+
 
 // ==================== WORKER DATA ====================
 async function loadWorkerData(){
@@ -2955,7 +2955,7 @@ loadWorkerTrainingProgress = async function(workerId){const [{data:topics},{data
 
 /* ==================== V2.3 FINAL PROFESSIONAL LAYER ==================== */
 let v23RoleTargetId=null;
-function iconTitle(ar,en){return '<span>'+esc(ar)+'</span><small class="nav-en" style="font-size:8px;display:block">'+esc(en)+'</small>';}
+
 
 /* Correct multi-section admin login and scope */
 async function loadAdminSectionsMultiV23(adminId){
@@ -3145,9 +3145,7 @@ async function editQuizQuestionGenericV23(qid){ensureEditModal();const {data:q}=
 async function saveEditQuizQuestionV23(qid){const {error}=await sb.from('quiz_questions').update({question_ar:$('eqz-ar').value.trim(),question_en:$('eqz-en').value.trim()}).eq('id',qid);if(error)return showToast(error.message);for(const inp of Array.from(document.querySelectorAll('[id^="eqz-o-ar-"]'))){const id=Number(inp.id.replace('eqz-o-ar-',''));const correct=Number(document.querySelector('input[name="eqz-correct"]:checked')?.value||0)===id;await sb.from('quiz_options').update({option_ar:inp.value.trim(),option_en:$('eqz-o-en-'+id).value.trim(),is_correct:correct}).eq('id',id);}closeV23Modal();await loadAdminQuizzes();showToast('تم تعديل سؤال الاختبار بدون حذف الإجابات السابقة ✅');}
 
 /* Preview as worker, read-only and no activity/progress writes */
-async function openAdminPreview(){ensurePreviewModal();const ids=getAdminScopeIds();let sectionId=ids[0]||'';const {data:secs}=await sb.from('sections').select('*').order('id');let html='<div class="preview-modal" id="v23-preview"><div class="preview-panel"><div class="preview-top"><div><b>معاينة صفحة الموظف</b><div class="muted" style="font-size:9px">Worker Preview • بدون تسجيل مشاهدة أو إجابة</div></div><div style="display:flex;gap:6px;align-items:center"><select id="pv-sec" class="input-field" style="width:auto;padding:6px">'+(adminUser?.isSuper?'<option value="">كل الأقسام</option>':'')+(secs||[]).filter(s=>adminUser?.isSuper||ids.includes(Number(s.id))).map(s=>'<option value="'+s.id+'" '+(String(s.id)===String(sectionId)?'selected':'')+'>'+esc(tr(s,'name'))+'</option>').join('')+'</select><button class="btn-danger btn-sm" onclick="closePreviewV23()">إغلاق</button></div></div><div id="pv-body"></div></div></div>';const old=$('v23-preview');if(old)old.remove();document.body.insertAdjacentHTML('beforeend',html);await renderPreviewV23();}
-function ensurePreviewModal(){}
-function closePreviewV23(){$('v23-preview')?.remove();}
+
 async function renderPreviewV23(){const sec=num($('pv-sec')?.value);const body=$('pv-body');if(!body)return;body.innerHTML='<div class="preview-card muted">جاري تحميل المعاينة…</div>';const [tR,vR,cR,qR]=await Promise.all([sb.from('training_topics').select('*').eq('is_visible',true).order('id'),sb.from('training_videos').select('*').eq('is_visible',true).order('id'),sb.from('safety_cards').select('*').eq('is_visible',true).order('id'),sb.from('quizzes').select('*').eq('is_visible',true).order('id')]);const topics=(tR.data||[]).filter(t=>!sec||!t.section_id||Number(t.section_id)===sec);const videos=vR.data||[];const cards=(cR.data||[]).filter(c=>!sec||!c.section_id||Number(c.section_id)===sec);const quizzes=(qR.data||[]).filter(q=>!sec||!q.section_id||Number(q.section_id)===sec);let h='<div class="preview-card"><div class="section-title"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z"/><circle cx="12" cy="12" r="2.5"/></svg></span>واجهة الموظف <small class="nav-en">Worker View</small></div><div class="muted" style="font-size:11px;margin-top:5px">هذه معاينة فقط. لن يتم تسجيل مشاهدة أو إجابة.</div></div>';h+='<div class="preview-card"><div style="font-weight:800;margin-bottom:8px">التدريبات <small class="nav-en">Training Videos</small></div>'+(topics.map(t=>{const vs=videos.filter(v=>Number(v.topic_id)===Number(t.id));return '<div style="padding:10px;border:1px solid var(--border);border-radius:12px;margin-bottom:8px"><b>'+esc(tr(t,'title')||t.title_ar)+'</b><div class="muted" style="font-size:10px;margin-top:4px">'+vs.map(v=>videoLanguageLabel(v.video_lang||'ar')).join(' • ')+'</div></div>';}).join('')||'<div class="muted">لا توجد تدريبات ظاهرة.</div>')+'</div>';h+='<div class="preview-card"><div style="font-weight:800;margin-bottom:8px">كروت السلامة <small class="nav-en">Safety Cards</small></div><div class="worker-carousel">'+cards.map(c=>'<div class="safety-card-slide"><div class="card" style="padding:10px"><img src="'+esc(c.image||'')+'" loading="lazy" class="card-img" onerror="this.style.display=\'none\'"/><b style="display:block;margin-top:8px">'+esc(tr(c,'title'))+'</b><p class="muted" style="font-size:11px;margin-top:4px">'+esc(tr(c,'description'))+'</p></div></div>').join('')+'</div></div>';h+='<div class="preview-card"><div style="font-weight:800;margin-bottom:8px">الاختبارات <small class="nav-en">Quizzes</small></div>'+(quizzes.map(q=>'<div style="padding:9px;border:1px solid var(--border);border-radius:11px;margin-bottom:7px">'+esc(tr(q,'title')||q.title_ar)+'</div>').join('')||'<div class="muted">لا توجد اختبارات ظاهرة.</div>')+'</div>';body.innerHTML=h;$('pv-sec')?.addEventListener('change',renderPreviewV23);}
 
 /* More reliable worker card rendering + image fallback */
@@ -4073,7 +4071,6 @@ try{(function(){
   document.head.appendChild(iconStyle);
 
   /* ---------- تشغيل أول مرة بعد اكتمال كل الطبقات ---------- */
-  console.log('V2.5 consolidation layer loaded — video/quiz/targeting/pagination fixes active.');
 })();}catch(e){console.error('طبقة 5 فشلت، الطبقات اللي بعدها هتشتغل عادي:',e);}
 
 
@@ -4171,7 +4168,6 @@ try{(function(){
     }catch(e){}
   };
 
-  console.log('V2.6 layer loaded — counters, image retry, branding cache active.');
 })();}catch(e){console.error('طبقة 6 فشلت، الطبقات اللي بعدها هتشتغل عادي:',e);}
 
 /* ==================== طبقة 7: لوحة التحكم ونسبة الالتزام والشهادات ==================== */
@@ -4513,7 +4509,6 @@ try{(function(){
     setTimeout(()=>w.print(),300);
   };
 
-  console.log('V2.7 layer loaded — dashboard, compliance score, certificates active.');
 })();}catch(e){console.error('طبقة 7 فشلت:',e);}
 
 /* ==================== طبقة 8: نصوص صفحة الدخول القابلة للتعديل ==================== */
@@ -4569,7 +4564,6 @@ try{(function(){
   };
   const oldAdminTabForLoginTexts=adminTab;
   adminTab=function(tab){ oldAdminTabForLoginTexts(tab); if(tab==='branding' && typeof loadLoginTextsForAdmin==='function') loadLoginTextsForAdmin(); };
-  console.log('V2.8 layer loaded — editable login page texts active.');
 })();}catch(e){console.error('طبقة 8 فشلت:',e);}
 
 /* ==================== طبقة 9: أدمن تلقائي بحكم الإدارة (الجودة مثلاً) ==================== */
@@ -4614,7 +4608,6 @@ try{(function(){
     if(error) return showToast('خطأ: '+error.message);
     showToast('تم الإرجاع ✅'); renderAutoAdminsList();
   };
-  console.log('V2.9 layer loaded — department-based auto-admin active.');
 })();}catch(e){console.error('طبقة 9 فشلت:',e);}
 
 /* ==================== طبقة 10: التدريبات الميدانية (سجل ورقي رقمي) ==================== */
@@ -4961,7 +4954,6 @@ try{(function(){
     loadWorkerOnsiteTrainings();
   };
 
-  console.log('V2.10 layer loaded — on-site training records active.');
 })();}catch(e){console.error('طبقة 10 فشلت:',e);}
 
 /* ===== V3: التدريبات الميدانية (نسخة مصلّحة) — تعمل فوق الكود القديم بدون حذف أي بيانات ===== */
@@ -8333,7 +8325,6 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   };
 
   /* ---------- الأزرار + الكروت ---------- */
-  function workerBtnText(){ return '🛡️ ' + ((window.V9 && V9.n) ? V9.n('toAdmin') : 'Admin'); }
   function afterEnter(){
       const d = V.dual; if(!d) return;
     if(typeof adminUser !== 'undefined' && adminUser){
@@ -9116,7 +9107,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     new MutationObserver(()=>{ if(busy) return; busy=true; try{ fixCards(); }finally{ setTimeout(()=>busy=false,0); } }).observe(g,{childList:true});
     fixCards();
   }
-  setInterval(arm, 1500); arm();
+  __tick(arm, 1500); arm();
 
   /* ---------- 2) رقم سري للإبلاغ ---------- */
   const DEFAULT_PIN = '5900';
@@ -9419,7 +9410,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
 /* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
 (function(){
-  const VERSION = 'v9.23';
+  const VERSION = 'v9.24';
   const $ = id => document.getElementById(id);
   let running = false;
   async function tx(text, lang){
@@ -9453,7 +9444,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
       if(el.children.length===0 && /Prepared by/i.test(el.textContent) && !el.dataset.v16s){ el.dataset.v16s='1'; el.insertAdjacentHTML('afterend','<div style="font-size:10px;opacity:.55;text-align:center;direction:ltr">'+VERSION+'</div>'); }
     });
   }
-  setInterval(stamp, 2500); stamp();
+  __tick(stamp, 2500); stamp();
 })();
 
 
@@ -9551,7 +9542,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   function schedule(){ clearTimeout(tm); tm = setTimeout(()=>{ try{ if(typeof currentUser !== 'undefined' && currentUser && !(typeof adminUser !== 'undefined' && adminUser)) walk($('worker-section')); }catch(e){} }, 90); }
   const ws = $('worker-section');
   if(ws) new MutationObserver(schedule).observe(ws, {childList:true, subtree:true, characterData:true});
-  setInterval(schedule, 2500);
+  __tick(schedule, 2500);
   // الرسائل المنبثقة (toast) للموظف
   const _t = window.showToast || (typeof showToast === 'function' ? showToast : null);
   if(_t){
@@ -9634,7 +9625,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
       if((hideV && workerActiveSection === 'violations') || (hideC && workerActiveSection === 'cards')) toggleWorkerSection('videos');
     }catch(e){}
   }
-  setInterval(()=>{ applyIcons().catch(()=>{}); }, 1500);
+  __tick(()=>applyIcons(), 1500);
 
   async function buildAdminCard(){
     if(typeof adminUser === 'undefined' || !adminUser || !adminUser.isSuper) return;
@@ -9757,7 +9748,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     new MutationObserver(()=>{ if(bz) return; bz = true; setTimeout(()=>{ try{ upgrade(); }finally{ bz = false; } }, 60); }).observe(g, {childList:true});
     upgrade();
   }
-  setInterval(arm, 1500); arm();
+  __tick(arm, 1500); arm();
 })();
 
 
