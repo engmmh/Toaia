@@ -1937,32 +1937,7 @@ window.onYouTubeIframeAPIReady=function(){ ytAPIReady=true; (pendingPlayers||[])
 /* (دمج v9.34: تعريف قديم اتشال: saveTopicProgress) */
 
 // ==================== VIDEOS (ADMIN) ====================
-async function loadAdminVideos(){
-  const [{data:topics},{data:videos}]=await Promise.all([
-    sb.from('training_topics').select('*').order('id',{ascending:true}),
-    sb.from('training_videos').select('*').order('id',{ascending:true})
-  ]);
-  let topicList=(topics||[]);
-  if(adminUser && !adminUser.isSuper) topicList=topicList.filter(t=>t.section_id===adminUser.section_id);
-  const vm={}; (videos||[]).forEach(v=>{ if(v.topic_id){ (vm[v.topic_id] ||= []).push(v); } });
-  const box=$('admin-videos-list');
-  box.innerHTML=topicList.map(t=>{
-    const rows=vm[t.id]||[];
-    const langs=[...new Set(rows.map(v=>v.video_lang||'ar'))];
-    const sec=sections.find(s=>s.id===t.section_id); const secName=sec?tr(sec,'name'):'الكل';
-    const visible=t.is_visible;
-    const langHtml=VIDEO_LANGS.map(l=>{
-      const r=rows.find(v=>(v.video_lang||'ar')===l && v.video_url);
-      return '<span class="badge '+(r?'badge-green':'badge-yellow')+'" style="font-size:9px;">'+videoLanguageLabel(l)+' '+(r?'✓':'—')+'</span>';
-    }).join(' ');
-    const rowHtml=rows.map(v=>{
-      const ytId=extractYTVideoId(v.video_url); const thumb=ytId?'<img src="https://img.youtube.com/vi/'+ytId+'/hqdefault.jpg" style="width:82px;height:46px;object-fit:cover;border-radius:7px;"/>':'<div style="width:82px;height:46px;border-radius:7px;background:#e2e8f0;display:flex;align-items:center;justify-content:center;">🎬</div>';
-      return '<div style="display:flex;align-items:center;gap:8px;border-top:1px solid var(--border);padding:8px 0;">'+thumb+'<div style="flex:1;font-size:11px;"><b>'+videoLanguageLabel(v.video_lang||'ar')+'</b><div class="muted">ID الفيديو: '+v.id+'</div></div><button class="btn-danger btn-sm" onclick="deleteVideoVersion('+v.id+')">حذف النسخة</button></div>';
-    }).join('');
-    return '<div class="topic-card"><div style="padding:13px 14px;"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center;"><div><div style="font-weight:800;font-size:14px;">🎓 '+esc(t.title_ar)+'</div><div class="muted" style="font-size:10px;margin-top:3px;">القسم: '+esc(secName)+' | '+langHtml+'</div></div><div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end;"><button class="btn-sm '+(visible?'btn-danger':'btn-primary')+'" style="padding:7px 10px;font-size:10px;" onclick="toggleTopicVisibility('+t.id+')">'+(visible?'إخفاء':'إظهار')+'</button><button class="btn-danger btn-sm" onclick="deleteTrainingTopic('+t.id+')">حذف التدريب</button></div></div>'+rowHtml+'<div style="margin-top:8px;"><button class="btn-secondary btn-sm" onclick="addTopicVideoQuestion('+t.id+')">❓ سؤال تحت التدريب</button> <span id="vqtopicbadge-'+t.id+'" class="muted" style="font-size:10px;"></span></div><div id="vqt-form-'+t.id+'" class="collapsible-panel" style="margin-top:7px;padding:10px;background:#f8fafc;border:1px solid var(--border);border-radius:10px;"></div></div></div>';
-  }).join('') || '<div class="muted" style="font-size:12px;text-align:center;padding:10px;">لا توجد تدريبات فيديو</div>';
-  refreshTopicQuestionBadges(topicList.map(t=>t.id));
-}
+/* (دمج v9.34: تعريف قديم اتشال: loadAdminVideos) */
 /* (دمج v9.34: تعريف قديم اتشال: saveVideoTopic) */
 async function toggleTopicVisibility(id){
   const {data:t}=await sb.from('training_topics').select('is_visible').eq('id',id).single(); if(!t)return;
@@ -2009,27 +1984,7 @@ async function refreshTopicQuestionBadges(ids){
 /* (دمج v9.34: تعريف قديم اتشال: renderWorkerCards) */
 
 // ==================== CARDS (ADMIN) ====================
-async function loadAdminCards(){
-  const { data } = await sb.from('safety_cards').select('*').order('id',{ascending:true});
-  let list=data||[];
-  if(adminUser && !adminUser.isSuper) list=list.filter(c=>c.section_id===adminUser.section_id);
-  const box=$('admin-cards-list');
-  box.innerHTML=list.map(c=>{
-    const sec=sections.find(s=>s.id===c.section_id); const secName=sec?tr(sec,'name'):'الكل';
-    const img=c.image?'<img src="'+c.image+'" style="width:80px;height:60px;object-fit:cover;border-radius:8px;"/>':'<div style="width:80px;height:60px;border-radius:8px;background:#e2e8f0;display:flex;align-items:center;justify-content:center;">📸</div>';
-    const secSelect = adminUser && !adminUser.isSuper ? '<div class="muted" style="font-size:11px;">'+esc(secName)+'</div>' :
-      '<select class="input-field" style="padding:4px;font-size:11px;width:auto;" onchange="changeCardSection('+c.id+',this.value)"><option value="">الكل</option>'+sections.map(s=>'<option value="'+s.id+'" '+(s.id===c.section_id?'selected':'')+'>'+esc(tr(s,'name'))+'</option>').join('')+'</select>';
-    return '<div class="card" style="padding:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;">'+img+
-      '<div style="flex:1;min-width:160px;"><div style="font-weight:700;font-size:13px;">'+esc(c.title_ar)+'</div>'+
-      '<div class="muted" style="font-size:11px;">'+esc(c.description_ar||'')+'</div>'+
-      '<div style="margin-top:4px;">'+secSelect+'</div>'+
-      '<div style="margin-top:4px;"><button class="btn-secondary btn-sm" style="font-size:10px;" onclick="addCardQuestion('+c.id+')">❓ سؤال تحت الصورة</button> <span id="cqbadge-'+c.id+'" style="font-size:10px;" class="muted"></span></div></div>'+
-      '<div style="display:flex;flex-direction:column;gap:6px;"><button class="btn-sm '+(c.is_visible?'btn-danger':'btn-primary')+'" style="padding:7px 14px;font-size:11px;" onclick="toggleCardVisibility('+c.id+')">'+(c.is_visible?'إخفاء':'إظهار')+'</button>'+
-      '<button class="btn-danger btn-sm" onclick="deleteCard('+c.id+')">حذف</button></div></div>'+
-      '<div id="cq-form-'+c.id+'" class="collapsible-panel" style="margin-top:6px;padding:12px;background:#f8fafc;border:1px solid var(--border);border-radius:10px;width:100%;"></div>';
-  }).join('') || '<div class="muted" style="font-size:12px;text-align:center;padding:10px;">لا توجد بطاقات</div>';
-  refreshQuestionBadges('card', list.map(c=>c.id));
-}
+/* (دمج v9.34: تعريف قديم اتشال: loadAdminCards) */
 async function compressImageFile(file,maxW=1400,maxH=1400,quality=.82){
   return new Promise((resolve,reject)=>{
     const img=new Image(); const url=URL.createObjectURL(file);
@@ -2158,13 +2113,7 @@ async function addTopicComment(topicId){
   input.value=''; showToast('تم إرسال تعليقك للأدمن ✅');
 }
 
-async function addComment(type,itemId){
-  if(!currentUser) return;
-  const input=$( (type==='card'?'ccmt':'vcmt')+'-'+itemId );
-  const text=input.value.trim(); if(!text) return showToast('اكتب تعليقك');
-  await sb.from('content_comments').insert({ item_type:type, item_id:itemId, worker_id:currentUser.id, comment:text });
-  input.value=''; showToast('تم إرسال تعليقك للأدمن ✅');
-}
+/* (دمج v9.34: تعريف قديم اتشال: addComment) */
 /* (دمج v9.34: تعريف قديم اتشال: loadAdminComments) */
 
 // ==================== VIOLATIONS (WORKER VIEW) ====================
@@ -2399,20 +2348,7 @@ async function renderAdminAdmins(){
 async function deleteAdmin(id){ if(!confirm('حذف الأدمن؟'))return; await sb.from('admins').delete().eq('id',id); renderAdminAdmins(); }
 
 // ==================== ADMIN DATA / TABS ====================
-function adminTab(tab){
-  document.querySelectorAll('.admin-tab').forEach(e=>e.classList.remove('active'));
-  $('tab-'+tab).classList.add('active');
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  const btn=$('tabbtn-'+tab); if(btn) btn.classList.add('active');
-  if(tab==='workers') loadWorkers();
-  if(tab==='sections') renderAdminSections();
-  if(tab==='quizzes') loadAdminQuizzes();
-  if(tab==='cards') loadAdminCards();
-  if(tab==='videos') loadAdminVideos();
-  if(tab==='comments') loadAdminComments();
-  if(tab==='vio-lib') loadViolationLib();
-  if(tab==='admins') renderAdminAdmins();
-}
+/* (دمج v9.34: تعريف قديم اتشال: adminTab) */
 
 
 // ==================== WORKER DATA ====================
@@ -2468,9 +2404,9 @@ async function loginAdminV22(adm){const ids=await loadAdminSectionsMultiV22(adm.
 doLogin = async function(){const val=$('login-id').value.trim(),err=$('login-error');err.classList.add('hidden');if(!val)return;if(val==='592001'){adminUser={isSuper:true,name:'المدير الرئيسي',section_id:null,section_ids:sections.map(s=>s.id)};await enterAdmin();return;}const {data:adm}=await sb.from('admins').select('*').eq('code',String(val)).maybeSingle();if(adm&&adm.id){await loginAdminV22(adm);return;}const id=parseInt(val);const {data}=await sb.from('workers_evaluations').select('*').eq('id',id).single();if(!data){err.textContent='رقم غير مسجل (موظف أو أدمن)';err.classList.remove('hidden');return;}currentUser=data;adminUser=null;$('login-section').classList.add('hidden');$('worker-section').classList.remove('hidden');$('worker-section').style.display='block';await loadBranding();await loadSections();$('worker-name-display').textContent=data.worker_name;updateWorkerHeader();loadWorkerData();};
 /* (دمج v9.34: تعريف قديم اتشال: applyAdminScope) */
 // Worker fields: role + section, no branch field in UI. Keep factory_branch in DB for legacy data.
-saveWorker = async function(){const id=$('nw-id').value.trim(),worker_name=$('nw-name').value.trim(),role_id=$('nw-role').value?parseInt($('nw-role').value):null;let section_id=$('nw-section').value?parseInt($('nw-section').value):null;const msg=$('add-worker-msg');if(!id||!worker_name||!role_id||!section_id){msg.innerHTML='<span style="color:#991b1b;">أكمل الرقم والاسم والوظيفة والقسم</span>';return;}if(adminUser&&!adminUser.isSuper){if(!getAdminScopeIds().includes(section_id))return showToast('لا يمكنك إضافة موظف خارج الأقسام المسموح بها');}const {error}=await sb.from('workers_evaluations').insert({id:parseInt(id),worker_name,job_role_id:role_id,section_id,kpi_score:100,violations_count:0});if(error){msg.innerHTML='<span style="color:#991b1b;">خطأ: '+(String(error.message||'').includes('duplicate')?'الرقم مسجل مسبقاً':error.message)+'</span>';return;}msg.innerHTML='<span style="color:#166534;">تمت إضافة الموظف بنجاح ✅</span>';['nw-id','nw-name'].forEach(i=>$(i).value='');$('nw-role').value='';$('nw-section').value='';setTimeout(()=>msg.innerHTML='',3000);loadWorkers();};
+/* (دمج v9.34: تعريف قديم اتشال: saveWorker) */
 /* (دمج v9.34: تعريف قديم اتشال: loadWorkers) */
-openWorkerModal = async function(id){currentModalWorkerId=id;const {data}=await sb.from('workers_evaluations').select('*,job_roles(name_ar)').eq('id',id).single();if(!data)return;$('modal-worker-title').textContent='الموظف: '+data.worker_name+' ('+data.id+')';$('modal-kpi').textContent=(data.kpi_score??100)+'%';$('ed-name').value=data.worker_name;$('ed-role').innerHTML=roleOpts(data.job_role_id);$('ed-section').innerHTML=sectionOpts(data.section_id);$('worker-modal').classList.remove('hidden');loadWorkerAttempts(id);loadWorkerViolationsAdmin(id);loadViolationLib();loadWorkerContentAnswers(id);loadWorkerCommentsAdmin(id);loadWorkerTrainingProgress(id);};
+/* (دمج v9.34: تعريف قديم اتشال: openWorkerModal) */
 /* (دمج v9.34: تعريف قديم اتشال: saveEditWorker) */
 // Robust image rendering: use native image URL and an explicit error fallback, never silently break the worker screen.
 /* (دمج v9.34: تعريف قديم اتشال: loadWorkerCards) */
@@ -2489,7 +2425,7 @@ const topicTimersV22={};
 // Questions: load once for topic, including questions stored against a video version or topic.
 /* (دمج v9.34: تعريف قديم اتشال: loadTopicQuestions) */
 // Multi-section admin creation
-saveAdmin = async function(){const name=$('ad-name').value.trim(),code=$('ad-code').value.trim(),ids=Array.from(document.querySelectorAll('.ad-section-v22:checked')).map(x=>parseInt(x.value));const msg=$('add-admin-msg');if(!name||!code||!ids.length){msg.innerHTML='<span style="color:#991b1b;">أكمل الاسم والكود واختر قسمًا واحدًا على الأقل</span>';return;}const {data:a,error}=await sb.from('admins').insert({name,code,is_super:false}).select().single();if(error){msg.innerHTML='<span style="color:#991b1b;">خطأ: '+error.message+'</span>';return;}const {error:e2}=await sb.from('admin_sections').insert(ids.map(section_id=>({admin_id:a.id,section_id})));if(e2){await sb.from('admins').delete().eq('id',a.id);msg.innerHTML='<span style="color:#991b1b;">تعذر حفظ الأقسام: '+e2.message+'</span>';return;}msg.innerHTML='<span style="color:#166534;">تمت إضافة الأدمن ✅</span>';['ad-name','ad-code'].forEach(i=>$(i).value='');document.querySelectorAll('.ad-section-v22').forEach(x=>x.checked=false);setTimeout(()=>msg.innerHTML='',3000);renderAdminAdminsV22();};
+/* (دمج v9.34: تعريف قديم اتشال: saveAdmin) */
 renderAdminAdminsV22 = async function(){const {data}=await sb.from('admins').select('*').order('id');const box=$('admins-list');if(!box)return;const rows=[];for(const a of data||[]){const ids=a.is_super?[]:await loadAdminSectionsMultiV22(a.id);const names=a.is_super?'كل الأقسام':ids.map(id=>{const s=sections.find(x=>String(x.id)===String(id));return s?tr(s,'name'):'—';}).join('، ')||'بدون قسم';rows.push('<div class="card" style="padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px;"><span style="font-weight:700;">'+(a.is_super?'🛡️ ':'')+esc(a.name)+' <span class="badge '+(a.is_super?'badge-green':'badge-blue')+'" style="font-size:9px;">'+esc(names)+'</span> <span class="muted" style="font-size:10px;">كود: '+esc(a.code)+'</span></span>'+(!a.is_super?'<button class="btn-danger btn-sm" onclick="deleteAdmin('+a.id+')">حذف</button>':'')+'</div>');}box.innerHTML=rows.join('')||'<div class="muted">لا يوجد أدمن</div>';};
 renderAdminAdmins=renderAdminAdminsV22;
 // Visible content filtering + card image upload fixes
@@ -2498,8 +2434,8 @@ saveCard = async function(){const g=id=>$(id)?.value.trim()||'';if(!g('cd-title-
 saveQuiz = async function(){const t=$('qz-title-ar').value.trim();if(!t)return showToast('اكتب عنوان الاختبار بالعربية');const section_id=$('qz-section').value?parseInt($('qz-section').value):null,target_department_id=$('qz-target').value?parseInt($('qz-target').value):null,is_visible=$('qz-visible').checked;if(adminUser&&!adminUser.isSuper&&!getAdminScopeIds().includes(section_id))return showToast('لا يمكنك إضافة اختبار خارج قسمك');const {error}=await sb.from('quizzes').insert({title_ar:t,title_en:$('qz-title-en').value.trim(),title_bn:$('qz-title-bn').value.trim(),title_ne:$('qz-title-ne').value.trim(),title_hi:$('qz-title-hi').value.trim(),section_id,target_department_id,is_visible});if(error)return showToast(error.message);['qz-title-ar','qz-title-en','qz-title-bn','qz-title-ne','qz-title-hi'].forEach(i=>$(i).value='');$('qz-section').value='';$('qz-target').value='';$('qz-visible').checked=false;loadAdminQuizzes();showToast('تم إنشاء الاختبار ✅');};
 /* (دمج v9.34: تعريف قديم اتشال: loadWorkerQuizzes) */
 // Card/admin loaders use new target fields but keep old content intact.
-const oldLoadAdminCards=loadAdminCards;/* (دمج v9.34: تعريف قديم اتشال: loadAdminCards) */
-const oldLoadAdminVideos=loadAdminVideos;/* (دمج v9.34: تعريف قديم اتشال: loadAdminVideos) */
+/* (تنظيف v9.37: نسخة محفوظة غير مستخدمة: oldLoadAdminCards) *//* (دمج v9.34: تعريف قديم اتشال: loadAdminCards) */
+/* (تنظيف v9.37: نسخة محفوظة غير مستخدمة: oldLoadAdminVideos) *//* (دمج v9.34: تعريف قديم اتشال: loadAdminVideos) */
 // Visibility controls for cards/topics already exist; quiz controls are added below.
 async function toggleQuizVisibilityV22(id){const {data}=await sb.from('quizzes').select('is_visible').eq('id',id).single();if(!data)return;await sb.from('quizzes').update({is_visible:!data.is_visible}).eq('id',id);loadAdminQuizzes();}
 // Admin activity and worker activity
@@ -2509,9 +2445,9 @@ async function hideCommentV22(id){if(!adminUser?.isSuper)return showToast('ال�
 async function restoreCommentV22(id){if(!adminUser?.isSuper)return;await sb.from('content_comments').update({is_visible:true,hidden_at:null,hidden_by:null}).eq('id',id);loadAdminComments();}
 /* (دمج v9.34: تعريف قديم اتشال: loadAdminComments) */
 // Hide moderated comments from workers.
-const oldAddComment=addComment;addComment=async function(type,itemId){if(!currentUser)return;const input=$((type==='card'?'ccmt':'vcmt')+'-'+itemId),text=input?.value.trim();if(!text)return showToast('اكتب تعليقك');const {error}=await sb.from('content_comments').insert({item_type:type,item_id:itemId,worker_id:currentUser.id,comment:text,is_visible:true});if(error)return showToast(error.message);input.value='';showToast('تم إرسال تعليقك للأدمن ✅');};
+/* (تنظيف v9.37: نسخة محفوظة غير مستخدمة: oldAddComment) *//* (دمج v9.34: تعريف قديم اتشال: addComment) */
 // Admin tab additions
-const oldAdminTab=adminTab;adminTab=function(tab){if(typeof toggleAdminSidebar==='function')toggleAdminSidebar(false);document.querySelectorAll('.admin-tab').forEach(e=>e.classList.remove('active'));const t=$('tab-'+tab);if(t)t.classList.add('active');document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));const btn=$('tabbtn-'+tab);if(btn)btn.classList.add('active');if(tab==='workers')loadWorkers();if(tab==='org'){renderAdminSections();loadV22Meta();}if(tab==='quizzes')loadAdminQuizzes();if(tab==='cards')loadAdminCards();if(tab==='videos')loadAdminVideos();if(tab==='comments')loadAdminComments();if(tab==='vio-lib')loadViolationLib();if(tab==='admins'){renderAdminAdmins();if(typeof loadDefaultPasswordField==='function')loadDefaultPasswordField();if(typeof renderAutoAdminsList==='function')renderAutoAdminsList();}if(tab==='dashboard'&&typeof loadAdminDashboard==='function')loadAdminDashboard();};
+/* (تنظيف v9.37: نسخة محفوظة غير مستخدمة: oldAdminTab) */adminTab=function(tab){if(typeof toggleAdminSidebar==='function')toggleAdminSidebar(false);document.querySelectorAll('.admin-tab').forEach(e=>e.classList.remove('active'));const t=$('tab-'+tab);if(t)t.classList.add('active');document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));const btn=$('tabbtn-'+tab);if(btn)btn.classList.add('active');if(tab==='workers')loadWorkers();if(tab==='org'){renderAdminSections();loadV22Meta();}if(tab==='quizzes')loadAdminQuizzes();if(tab==='cards')loadAdminCards();if(tab==='videos')loadAdminVideos();if(tab==='comments')loadAdminComments();if(tab==='vio-lib')loadViolationLib();if(tab==='admins'){renderAdminAdmins();if(typeof loadDefaultPasswordField==='function')loadDefaultPasswordField();if(typeof renderAutoAdminsList==='function')renderAutoAdminsList();}if(tab==='dashboard'&&typeof loadAdminDashboard==='function')loadAdminDashboard();};
 // Startup wrapper: load V2.2 metadata after sections are available.
 const oldLoadSections=loadSections;loadSections=async function(){await oldLoadSections();if(adminUser){await loadV22Meta();applyAdminScope();}};
 // Ensure worker questions and cards are loaded from V2.2 after login.
@@ -2541,7 +2477,7 @@ loadAdminQuizzes = async function(){
       '<div id="questions-list-'+q.id+'" style="display:flex;flex-direction:column;gap:8px;"></div>';
     box.appendChild(w);
     const ql=$('questions-list-'+q.id);
-    ql.innerHTML=(questions||[]).map((qst,i)=>'<div style="border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:#f8fafc;"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;"><div style="font-weight:700;font-size:13px;"><span class="muted" style="font-weight:900;">'+(i+1)+'.</span> '+esc(qst.question_ar)+'</div><button class="btn-danger btn-sm" onclick="deleteQuestion('+qst.id+')">حذف</button></div></div>').join('')||'<div class="muted" style="font-size:12px;">لا توجد أسئلة بعد</div>';
+    ql.innerHTML=(questions||[]).map((qst,i)=>'<div style="border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:#f8fafc;"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;"><button class="btn-secondary btn-sm v23-edit-qz" onclick="editQuizQuestionV23('+qst.id+')">تعديل</button><div style="font-weight:700;font-size:13px;"><span class="muted" style="font-weight:900;">'+(i+1)+'.</span> '+esc(qst.question_ar)+'</div><button class="btn-danger btn-sm" onclick="deleteQuestion('+qst.id+')">حذف</button></div></div>').join('')||'<div class="muted" style="font-size:12px;">لا توجد أسئلة بعد</div>';
   }
 };
 async function loadWorkerPerformanceSummaryV23(workerId){
@@ -2551,16 +2487,16 @@ async function loadWorkerPerformanceSummaryV23(workerId){
 }
 async function loadActivityForWorkerV22(workerId){const {data}=await sb.from('activity_logs').select('*').eq('actor_type','worker').eq('actor_id',workerId).order('created_at',{ascending:false}).limit(100);const b=$('modal-activity');if(!b)return;b.innerHTML=(data||[]).map(a=>'<div style="background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:7px 9px;"><div style="font-size:11px;font-weight:700;">'+esc(a.action)+'</div><div class="muted" style="font-size:9px;">'+fmtDate(a.created_at)+'</div></div>').join('')||'<div class="muted" style="font-size:11px;text-align:center;">لا يوجد نشاط مسجل بعد</div>';}
 async function loadActivityForAdminV22(){const {data}=await sb.from('activity_logs').select('*').eq('actor_type','admin').order('created_at',{ascending:false}).limit(150);const b=$('admin-activity-list');if(!b)return;b.innerHTML=(data||[]).map(a=>'<div class="card" style="padding:9px 12px;"><div style="font-size:12px;font-weight:700;">🛡️ أدمن #'+a.actor_id+' — '+esc(a.action)+'</div><div class="muted" style="font-size:10px;">'+fmtDate(a.created_at)+'</div></div>').join('')||'<div class="muted" style="font-size:12px;text-align:center;">لا يوجد نشاط مسجل بعد</div>';}
-const oldOpenWorkerModalV22=openWorkerModal;/* (دمج v9.34: تعريف قديم اتشال: openWorkerModal) */
+/* (تنظيف v9.37: نسخة محفوظة غير مستخدمة: oldOpenWorkerModalV22) *//* (دمج v9.34: تعريف قديم اتشال: openWorkerModal) */
 const oldAdminTabV22=adminTab;adminTab=function(tab){oldAdminTabV22(tab);if(tab==='activity')loadActivityForAdminV22();};
 // Record the most important worker/admin actions without making the activity table a dependency for normal operation.
-const _saveWorkerV22=saveWorker; /* (دمج v9.34: تعريف قديم اتشال: saveWorker) */
+/* (تنظيف v9.37: نسخة محفوظة غير مستخدمة: _saveWorkerV22) */ /* (دمج v9.34: تعريف قديم اتشال: saveWorker) */
 const _saveCardV22=saveCard; saveCard=async function(){await _saveCardV22();if(adminUser)logActivityV22('admin',adminUser.id,'إضافة كارت','card',null);};
 const _saveQuizV22=saveQuiz; saveQuiz=async function(){await _saveQuizV22();if(adminUser)logActivityV22('admin',adminUser.id,'إضافة اختبار','quiz',null);};
-const _saveAdminV22=saveAdmin; /* (دمج v9.34: تعريف قديم اتشال: saveAdmin) */
+/* (تنظيف v9.37: نسخة محفوظة غير مستخدمة: _saveAdminV22) */ /* (دمج v9.34: تعريف قديم اتشال: saveAdmin) */
 const _submitAnswerV22=submitContentAnswer; submitContentAnswer=async function(type,qid,itemId){await _submitAnswerV22(type,qid,itemId);if(currentUser)logActivityV22('worker',currentUser.id,'الإجابة على سؤال محتوى',type,itemId);};
 const _submitQuizV22=submitQuiz; submitQuiz=async function(quizId,questions){await _submitQuizV22(quizId,questions);if(currentUser)logActivityV22('worker',currentUser.id,'إكمال اختبار','quiz',quizId);};
-const _addCommentV22=addComment; // already wrapped; no-op alias for future compatibility
+/* (تنظيف v9.37: نسخة محفوظة غير مستخدمة: _addCommentV22) */ // already wrapped; no-op alias for future compatibility
 
 
 // V2.2 multi-section scope for content administration.
@@ -2581,6 +2517,7 @@ loadAdminCards = async function(){
         '<div class="muted" style="font-size:10px;margin-top:6px;">📁 '+esc(secName)+' &nbsp;|&nbsp; ↕️ '+(c.sort_order||0)+'</div>'+
         '<div style="margin-top:8px;">'+(c.is_visible?'<span class="badge badge-green" style="font-size:9px;">ظاهر للموظف</span>':'<span class="badge badge-yellow" style="font-size:9px;">مخفي</span>')+'</div>'+
         '<div class="card-actions-row" style="display:flex;gap:6px;margin-top:9px;flex-wrap:wrap;">'+
+          '<button class="btn-secondary btn-sm v23-edit-card" style="flex:1;" onclick="openEditCardV23('+c.id+')">تعديل</button>'+
           '<button class="btn-sm '+(c.is_visible?'btn-danger':'btn-primary')+'" style="padding:6px 10px;font-size:10px;flex:1;" onclick="toggleCardVisibility('+c.id+')">'+(c.is_visible?'إخفاء':'إظهار')+'</button>'+
           '<button class="btn-danger btn-sm" style="padding:6px 10px;font-size:10px;" onclick="deleteCard('+c.id+')">حذف</button>'+
         '</div>'+
@@ -2610,6 +2547,7 @@ loadAdminVideos = async function(){
             '<div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap;">'+langHtml+'</div>'+
           '</div>'+
           '<div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end;">'+
+            '<button class="btn-secondary btn-sm v23-edit-topic" onclick="openEditTopicV23('+t.id+')">تعديل</button>'+
             '<button class="btn-secondary btn-sm" style="font-size:10px;" onclick="openVideoWatchersPanel('+t.id+',\''+esc(t.title_ar).replace(/'/g,"\\'")+'\')">👁️ من شاهد؟</button>'+
             '<button class="btn-sm '+(t.is_visible?'btn-danger':'btn-primary')+'" style="padding:7px 10px;font-size:10px;" onclick="toggleTopicVisibility('+t.id+')">'+(t.is_visible?'إخفاء':'إظهار')+'</button>'+
             '<button class="btn-danger btn-sm" onclick="deleteTrainingTopic('+t.id+')">حذف التدريب</button>'+
@@ -2913,11 +2851,7 @@ async function renderPreviewV23(){const sec=num($('pv-sec')?.value);const body=$
 saveCardV23=saveCard;saveCard=async function(){return saveCardV23.apply(this,arguments)};
 
 /* Add edit buttons to admin lists by wrapping current renderers */
-const baseAdminCardsV23=loadAdminCards;loadAdminCards=async function(){await baseAdminCardsV23();document.querySelectorAll('#admin-cards-list .topic-card').forEach(el=>{const btn=el.querySelector('button[onclick^="deleteCard"]');const id=btn?.getAttribute('onclick')?.match(/deleteCard\((\d+)\)/)?.[1];if(id&&!el.querySelector('.v23-edit-card')){const b=document.createElement('button');b.className='btn-secondary btn-sm v23-edit-card';b.style.flex='1';b.textContent='تعديل';b.onclick=()=>openEditCardV23(Number(id));(el.querySelector('.card-actions-row')||el.querySelector('div[style*="flex-direction:column"]'))?.prepend(b);}});};
-const baseAdminVideosV23=loadAdminVideos;loadAdminVideos=async function(){await baseAdminVideosV23();document.querySelectorAll('#admin-videos-list .topic-card').forEach(el=>{const btn=el.querySelector('button[onclick^="deleteTrainingTopic"]');const id=btn?.getAttribute('onclick')?.match(/deleteTrainingTopic\((\d+)\)/)?.[1];if(id&&!el.querySelector('.v23-edit-topic')){const b=document.createElement('button');b.className='btn-secondary btn-sm v23-edit-topic';b.textContent='تعديل';b.onclick=()=>openEditTopicV23(Number(id));btn.parentElement?.prepend(b);}});};
 
-/* Edit buttons for existing questions */
-const baseAdminQuizzesV23=loadAdminQuizzes;loadAdminQuizzes=async function(){await baseAdminQuizzesV23();document.querySelectorAll('#admin-quizzes-list [id^="questions-list-"]').forEach(box=>box.querySelectorAll('div').forEach(row=>{const del=row.querySelector('button[onclick^="deleteQuestion"]');const id=del?.getAttribute('onclick')?.match(/deleteQuestion\((\d+)\)/)?.[1];if(id&&!row.querySelector('.v23-edit-qz')){const b=document.createElement('button');b.className='btn-secondary btn-sm v23-edit-qz';b.textContent='تعديل';b.onclick=()=>editQuizQuestionV23(Number(id));del.parentElement?.prepend(b);}}));};
 
 /* Admin multi-section renderer */
 renderAdminAdminsV23=async function(){const {data}=await sb.from('admins').select('*').order('id');const box=$('admins-list');if(!box)return;const canDeleteAny=adminUser?.isSuper && !adminUser?.id;let html='';for(const a of data||[]){const ids=a.is_super?[]:await loadAdminSectionsMultiV23(a.id);const names=a.is_super?'كل الأقسام':ids.map(id=>{const s=sections.find(x=>Number(x.id)===id);return s?tr(s,'name'):'—'}).join('، ')||'بدون قسم';const canDelete=canDeleteAny||!a.is_super;html+='<div class="card" style="padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><div><b>'+esc(a.name)+'</b>'+(a.is_super?' <span class="badge badge-green" style="font-size:9px;">Super Admin</span>':'')+'<div class="muted" style="font-size:10px;margin-top:3px">'+esc(names)+' • رقم هوية الموظف: '+esc(a.worker_id||a.code)+'</div></div>'+(canDelete?'<button class="btn-danger btn-sm" onclick="deleteAdmin('+a.id+')">إلغاء صلاحية الأدمن</button>':'')+'</div>';}box.innerHTML=html||'<div class="muted">لا يوجد أدمن</div>';};
@@ -3142,7 +3076,7 @@ try{(function(){
   };
 
   /* Content comments: hidden comments must not appear to workers. */
-  const baseAddCommentV24=window.addComment;
+  /* (تنظيف v9.37: نسخة محفوظة غير مستخدمة: baseAddCommentV24) */
   /* (دمج v9.34: تعريف قديم اتشال: addComment) */
 
   /* Admin activity tab refresh */
@@ -3179,8 +3113,7 @@ try{(function(){
 try{(function(){
   window.updateWorkerHeader=function(){if(!currentUser)return;const sec=sections.find(s=>Number(s.id)===Number(currentUser.section_id));const role=jobRolesV22.find(r=>Number(r.id)===Number(currentUser.job_role_id));$('worker-meta').textContent='ID: '+currentUser.id+' | '+(role?.name_ar||'—')+' | '+(sec?tr(sec,'name'):'—');};
 
-  window.loadWorkers=async function(){
-    if(!adminUser)return;const search=($('worker-search')?.value||'').trim(),filterSec=$('worker-filter-section')?.value||'';let q=sb.from('workers_evaluations').select('*').order('id',{ascending:true}).limit(100);const ids=getAdminScopeIds();if(!adminUser.isSuper)q=q.in('section_id',ids.length?ids:[-1]);if(filterSec)q=q.eq('section_id',Number(filterSec));if(search){if(/^\d+$/.test(search))q=q.eq('id',Number(search));else q=q.ilike('worker_name','%'+search.replace(/[%_]/g,'')+'%');}const {data,error}=await q;if(error)return showToast('تعذر تحميل الموظفين');const rows=data||[];const roleIds=[...new Set(rows.map(w=>Number(w.job_role_id)).filter(Boolean))];let roleMap={};if(roleIds.length){const r=await sb.from('job_roles').select('id,name_ar,name_en,target_department_id').in('id',roleIds);(r.data||[]).forEach(x=>roleMap[x.id]=x);}const tbody=$('workers-tbody');tbody.innerHTML=rows.map(w=>{const sec=sections.find(s=>Number(s.id)===Number(w.section_id)),role=roleMap[w.job_role_id];return '<tr class="worker-row" onclick="openWorkerModal('+w.id+')"><td style="font-weight:800;color:var(--primary);">'+w.id+'</td><td style="font-weight:700;">'+esc(w.worker_name)+'</td><td>'+esc(role?.name_ar||'—')+'</td><td>'+esc(sec?tr(sec,'name'):'—')+'</td><td style="font-weight:800;color:var(--primary);">'+(w.kpi_score??100)+'%</td><td>'+(w.violations_count||0)+'</td><td><button class="btn-secondary btn-sm" onclick="event.stopPropagation();openWorkerModal('+w.id+')">تفاصيل <small class="nav-en" style="display:inline;font-size:8px">Details</small></button> <button class="btn-danger btn-sm" onclick="event.stopPropagation();deleteWorker('+w.id+')">حذف <small class="nav-en" style="display:inline;font-size:8px">Delete</small></button></td></tr>';}).join('')||'<tr><td colspan="7" class="muted" style="text-align:center;padding:20px;">لا يوجد موظفين مطابقون</td></tr>';};
+  /* (دمج v9.34: تعريف قديم اتشال: loadWorkers) */
 
   /* (دمج v9.34: تعريف قديم اتشال: saveTopicProgress) */
 
@@ -3662,7 +3595,7 @@ try{(function(){
   window.workersPagerPrev=function(){ if(window._workersPage>0){window._workersPage--; loadWorkers();} };
   window.workersPagerNext=function(){ window._workersPage++; loadWorkers(); };
 
-  const _baseLoadWorkersV25 = loadWorkers;
+  /* (تنظيف v9.37: نسخة محفوظة غير مستخدمة: _baseLoadWorkersV25) */
   loadWorkers = async function(){
     ensureWorkersPagerUI();
     const from=window._workersPage*window._workersPageSize, to=from+window._workersPageSize-1;
@@ -8813,7 +8746,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
 /* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
 (function(){
-  const VERSION = 'v9.36';
+  const VERSION = 'v9.37';
   const $ = id => document.getElementById(id);
   let running = false;
   async function tx(text, lang){
