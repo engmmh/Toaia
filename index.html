@@ -3022,11 +3022,20 @@ doLogin=doLoginV23;
 let pendingLoginWorker=null, pendingLoginAdmin=null;
 async function enterAsWorkerFinal(worker){
   currentUser=worker; adminUser=null;
+  /* صفحة الموظف بتتجهّز وبياناتها بتتحمّل وهي تحت شاشة الدخول، وبعدين تتكشف مرة واحدة كاملة (من غير أصفار/نصوص فاضية ثم تحديث) */
+  const ws=$('worker-section'); ws.style.visibility='hidden'; ws.classList.remove('hidden'); ws.style.display='block';
+  const lb=document.querySelector('#login-form-card .btn-primary'); if(lb){ lb.disabled=true; lb.innerHTML='…'; }
+  try{
+    await loadBranding(); await loadSections();
+    if($('worker-name-display')) $('worker-name-display').textContent=worker.worker_name;
+    updateWorkerHeader();
+    await Promise.race([Promise.resolve(loadWorkerData()).catch(()=>{}), new Promise(r=>setTimeout(r,6000))]);   // لو النت بطيء جدًا ندخّله بعد 6 ثواني
+  } finally {
+    if(lb){ lb.disabled=false; if(window.FSLogin) window.FSLogin.btn(); }
+  }
   document.body.classList.remove('on-login','on-admin');
-  $('login-section').classList.add('hidden'); $('worker-section').classList.remove('hidden'); $('worker-section').style.display='block';
-  await loadBranding(); await loadSections();
-  if($('worker-name-display')) $('worker-name-display').textContent=worker.worker_name;
-  updateWorkerHeader(); await loadWorkerData();
+  $('login-section').classList.add('hidden'); ws.style.visibility='';
+  try{ window.dispatchEvent(new Event('resize')); }catch(e){}
 }
 window.chooseLoginRole=async function(role){
   $('login-role-card')?.classList.add('hidden');
@@ -9436,7 +9445,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
 /* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
 (function(){
-  const VERSION = 'v9.32';
+  const VERSION = 'v9.33';
   const $ = id => document.getElementById(id);
   let running = false;
   async function tx(text, lang){
