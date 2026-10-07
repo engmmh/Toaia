@@ -1637,31 +1637,7 @@ async function saveBranding(){
 }
 
 // ==================== LOGIN ====================
-async function doLogin(){
-  const val=$('login-id').value.trim(); const err=$('login-error');
-  err.classList.add('hidden'); if(!val) return;
-  // كود السوبر أدمن الثابت
-  if(val==='592001'){
-    adminUser={isSuper:true, name:'المدير الرئيسي', section_id:null};
-    await enterAdmin(); return;
-  }
-  // كود أدمن عادي من الجدول
-  const { data: adm } = await sb.from('admins').select('*').eq('code', String(val)).maybeSingle();
-  if(adm && adm.id){
-    adminUser={isSuper:false, name:adm.name, section_id:adm.section_id, sectionName:(sections.find(s=>s.id===adm.section_id)||{}).name_ar||'قسم محدد', id:adm.id};
-    await enterAdmin(); return;
-  }
-  // غير ذلك: موظف
-  const id=parseInt(val);
-  const { data } = await sb.from('workers_evaluations').select('*').eq('id', id).single();
-  if(!data){ err.textContent='رقم غير مسجل (موظف أو أدمن)'; err.classList.remove('hidden'); return; }
-  currentUser=data; adminUser=null;
-  $('login-section').classList.add('hidden');
-  $('worker-section').classList.remove('hidden'); $('worker-section').style.display='block';
-  await loadBranding(); await loadSections();
-  $('worker-name-display').textContent=data.worker_name;
-  updateWorkerHeader(); loadWorkerData();
-}
+/* (دمج v9.34: تعريف قديم اتشال: doLogin) */
 async function enterAdmin(){
   document.body.classList.remove('on-login'); document.body.classList.add('on-admin');
   $('login-section').classList.add('hidden');
@@ -1673,36 +1649,9 @@ async function enterAdmin(){
   applyAdminScope(); adminTab('dashboard');
   if(typeof applySavedSidebarCollapse==='function') applySavedSidebarCollapse();
 }
-function applyAdminScope(){
-  // إخفاء تبويبات السوبر للأدمن الثانوي
-  const superOnly=['branding','admins','vio-lib','org'];
-  superOnly.forEach(t=>{ const el=$('tabbtn-'+t); if(el) el.classList.toggle('hidden', !adminUser.isSuper); });
-  // فلتر القسم للموظفين
-  const filter=$('worker-filter-section');
-  if(adminUser.isSuper){
-    filter.innerHTML='<option value="">كل الأقسام</option>'+sections.map(s=>'<option value="'+s.id+'">'+esc(tr(s,'name'))+'</option>').join('');
-  } else {
-    const sec=sections.find(s=>s.id===adminUser.section_id);
-    filter.innerHTML='<option value="'+adminUser.section_id+'">'+esc(sec?tr(sec,'name'):'قسمي')+'</option>';
-  }
-  $('worker-search').value='';
-}
-function updateWorkerHeader(){
-  if(!currentUser) return;
-  const sec=sections.find(s=>s.id===currentUser.section_id);
-  const secName=sec?tr(sec,'name'):(currentUser.factory_branch||'—');
-  $('worker-meta').textContent='ID: '+currentUser.id+'  |  '+(secName||'—');
-}
-function logout(){
-  currentUser=null; adminUser=null; destroyAllPlayers();
-  document.body.classList.remove('on-admin'); document.body.classList.add('on-login');
-  ['worker-section','admin-section'].forEach(id=>{ $(id).classList.add('hidden'); $(id).style.display='none'; });
-  $('login-section').classList.remove('hidden'); $('login-id').value=''; $('login-error').classList.add('hidden');
-  if($('login-password')) $('login-password').value='';
-  $('login-role-card')?.classList.add('hidden');
-  $('login-form-card')?.classList.remove('hidden');
-  pendingLoginWorker=null; pendingLoginAdmin=null;
-}
+/* (دمج v9.34: تعريف قديم اتشال: applyAdminScope) */
+/* (دمج v9.34: تعريف قديم اتشال: updateWorkerHeader) */
+/* (دمج v9.34: تعريف قديم اتشال: logout) */
 
 // ==================== SECTIONS ====================
 async function loadSections(){
@@ -1744,17 +1693,7 @@ function renderAdminSections(){
 
 
 // ==================== WORKERS ====================
-async function saveWorker(){
-  const id=$('nw-id').value.trim(); const worker_name=$('nw-name').value.trim();
-  const factory_branch=$('nw-branch').value.trim();
-  let section_id=$('nw-section').value?parseInt($('nw-section').value):null;
-  const msg=$('add-worker-msg');
-  if(!id||!worker_name){ msg.innerHTML='<span style="color:#991b1b;">اكتب الرقم الوظيفي والاسم</span>'; return; }
-  if(adminUser && !adminUser.isSuper) section_id=adminUser.section_id; // الأدمن الثانوي يضيف في قسمه فقط
-  const { error } = await sb.from('workers_evaluations').insert({ id:parseInt(id), worker_name, factory_branch, section_id, kpi_score:100, violations_count:0 });
-  if(error) msg.innerHTML='<span style="color:#991b1b;">خطأ: '+(String(error.message||'').includes('duplicate')?'الرقم مسجل مسبقاً':error.message)+'</span>';
-  else { msg.innerHTML='<span style="color:#166534;">تمت إضافة الموظف بنجاح ✅</span>'; ['nw-id','nw-name','nw-branch'].forEach(i=>$(i).value=''); $('nw-section').value=''; setTimeout(()=>msg.innerHTML='',3000); loadWorkers(); }
-}
+/* (دمج v9.34: تعريف قديم اتشال: saveWorker) */
 async function loadWorkers(){
   const q=sb.from('workers_evaluations').select('*').order('id',{ascending:true});
   let data=[];
@@ -1786,18 +1725,7 @@ async function deleteWorker(id){
 }
 
 // ==================== WORKER MODAL ====================
-async function openWorkerModal(id){
-  currentModalWorkerId=id;
-  const { data } = await sb.from('workers_evaluations').select('*').eq('id', id).single();
-  if(!data) return;
-  $('modal-worker-title').textContent='الموظف: '+data.worker_name+' ('+data.id+')';
-  $('modal-kpi') && ($('modal-kpi').textContent=(data.kpi_score??100)+'%');
-  $('ed-name').value=data.worker_name; $('ed-branch').value=data.factory_branch||'';
-  const opts=sections.map(s=>'<option value="'+s.id+'" '+(s.id===data.section_id?'selected':'')+'>'+esc(tr(s,'name'))+'</option>').join('');
-  $('ed-section').innerHTML='<option value="">بدون قسم</option>'+opts;
-  $('worker-modal').classList.remove('hidden');
-  loadWorkerAttempts(id); loadWorkerViolationsAdmin(id); loadViolationLib(); loadWorkerContentAnswers(id); loadWorkerCommentsAdmin(id); loadWorkerTrainingProgress(id);
-}
+/* (دمج v9.34: تعريف قديم اتشال: openWorkerModal) */
 function closeWorkerModal(){ $('worker-modal').classList.add('hidden'); currentModalWorkerId=null; }
 
 /* ===== تابات مودال تفاصيل الموظف ===== */
@@ -1820,23 +1748,8 @@ function setWorkerModalViolationFilter(f){
   document.querySelectorAll('[data-wmvf]').forEach(b=>b.classList.toggle('active', b.getAttribute('data-wmvf')===f));
   if(currentModalWorkerId) loadWorkerViolationsAdmin(currentModalWorkerId);
 }
-async function saveEditWorker(){
-  if(!currentModalWorkerId) return;
-  await sb.from('workers_evaluations').update({ worker_name:$('ed-name').value.trim(), factory_branch:$('ed-branch').value.trim(), section_id:$('ed-section').value?parseInt($('ed-section').value):null }).eq('id',currentModalWorkerId);
-  showToast('تم حفظ التعديلات ✅'); closeWorkerModal(); loadWorkers();
-}
-async function loadWorkerTrainingProgress(workerId){
-  const [{data:topics},{data:progress}]=await Promise.all([
-    sb.from('training_topics').select('*').order('id'),
-    sb.from('training_progress').select('*').eq('worker_id',workerId).order('updated_at',{ascending:false})
-  ]);
-  const map={}; (progress||[]).forEach(p=>map[String(p.topic_id)]=p);
-  const box=$('modal-training-progress');
-  box.innerHTML=(topics||[]).filter(t=>!adminUser||adminUser.isSuper||t.section_id===adminUser.section_id).map(t=>{
-    const p=map[String(t.id)]; const pct=Math.round(Number(p?.progress_percent||0));
-    return '<div style="background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:8px 10px;"><div style="display:flex;justify-content:space-between;gap:8px;"><span style="font-weight:700;font-size:12px;">'+esc(t.title_ar)+'</span><span class="badge '+(p?.completed?'badge-green':'badge-yellow')+'" style="font-size:9px;">'+(p?.completed?'مكتمل ✅':pct+'%')+'</span></div><div class="muted" style="font-size:10px;margin-top:3px;">'+(p?'اللغة: '+videoLanguageLabel(p.language)+' | آخر تقدم: '+pct+'%':'لم يبدأ بعد')+'</div></div>';
-  }).join('') || '<div class="muted" style="font-size:11px;text-align:center;padding:8px;">لا توجد تدريبات مسجلة</div>';
-}
+/* (دمج v9.34: تعريف قديم اتشال: saveEditWorker) */
+/* (دمج v9.34: تعريف قديم اتشال: loadWorkerTrainingProgress) */
 
 async function loadWorkerAttempts(workerId){
   const { data: attempts } = await sb.from('quiz_attempts').select('*, quizzes(title_ar,title_en,title_bn,title_ne,title_hi)').eq('worker_id',workerId).order('created_at',{ascending:false});
@@ -1966,15 +1879,7 @@ function getLegacyVideoVersions(v){
   if(v.video_url_bn) out.push({id:v.id,topic_id:v.topic_id,lang:'bn',url:v.video_url_bn,row:v});
   return out;
 }
-function pickTopicVideo(topic, preferredLang){
-  const versions=topic.versions||[];
-  const byLang={}; versions.forEach(v=>{ if(v.url && !byLang[v.lang]) byLang[v.lang]=v; });
-  // Exact requested language first. For other interface languages, Bengali is the preferred fallback,
-  // then English, then Arabic. This matches the agreed rule.
-  const order = preferredLang==='ar' ? ['ar','en','bn'] : preferredLang==='en' ? ['en','bn','ar'] : ['bn','en','ar'];
-  for(const l of order) if(byLang[l]) return byLang[l];
-  return versions[0]||null;
-}
+/* (دمج v9.34: تعريف قديم اتشال: pickTopicVideo) */
 function topicLanguageOptions(topic){
   const seen=new Set(); (topic.versions||[]).forEach(v=>{ if(v.url) seen.add(v.lang); });
   return VIDEO_LANGS.filter(l=>seen.has(l));
@@ -1985,33 +1890,7 @@ function topicProgressText(p){
   return Math.round(Number(p.progress_percent||0))+'%';
 }
 
-async function loadWorkerVideos(){
-  if(!currentUser) return;
-  const [{data:topics},{data:videos},{data:progress}] = await Promise.all([
-    sb.from('training_topics').select('*').eq('is_visible',true).order('id'),
-    sb.from('training_videos').select('*').eq('is_visible',true).order('id'),
-    sb.from('training_progress').select('*').eq('worker_id',currentUser.id)
-  ]);
-  const topicMap={};
-  (topics||[]).forEach(t=>{
-    if(t.section_id && t.section_id!==currentUser.section_id) return;
-    topicMap[t.id]={...t,versions:[]};
-  });
-  (videos||[]).forEach(v=>{
-    if(!topicMap[v.topic_id]) return;
-    const legacy=getLegacyVideoVersions(v);
-    if(v.topic_id && v.video_lang && v.video_url){
-      topicMap[v.topic_id].versions.push({id:v.id,topic_id:v.topic_id,lang:v.video_lang,url:v.video_url,row:v});
-    } else {
-      legacy.forEach(x=>topicMap[v.topic_id].versions.push(x));
-    }
-  });
-  workerTopics=Object.values(topicMap).filter(t=>t.versions.length);
-  workerVideos=[];
-  workerTopicProgress={};
-  (progress||[]).forEach(p=>workerTopicProgress[String(p.topic_id)]=p);
-  renderWorkerVideos();
-}
+/* (دمج v9.34: تعريف قديم اتشال: loadWorkerVideos) */
 function renderWorkerVideos(){
   const grid=$('worker-videos-grid'); const empty=$('worker-videos-empty');
   Object.values(activeVideoPlayers).forEach(p=>{try{p.destroy();}catch(e){}}); activeVideoPlayers={};
@@ -2052,56 +1931,10 @@ function selectTopicVideo(topicId,lang){
   if(typeof topicTimersV22!=='undefined' && topicTimersV22[topicId]){ clearInterval(topicTimersV22[topicId]); delete topicTimersV22[topicId]; }
   renderWorkerVideos();
 }
-function startTopicVideo(topicId){
-  const topic=workerTopics.find(t=>String(t.id)===String(topicId)); if(!topic) return;
-  const preferred=activeTopicVideo[topicId] || browserVideoLang || currentLang;
-  const version=pickTopicVideo(topic,preferred); if(!version) return showToast('لا يوجد فيديو متاح');
-  activeTopicVideo[topicId]=version.lang;
-  const wrap=$('topic-player-'+topicId); if(!wrap) return;
-  const ytId=extractYTVideoId(version.url);
-  if(!ytId){ wrap.innerHTML='<div style="color:#fff;padding:20px;text-align:center;">رابط الفيديو غير صالح</div>'; return; }
-  wrap.innerHTML='<div id="yt-topic-'+topicId+'" style="width:100%;height:100%;"></div>';
-  const create=()=>{
-    try{
-      const player=new YT.Player('yt-topic-'+topicId,{width:'100%',height:'100%',videoId:ytId,playerVars:{rel:0,playsinline:1},events:{onStateChange:ev=>{if(ev.data===YT.PlayerState.PLAYING) startTopicTracking(topicId,version,player);}}});
-      activeVideoPlayers[topicId]=player;
-    }catch(e){ showToast('تعذر تشغيل الفيديو'); }
-  };
-  if(ytAPIReady) create(); else pendingPlayers.push({customCreate:create});
-}
+/* (دمج v9.34: تعريف قديم اتشال: startTopicVideo) */
 window.onYouTubeIframeAPIReady=function(){ ytAPIReady=true; (pendingPlayers||[]).forEach(p=>{if(p.customCreate)p.customCreate();}); pendingPlayers=[]; };
-function startTopicTracking(topicId,version,player){
-  if(!currentUser) return;
-  let lastSaved=-1;
-  const timer=setInterval(async()=>{
-    try{
-      if(!player || !player.getDuration){clearInterval(timer);return;}
-      const duration=player.getDuration(), current=player.getCurrentTime();
-      if(!duration) return;
-      const pct=Math.min(100,(current/duration)*100);
-      const rounded=Math.floor(pct);
-      if(rounded>=lastSaved+5 || rounded>=60){ lastSaved=rounded; await saveTopicProgress(topicId,version,rounded); }
-      if(pct>=60){ clearInterval(timer); await saveTopicProgress(topicId,version,Math.max(60,pct),true); }
-    }catch(e){ }
-  },2000);
-}
-async function saveTopicProgress(topicId,version,pct,completed=false){
-  if(!currentUser) return;
-  const value=Math.min(100,Number(pct)||0); const done=completed||value>=60;
-  const payload={worker_id:currentUser.id,topic_id:topicId,video_id:version.id,language:version.lang,progress_percent:value,completed:done,updated_at:new Date().toISOString()};
-  if(done) payload.completed_at=new Date().toISOString();
-  const {error}=await sb.from('training_progress').upsert(payload,{onConflict:'worker_id,topic_id'});
-  if(error) return;
-  if(done){
-    const {data:old}=await sb.from('video_views').select('id').eq('worker_id',currentUser.id).eq('video_id',version.id).limit(1);
-    if(!old||!old.length) await sb.from('video_views').insert({worker_id:currentUser.id,video_id:version.id});
-    workerTopicProgress[String(topicId)]={...workerTopicProgress[String(topicId)],...payload};
-    renderWorkerVideos(); showToast('تم إكمال التدريب بنسبة 60% أو أكثر ✅');
-  } else {
-    workerTopicProgress[String(topicId)]={...workerTopicProgress[String(topicId)],...payload};
-    const badge=$('topic-note-'+topicId); if(badge) badge.textContent='اللغة المختارة: '+videoLanguageLabel(version.lang)+' — المشاهدة: '+Math.round(value)+'%';
-  }
-}
+/* (دمج v9.34: تعريف قديم اتشال: startTopicTracking) */
+/* (دمج v9.34: تعريف قديم اتشال: saveTopicProgress) */
 
 // ==================== VIDEOS (ADMIN) ====================
 async function loadAdminVideos(){
@@ -2130,24 +1963,7 @@ async function loadAdminVideos(){
   }).join('') || '<div class="muted" style="font-size:12px;text-align:center;padding:10px;">لا توجد تدريبات فيديو</div>';
   refreshTopicQuestionBadges(topicList.map(t=>t.id));
 }
-async function saveVideoTopic(){
-  const titleAr=$('vd-title-ar').value.trim(), titleEn=$('vd-title-en').value.trim();
-  const urls={ar:$('vd-url').value.trim(),en:$('vd-url-en').value.trim(),bn:$('vd-url-bn').value.trim(),ne:($('vd-url-ne')?.value||'').trim(),hi:($('vd-url-hi')?.value||'').trim()};
-  if(!titleAr) return showToast('اكتب اسم التدريب بالعربية');
-  if(!urls.ar&&!urls.en&&!urls.bn&&!urls.ne&&!urls.hi) return showToast('أضف رابط فيديو واحد على الأقل');
-  const section_id=$('vd-section').value?parseInt($('vd-section').value):null;
-  if(adminUser&&!adminUser.isSuper && section_id!==adminUser.section_id) return showToast('لا يمكنك إضافة تدريب خارج قسمك');
-  const visible=$('vd-visible').checked;
-  const {data:topic,error}=await sb.from('training_topics').insert({title_ar:titleAr,title_en:titleEn,section_id,is_visible:visible}).select().single();
-  if(error) return showToast('خطأ: '+error.message);
-  for(const lang of VIDEO_LANGS){
-    if(!urls[lang]) continue;
-    const {error:e}=await sb.from('training_videos').insert({topic_id:topic.id,video_lang:lang,video_url:urls[lang],title_ar:titleAr,title_en:titleEn,section_id,is_visible:visible});
-    if(e) return showToast('تم إنشاء التدريب لكن حدث خطأ في نسخة '+videoLanguageLabel(lang));
-  }
-  ['vd-title-ar','vd-title-en','vd-url','vd-url-en','vd-url-bn','vd-url-ne','vd-url-hi'].forEach(i=>{const el=$(i);if(el)el.value='';}); $('vd-section').value=''; $('vd-visible').checked=false;
-  await loadAdminVideos(); showToast('تم حفظ التدريب ونسخ اللغات ✅');
-}
+/* (دمج v9.34: تعريف قديم اتشال: saveVideoTopic) */
 async function toggleTopicVisibility(id){
   const {data:t}=await sb.from('training_topics').select('is_visible').eq('id',id).single(); if(!t)return;
   const visible=!t.is_visible;
@@ -2178,13 +1994,7 @@ async function deleteVideoVersion(id){
   if(v?.topic_id){ const {count}=await sb.from('training_videos').select('id',{count:'exact',head:true}).eq('topic_id',v.topic_id); if(count===0) await sb.from('training_topics').delete().eq('id',v.topic_id); }
   await loadAdminVideos();
 }
-async function addTopicVideoQuestion(topicId){
-  const topic=workerTopics.find(t=>t.id===topicId);
-  const rows=topic?topic.versions:[];
-  const {data:vids}=await sb.from('training_videos').select('*').eq('topic_id',topicId).order('id');
-  const v=(vids||[])[0]; if(!v) return showToast('لا توجد نسخة فيديو لهذا التدريب');
-  const f=$('vqt-form-'+topicId); f.innerHTML=contentQFormHTML('topic',topicId); f.classList.toggle('open');
-}
+/* (دمج v9.34: تعريف قديم اتشال: addTopicVideoQuestion) */
 async function refreshTopicQuestionBadges(ids){
   if(!ids.length)return;
   const {data:vids}=await sb.from('training_videos').select('id,topic_id').in('topic_id',ids);
@@ -2195,28 +2005,8 @@ async function refreshTopicQuestionBadges(ids){
 }
 
 // ==================== CARDS (WORKER) ====================
-async function loadWorkerCards(){
-  if(!currentUser) return;
-  const { data } = await sb.from('safety_cards').select('*').eq('is_visible',true);
-  const all=data||[];
-  workerCards=all.filter(c=> !c.section_id || c.section_id===currentUser.section_id);
-  renderWorkerCards();
-}
-function renderWorkerCards(){
-  const grid=$('worker-cards-grid'); const empty=$('worker-cards-empty');
-  if(!workerCards.length){ grid.innerHTML=''; empty.textContent='لا توجد بطاقات متاحة لقسمك حالياً'; empty.classList.remove('hidden'); return; }
-  empty.classList.add('hidden');
-  grid.innerHTML=workerCards.map(c=>{
-    const img=c.image?'<img src="'+c.image+'" class="card-img"/>':'<div style="width:100%;height:170px;border-radius:10px;background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-size:34px;">📸</div>';
-    return '<div class="card" style="padding:12px;">'+img+
-      '<div style="font-size:15px;font-weight:800;margin:8px 0 4px;">'+esc(tr(c,'title'))+'</div>'+
-      '<p style="font-size:13px;color:#475569;margin-bottom:8px;">'+esc(tr(c,'description'))+'</p>'+
-      '<div id="cq-'+c.id+'" style="margin-bottom:8px;"></div>'+
-      '<input id="ccmt-'+c.id+'" type="text" class="input-field" style="font-size:12px;" placeholder="💬 اسأل أو علّق على هذه البطاقة..."/> <button class="btn-secondary btn-sm" style="margin-top:5px;font-size:11px;" onclick="addComment(\'card\','+c.id+')">إرسال</button>'+
-    '</div>';
-  }).join('');
-  loadContentForItems('card', workerCards.map(c=>c.id));
-}
+/* (دمج v9.34: تعريف قديم اتشال: loadWorkerCards) */
+/* (دمج v9.34: تعريف قديم اتشال: renderWorkerCards) */
 
 // ==================== CARDS (ADMIN) ====================
 async function loadAdminCards(){
@@ -2258,18 +2048,7 @@ async function uploadSafetyCardImage(file){
   const {data}=sb.storage.from('safety-cards').getPublicUrl(path);
   return data.publicUrl;
 }
-async function saveCard(){
-  const g=id=>$(id).value.trim();
-  if(!g('cd-title-ar')) return showToast('اكتب عنوان البطاقة بالعربية');
-  const section_id=$('cd-section').value?parseInt($('cd-section').value):null;
-  if(adminUser&&!adminUser.isSuper && section_id!==adminUser.section_id) return showToast('لا يمكنك إضافة كارت خارج قسمك');
-  const file=$('cd-image').files[0]; let image=null;
-  try{ if(file) image=await uploadSafetyCardImage(file); }
-  catch(e){ return showToast('فشل رفع الصورة: '+(e.message||'تحقق من إعداد Storage')); }
-  const {error}=await sb.from('safety_cards').insert({title_ar:g('cd-title-ar'),title_en:g('cd-title-en'),title_bn:g('cd-title-bn'),title_ne:g('cd-title-ne'),title_hi:g('cd-title-hi'),description_ar:g('cd-desc-ar'),description_en:g('cd-desc-en'),description_bn:g('cd-desc-bn'),description_ne:g('cd-desc-ne'),description_hi:g('cd-desc-hi'),image,section_id,is_visible:false});
-  if(error)return showToast('خطأ: '+error.message);
-  await afterCardSave();
-}
+/* (دمج v9.34: تعريف قديم اتشال: saveCard) */
 function dataUrlToBlob(dataUrl){ const parts=dataUrl.split(','); const mime=(parts[0].match(/:(.*?);/)||[])[1]||'image/jpeg'; const bin=atob(parts[1]||''); const arr=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i); return new Blob([arr],{type:mime}); }
 async function migrateLegacyCardImages(){
   if(!adminUser?.isSuper)return showToast('هذه العملية للسوبر أدمن فقط');
@@ -2316,7 +2095,7 @@ function coInput(pf,idx){
 let contentOptCount={};
 function addCO(type,itemId){ const pf=type+'_'+itemId; contentOptCount[pf]=(contentOptCount[pf]||2)+1; const idx=contentOptCount[pf]; const formId=(type==='card'?'cq-form-':type==='video'?'vq-form-':'vqt-form-')+itemId; const anchor=document.querySelector('#'+formId+' .btn-primary'); if(anchor) anchor.insertAdjacentHTML('beforebegin',coInput(pf,idx)); }
 function removeCO(pf,idx){ const r=$('co-row-'+pf+'-'+idx); const l=$('col-'+pf+'-'+idx); if(r)r.remove(); if(l)l.remove(); }
-function addCardQuestion(id){ const f=$('cq-form-'+id); f.innerHTML=contentQFormHTML('card',id); f.classList.toggle('open'); }
+/* (دمج v9.34: تعريف قديم اتشال: addCardQuestion) */
 
 
 async function saveContentQuestion(type,itemId){
@@ -2340,28 +2119,7 @@ async function refreshQuestionBadges(type, ids){
 
 
 // ==================== CONTENT FOR WORKER (أسئلة تحت الكروت والفيديوهات) ====================
-async function loadTopicQuestions(){
-  if(!workerTopics.length)return;
-  const videoIds=[]; const topicByVideo={};
-  workerTopics.forEach(t=>{
-    const preferred=activeTopicVideo[t.id] || pickTopicVideo(t,currentLang);
-    const v=typeof preferred==='object'?preferred:pickTopicVideo(t,preferred);
-    if(v){videoIds.push(v.id); topicByVideo[String(v.id)]=t.id;}
-  });
-  if(!videoIds.length)return;
-  const {data:qs}=await sb.from('content_questions').select('*').eq('item_type','video').or('topic_id.in.('+workerTopics.map(t=>t.id).join(',')+'),item_id.in.('+videoIds.join(',')+')');
-  const {data:ans}=await sb.from('content_answers').select('question_id').eq('worker_id',currentUser.id).in('question_id',(qs||[]).map(q=>q.id));
-  const answered=new Set((ans||[]).map(a=>String(a.question_id)));
-  for(const q of (qs||[])){
-    const topicId=q.topic_id || topicByVideo[String(q.item_id)]; const container=$('vq-'+topicId); if(!container)continue;
-    const {data:opts}=await sb.from('content_options').select('*').eq('question_id',q.id).order('id');
-    if(answered.has(String(q.id))){
-      container.innerHTML='<div style="background:#ecfdf5;border:1px solid #bbf7d0;border-radius:8px;padding:8px;"><div style="font-size:12px;font-weight:700;">❓ '+esc(tr(q,'question')||q.question_ar)+'</div><div style="font-size:11px;color:#166534;margin-top:3px;">✔ تمت إجابتك على هذا السؤال</div></div>';
-    } else {
-      container.innerHTML='<div style="background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:8px;"><div style="font-size:12px;font-weight:700;margin-bottom:6px;">❓ '+esc(tr(q,'question')||q.question_ar)+'</div>'+(opts||[]).map(o=>'<label style="display:flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--border);border-radius:6px;padding:6px 8px;margin-bottom:4px;cursor:pointer;font-size:12px;"><input type="radio" name="cq-'+q.id+'" value="'+o.id+'" style="accent-color:var(--primary);"/> '+esc(tr(o,'option'))+'</label>').join('')+'<button class="btn-primary btn-sm" style="margin-top:6px;font-size:11px;width:100%;" onclick="submitContentAnswer(\'video\','+q.id+','+q.item_id+')">إرسال إجابتي</button></div>';
-    }
-  }
-}
+/* (دمج v9.34: تعريف قديم اتشال: loadTopicQuestions) */
 
 async function loadContentForItems(type, ids){
   if(!ids.length) return;
@@ -2407,16 +2165,7 @@ async function addComment(type,itemId){
   await sb.from('content_comments').insert({ item_type:type, item_id:itemId, worker_id:currentUser.id, comment:text });
   input.value=''; showToast('تم إرسال تعليقك للأدمن ✅');
 }
-async function loadAdminComments(){
-  const { data } = await sb.from('content_comments').select('*, workers_evaluations(worker_name)').order('created_at',{ascending:false}).limit(100);
-  const box=$('admin-comments-list');
-  box.innerHTML=(data||[]).map(c=>{
-    const type=c.item_type==='card'?'📸 كارت':'🎬 تدريب فيديو';
-    return '<div class="card" style="padding:10px 14px;"><div style="display:flex;justify-content:space-between;"><span style="font-weight:700;font-size:13px;">'+type+' <span class="muted">#'+c.item_id+'</span></span><span class="muted" style="font-size:10px;">'+fmtDate(c.created_at)+'</span></div>'+
-    '<div style="font-size:13px;margin:6px 0;">💬 '+esc(c.comment)+'</div>'+
-    '<div class="muted" style="font-size:11px;">من الموظف: '+esc(c.workers_evaluations?c.workers_evaluations.worker_name:'?')+(c.topic_id?' | التدريب #'+c.topic_id:'')+'</div></div>';
-  }).join('') || '<div class="muted" style="font-size:12px;text-align:center;padding:10px;">لا توجد تعليقات بعد</div>';
-}
+/* (دمج v9.34: تعريف قديم اتشال: loadAdminComments) */
 
 // ==================== VIOLATIONS (WORKER VIEW) ====================
 let workerViolationsExpanded = false;
@@ -2561,29 +2310,7 @@ async function submitViolationReply(id){
 }
 
 // ==================== QUIZZES (WORKER) ====================
-async function loadWorkerQuizzes(){
-  if(!currentUser) return;
-  const { data: quizzes } = await sb.from('quizzes').select('*').order('id');
-  const { data: attempts } = await sb.from('quiz_attempts').select('quiz_id, score').eq('worker_id',currentUser.id);
-  const doneMap={}; (attempts||[]).forEach(a=>doneMap[a.quiz_id]=a.score);
-  const box=$('worker-quizzes'); box.innerHTML='';
-  if(!quizzes||!quizzes.length){ box.innerHTML='<div class="muted" style="font-size:12px;text-align:center;padding:12px;">لا توجد اختبارات حالياً</div>'; return; }
-  for(const q of quizzes){
-    const { data: questions } = await sb.from('quiz_questions').select('*').eq('quiz_id',q.id).order('id');
-    const score=doneMap[q.id];
-    const card=document.createElement('div'); card.className='card'; card.style.cssText='padding:16px;margin-bottom:14px;border:'+(score===undefined?'2px solid var(--primary-light)':'1px solid var(--border)')+';';
-    const title=tr(q,'title')||('اختبار '+(quizzes.indexOf(q)+1));
-    card.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><div style="font-weight:800;font-size:15px;">'+esc(title)+'</div>'+(score===undefined?'<span class="badge badge-red">جديد!</span>':'<span class="badge badge-green">النتيجة: '+score+'%</span>')+'</div>';
-    if(score!==undefined){ card.innerHTML+='<div class="muted" style="font-size:12px;">تم إنجاز هذا الاختبار بنتيجة '+score+'% ✅</div>'; box.appendChild(card); }
-    else {
-      const form=document.createElement('div'); form.dataset.quizId=q.id;
-      (questions||[]).forEach((qst,qi)=>{ form.innerHTML+='<div style="background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;"><div style="font-weight:700;font-size:13px;margin-bottom:8px;">'+(qi+1)+'. '+esc(qst.question_ar)+'</div><div id="qopts-'+qst.id+'" style="display:flex;flex-direction:column;gap:6px;"></div></div>'; });
-      box.appendChild(card); card.appendChild(form);
-      (questions||[]).forEach(async(qst)=>{ const { data: opts }=await sb.from('quiz_options').select('*').eq('question_id',qst.id).order('id'); const w=$('qopts-'+qst.id); if(w) w.innerHTML=(opts||[]).map(o=>'<label style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--border);border-radius:8px;padding:8px 10px;cursor:pointer;font-size:13px;"><input type="radio" name="qz-'+qst.id+'" value="'+o.id+'" style="accent-color:var(--primary);"/> '+esc(tr(o,'option'))+'</label>').join(''); });
-      const btn=document.createElement('button'); btn.className='btn-primary'; btn.style.cssText='width:100%;padding:11px;font-size:13px;margin-top:4px;'; btn.textContent='إرسال إجابات هذا الاختبار'; btn.onclick=()=>submitQuiz(q.id,questions); form.appendChild(btn);
-    }
-  }
-}
+/* (دمج v9.34: تعريف قديم اتشال: loadWorkerQuizzes) */
 async function submitQuiz(quizId,questions){
   let correct=0;
   for(const qst of questions){ const sel=document.querySelector('input[name="qz-'+qst.id+'"]:checked'); if(sel){ const { data: opt }=await sb.from('quiz_options').select('is_correct').eq('id',parseInt(sel.value)).single(); if(opt&&opt.is_correct) correct++; } }
@@ -2608,24 +2335,7 @@ async function submitQuiz(quizId,questions){
 }
 
 // ==================== QUIZZES (ADMIN) — نفس المنطق السابق ====================
-async function loadAdminQuizzes(){
-  const { data: quizzes } = await sb.from('quizzes').select('*').order('id');
-  const box=$('admin-quizzes-list'); box.innerHTML='';
-  if(!quizzes||!quizzes.length){ box.innerHTML='<div class="muted" style="font-size:12px;text-align:center;padding:10px;">لا توجد اختبارات</div>'; return; }
-  for(const q of quizzes){
-    const { data: questions } = await sb.from('quiz_questions').select('*').eq('quiz_id',q.id).order('id');
-    const w=document.createElement('div'); w.className='card'; w.style.cssText='padding:16px;';
-    w.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><div style="font-weight:800;font-size:14px;">📝 '+esc(q.title_ar||('اختبار '+q.id))+'</div><div><button class="btn-secondary btn-sm" onclick="addQuestionForm('+q.id+')">+ سؤال</button> <button class="btn-danger btn-sm" onclick="deleteQuiz('+q.id+')">حذف</button></div></div>'+
-      '<div id="add-question-form-'+q.id+'" class="hidden" style="background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px;"><div style="font-weight:700;font-size:13px;margin-bottom:8px;">إضافة سؤال</div><label class="field-label">السؤال (عربي)</label><input id="qs-ar-'+q.id+'" type="text" class="input-field" placeholder="السؤال بالعربية" onblur="autoTranslateGroup(&#39;qs-ar-'+q.id+'&#39;,{en:&#39;qs-en-'+q.id+'&#39;,bn:&#39;qs-bn-'+q.id+'&#39;,ne:&#39;qs-ne-'+q.id+'&#39;,hi:&#39;qs-hi-'+q.id+'&#39;})"/>'+
-      '<button class="btn-secondary" style="margin:8px 0 0;" onclick="togglePanel(\'qs-langs-'+q.id+'\')">+ لغات</button><div class="collapsible-panel" id="qs-langs-'+q.id+'" style="margin-top:8px;"><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">'+['en','bn','ne','hi'].map(l=>'<input id="qs-'+l+'-'+q.id+'" type="text" class="input-field" placeholder="'+l+'"/>').join('')+'</div></div>'+
-      '<div style="margin-top:10px;">'+qzOptInput(q.id,0)+qzOptInput(q.id,1)+'</div>'+
-      '<button class="btn-secondary btn-sm" onclick="addQzOpt('+q.id+')">+ خيار</button> <button class="btn-primary btn-sm" onclick="saveQuestion('+q.id+')">حفظ السؤال</button></div>'+
-      '<div id="questions-list-'+q.id+'" style="display:flex;flex-direction:column;gap:8px;"></div>';
-    box.appendChild(w);
-    const ql=$('questions-list-'+q.id);
-    ql.innerHTML=(questions||[]).map(qst=>'<div style="border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:#f8fafc;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><div style="font-weight:700;font-size:13px;">'+esc(qst.question_ar)+'</div><button class="btn-danger btn-sm" onclick="deleteQuestion('+qst.id+')">حذف</button></div></div>').join('') || '<div class="muted" style="font-size:12px;">لا توجد أسئلة بعد</div>';
-  }
-}
+/* (دمج v9.34: تعريف قديم اتشال: loadAdminQuizzes) */
 function qzOptInput(quizId,idx){
   return '<div id="qz-row-'+quizId+'-'+idx+'" style="display:flex;align-items:center;gap:6px;margin-bottom:6px;"><input type="radio" name="qzcorr-'+quizId+'" value="'+idx+'" style="accent-color:var(--primary);flex-shrink:0;"/><input id="qzopt-ar-'+quizId+'-'+idx+'" type="text" class="input-field" style="font-size:12px;padding:6px;" placeholder="الخيار '+(idx+1)+' (عربي)" onblur="autoTranslateGroup(\'qzopt-ar-'+quizId+'-'+idx+'\',{en:\'qzopt-en-'+quizId+'-'+idx+'\',bn:\'qzopt-bn-'+quizId+'-'+idx+'\',ne:\'qzopt-ne-'+quizId+'-'+idx+'\',hi:\'qzopt-hi-'+quizId+'-'+idx+'\'})"/>'+
   '<button onclick="togglePanel(\'qzl-'+quizId+'-'+idx+'\')" style="font-size:10px;color:var(--primary);background:none;border:none;cursor:pointer;">+لغات</button>'+(idx>=2?'<button onclick="removeQzOpt('+quizId+','+idx+')" style="font-size:13px;color:var(--danger);background:none;border:none;cursor:pointer;">x</button>':'')+'</div>'+
@@ -2644,11 +2354,7 @@ async function saveQuestion(quizId){
   $('qs-ar-'+quizId).value=''; ['qs-en','qs-bn','qs-ne','qs-hi'].forEach(k=>{const el=$(''+k+'-'+quizId); if(el)el.value='';});
   loadAdminQuizzes(); showToast('تم حفظ السؤال ✅');
 }
-async function saveQuiz(){
-  const t=$('qz-title-ar').value.trim(); if(!t) return showToast('اكتب عنوان الاختبار بالعربية');
-  await sb.from('quizzes').insert({ title_ar:t, title_en:$('qz-title-en').value.trim(), title_bn:$('qz-title-bn').value.trim(), title_ne:$('qz-title-ne').value.trim(), title_hi:$('qz-title-hi').value.trim() });
-  ['qz-title-ar','qz-title-en','qz-title-bn','qz-title-ne','qz-title-hi'].forEach(i=>$(i).value=''); loadAdminQuizzes(); showToast('تم إنشاء الاختبار ✅');
-}
+/* (دمج v9.34: تعريف قديم اتشال: saveQuiz) */
 async function deleteQuiz(id){ if(!confirm('حذف الاختبار وكل أسئلته؟'))return; await sb.from('quizzes').delete().eq('id',id); loadAdminQuizzes(); }
 async function deleteQuestion(id){ if(!confirm('حذف السؤال؟'))return; await sb.from('quiz_questions').delete().eq('id',id); loadAdminQuizzes(); }
 
@@ -2680,14 +2386,7 @@ function setLang(lang){
 }
 
 // ==================== ADMINS (SUPER) ====================
-async function saveAdmin(){
-  const name=$('ad-name').value.trim(); const code=$('ad-code').value.trim(); const section_id=$('ad-section').value?parseInt($('ad-section').value):null;
-  const msg=$('add-admin-msg');
-  if(!name||!code||!section_id){ msg.innerHTML='<span style="color:#991b1b;">اكتب الاسم والكود واختر القسم</span>'; return; }
-  const { error } = await sb.from('admins').insert({ name, code, section_id, is_super:false });
-  if(error) msg.innerHTML='<span style="color:#991b1b;">خطأ: '+error.message+'</span>';
-  else { msg.innerHTML='<span style="color:#166534;">تمت إضافة الأدمن ✅</span>'; ['ad-name','ad-code'].forEach(i=>$(i).value=''); $('ad-section').value=''; setTimeout(()=>msg.innerHTML='',3000); renderAdminAdmins(); }
-}
+/* (دمج v9.34: تعريف قديم اتشال: saveAdmin) */
 async function renderAdminAdmins(){
   const { data } = await sb.from('admins').select('*').order('id');
   const box=$('admins-list'); if(!box) return;
@@ -2758,37 +2457,37 @@ async function toggleAdminDepartmentV22(id, val){
 function renderAdminSectionsV22(){ if(typeof renderAdminSections==='function') renderAdminSections(); }
 async function saveJobRoleV22(){const ar=$('role-ar')?.value.trim();if(!ar)return showToast('اكتب اسم الوظيفة');const en=$('role-en')?.value.trim();const {error}=await sb.from('job_roles').insert({name_ar:ar,name_en:en,is_active:true});if(error)return showToast('تعذر حفظ الوظيفة: '+error.message);$('role-ar').value='';$('role-en').value='';await loadV22Meta();showToast('تم حفظ الوظيفة ✅');}
 async function editJobRoleV22(id){const r=jobRolesV22.find(x=>x.id===id);if(!r)return;const ar=prompt('اسم الوظيفة / الدور',r.name_ar);if(ar===null)return;const en=prompt('English',r.name_en||'');const {error}=await sb.from('job_roles').update({name_ar:ar.trim(),name_en:en.trim()}).eq('id',id);if(error)return showToast(error.message);await loadV22Meta();}
-async function deleteJobRoleV22(id){const used=await sb.from('workers_evaluations').select('id',{count:'exact',head:true}).eq('job_role_id',id);if((used.count||0)>0)return showToast('لا يمكن حذف وظيفة مستخدمة. عدّل الموظفين أولاً.');if(!confirm('حذف الوظيفة؟'))return;await sb.from('job_roles').delete().eq('id',id);await loadV22Meta();showToast('تم الحذف');}
+/* (دمج v9.34: تعريف قديم اتشال: deleteJobRoleV22) */
 async function saveTargetDepartmentV22(){const ar=$('target-ar')?.value.trim();if(!ar)return showToast('اكتب اسم الإدارة');const en=$('target-en')?.value.trim();const isAdminDept=$('target-is-admin')?.checked||false;let {error}=await sb.from('target_departments').insert({name_ar:ar,name_en:en,is_active:true,is_admin_department:isAdminDept});if(error && /is_admin_department/i.test(error.message||'')){({error}=await sb.from('target_departments').insert({name_ar:ar,name_en:en,is_active:true}));}if(error)return showToast('تعذر حفظ الإدارة: '+error.message);$('target-ar').value='';$('target-en').value='';if($('target-is-admin'))$('target-is-admin').checked=false;await loadV22Meta();showToast('تم حفظ الإدارة ✅');}
 async function editTargetDepartmentV22(id){const r=targetDepartmentsV22.find(x=>x.id===id);if(!r)return;const ar=prompt('اسم الإدارة',r.name_ar);if(ar===null)return;const en=prompt('English',r.name_en||'');const {error}=await sb.from('target_departments').update({name_ar:ar.trim(),name_en:en.trim()}).eq('id',id);if(error)return showToast(error.message);await loadV22Meta();}
-async function deleteTargetDepartmentV22(id){if(!confirm('حذف الإدارة؟'))return;const {error}=await sb.from('target_departments').delete().eq('id',id);if(error)return showToast('لا يمكن الحذف إذا كانت مستخدمة. '+error.message);await loadV22Meta();showToast('تم الحذف');}
+/* (دمج v9.34: تعريف قديم اتشال: deleteTargetDepartmentV22) */
 async function loadAdminSectionsMultiV22(adminId){const {data}=await sb.from('admin_sections').select('section_id').eq('admin_id',adminId);return (data||[]).map(x=>x.section_id);}
 function getAdminScopeIds(){return adminUser?.isSuper?sections.map(s=>s.id):(adminUser?.section_ids||[adminUser?.section_id]).filter(Boolean);}
 async function loginAdminV22(adm){const ids=await loadAdminSectionsMultiV22(adm.id);adminUser={isSuper:false,name:adm.name,section_id:ids[0]||adm.section_id,section_ids:ids,id:adm.id};await enterAdmin();}
 // Override login to support multi-section admins while retaining V2.1 login codes.
 doLogin = async function(){const val=$('login-id').value.trim(),err=$('login-error');err.classList.add('hidden');if(!val)return;if(val==='592001'){adminUser={isSuper:true,name:'المدير الرئيسي',section_id:null,section_ids:sections.map(s=>s.id)};await enterAdmin();return;}const {data:adm}=await sb.from('admins').select('*').eq('code',String(val)).maybeSingle();if(adm&&adm.id){await loginAdminV22(adm);return;}const id=parseInt(val);const {data}=await sb.from('workers_evaluations').select('*').eq('id',id).single();if(!data){err.textContent='رقم غير مسجل (موظف أو أدمن)';err.classList.remove('hidden');return;}currentUser=data;adminUser=null;$('login-section').classList.add('hidden');$('worker-section').classList.remove('hidden');$('worker-section').style.display='block';await loadBranding();await loadSections();$('worker-name-display').textContent=data.worker_name;updateWorkerHeader();loadWorkerData();};
-applyAdminScope = function(){const superOnly=['branding','admins','vio-lib','org'];superOnly.forEach(t=>{const el=$('tabbtn-'+t);if(el)el.classList.toggle('hidden',!adminUser?.isSuper);});const filter=$('worker-filter-section');const ids=getAdminScopeIds();filter.innerHTML=adminUser?.isSuper?'<option value="">كل الأقسام</option>'+sections.map(s=>'<option value="'+s.id+'">'+esc(tr(s,'name'))+'</option>').join(''):ids.map(id=>{const sec=sections.find(s=>String(s.id)===String(id));return '<option value="'+id+'">'+esc(sec?tr(sec,'name'):'قسم')+'</option>';}).join('');$('worker-search').value='';};
+/* (دمج v9.34: تعريف قديم اتشال: applyAdminScope) */
 // Worker fields: role + section, no branch field in UI. Keep factory_branch in DB for legacy data.
 saveWorker = async function(){const id=$('nw-id').value.trim(),worker_name=$('nw-name').value.trim(),role_id=$('nw-role').value?parseInt($('nw-role').value):null;let section_id=$('nw-section').value?parseInt($('nw-section').value):null;const msg=$('add-worker-msg');if(!id||!worker_name||!role_id||!section_id){msg.innerHTML='<span style="color:#991b1b;">أكمل الرقم والاسم والوظيفة والقسم</span>';return;}if(adminUser&&!adminUser.isSuper){if(!getAdminScopeIds().includes(section_id))return showToast('لا يمكنك إضافة موظف خارج الأقسام المسموح بها');}const {error}=await sb.from('workers_evaluations').insert({id:parseInt(id),worker_name,job_role_id:role_id,section_id,kpi_score:100,violations_count:0});if(error){msg.innerHTML='<span style="color:#991b1b;">خطأ: '+(String(error.message||'').includes('duplicate')?'الرقم مسجل مسبقاً':error.message)+'</span>';return;}msg.innerHTML='<span style="color:#166534;">تمت إضافة الموظف بنجاح ✅</span>';['nw-id','nw-name'].forEach(i=>$(i).value='');$('nw-role').value='';$('nw-section').value='';setTimeout(()=>msg.innerHTML='',3000);loadWorkers();};
-loadWorkers = async function(){const search=$('worker-search').value.trim().toLowerCase(),filterSec=$('worker-filter-section').value;let query=sb.from('workers_evaluations').select('*,job_roles(name_ar)').order('id');const ids=getAdminScopeIds();if(!adminUser?.isSuper&&ids.length)query=query.in('section_id',ids);const {data}=await query;let rows=data||[];if(filterSec)rows=rows.filter(w=>String(w.section_id)===String(filterSec));if(search)rows=rows.filter(w=>String(w.id).includes(search)||(w.worker_name||'').toLowerCase().includes(search));const tbody=$('workers-tbody');tbody.innerHTML=rows.map(w=>{const sec=sections.find(s=>String(s.id)===String(w.section_id));return '<tr class="worker-row" onclick="openWorkerModal('+w.id+')"><td style="font-weight:800;color:var(--primary);">'+w.id+'</td><td style="font-weight:700;">'+esc(w.worker_name)+'</td><td>'+esc(w.job_roles?.name_ar||'—')+'</td><td>'+esc(sec?tr(sec,'name'):'—')+'</td><td style="font-weight:800;color:var(--primary);">'+(w.kpi_score??100)+'%</td><td>'+(w.violations_count||0)+'</td><td><button class="btn-secondary btn-sm" onclick="event.stopPropagation();openWorkerModal('+w.id+')">تفاصيل 📊</button> <button class="btn-danger btn-sm" onclick="event.stopPropagation();deleteWorker('+w.id+')">حذف 🗑️</button></td></tr>';}).join('')||'<tr><td colspan="7" class="muted" style="text-align:center;padding:20px;">لا يوجد موظفين مطابقون</td></tr>';};
+/* (دمج v9.34: تعريف قديم اتشال: loadWorkers) */
 openWorkerModal = async function(id){currentModalWorkerId=id;const {data}=await sb.from('workers_evaluations').select('*,job_roles(name_ar)').eq('id',id).single();if(!data)return;$('modal-worker-title').textContent='الموظف: '+data.worker_name+' ('+data.id+')';$('modal-kpi').textContent=(data.kpi_score??100)+'%';$('ed-name').value=data.worker_name;$('ed-role').innerHTML=roleOpts(data.job_role_id);$('ed-section').innerHTML=sectionOpts(data.section_id);$('worker-modal').classList.remove('hidden');loadWorkerAttempts(id);loadWorkerViolationsAdmin(id);loadViolationLib();loadWorkerContentAnswers(id);loadWorkerCommentsAdmin(id);loadWorkerTrainingProgress(id);};
-saveEditWorker = async function(){if(!currentModalWorkerId)return;const role_id=$('ed-role').value?parseInt($('ed-role').value):null,section_id=$('ed-section').value?parseInt($('ed-section').value):null;if(!role_id||!section_id)return showToast('اختر الوظيفة والقسم');if(adminUser&&!adminUser.isSuper&&!getAdminScopeIds().includes(section_id))return showToast('لا يمكنك نقل الموظف إلى قسم غير مصرح به');const {error}=await sb.from('workers_evaluations').update({worker_name:$('ed-name').value.trim(),job_role_id:role_id,section_id}).eq('id',currentModalWorkerId);if(error)return showToast(error.message);showToast('تم حفظ التعديلات ✅');closeWorkerModal();loadWorkers();};
+/* (دمج v9.34: تعريف قديم اتشال: saveEditWorker) */
 // Robust image rendering: use native image URL and an explicit error fallback, never silently break the worker screen.
-loadWorkerCards = async function(){if(!currentUser)return;const {data,error}=await sb.from('safety_cards').select('id,title_ar,title_en,title_bn,title_ne,title_hi,description_ar,description_en,description_bn,description_ne,description_hi,image,section_id,is_visible').eq('is_visible',true).order('id');if(error){showToast('تعذر تحميل بطاقات الصور');console.error(error);return;}workerCards=(data||[]).filter(c=>!c.section_id||String(c.section_id)===String(currentUser.section_id));renderWorkerCardsV22();};
+/* (دمج v9.34: تعريف قديم اتشال: loadWorkerCards) */
 renderWorkerCardsV22 = function(){const grid=$('worker-cards-grid'),empty=$('worker-cards-empty');if(!workerCards.length){grid.innerHTML='';empty.textContent='لا توجد بطاقات متاحة لقسمك حالياً';empty.classList.remove('hidden');return;}empty.classList.add('hidden');grid.className='worker-carousel';grid.innerHTML=workerCards.map(c=>{const img=c.image?'<img loading="lazy" src="'+esc(c.image)+'" class="card-img" onerror="this.style.display=\'none\';this.parentElement.querySelector(\'.img-fallback\').classList.remove(\'hidden\')"/><div class="img-fallback hidden" style="height:170px;border-radius:10px;background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-size:30px;">📸</div>':'<div style="height:170px;border-radius:10px;background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-size:30px;">📸</div>';return '<div class="safety-card-slide card" style="padding:12px;">'+img+'<div style="font-size:15px;font-weight:800;margin:8px 0 4px;">'+esc(tr(c,'title'))+'</div><p style="font-size:13px;color:#475569;margin-bottom:8px;">'+esc(tr(c,'description'))+'</p><div id="cq-'+c.id+'" style="margin-bottom:8px;"></div><input id="ccmt-'+c.id+'" type="text" class="input-field" style="font-size:12px;" placeholder="💬 اسأل أو علّق على هذه البطاقة..."/><button class="btn-secondary btn-sm" style="margin-top:5px;font-size:11px;" onclick="addComment(\'card\','+c.id+')">إرسال</button></div>';}).join('');loadContentForItems('card',workerCards.map(c=>c.id));};
 renderWorkerCards=renderWorkerCardsV22;
 // Video loading: only active/visible topics for this worker. No video player is created until user presses play.
-loadWorkerVideos = async function(){if(!currentUser)return;const [trr,vrr,prr]=await Promise.all([sb.from('training_topics').select('*').eq('is_visible',true).order('id'),sb.from('training_videos').select('*').eq('is_visible',true).order('id'),sb.from('training_progress').select('*').eq('worker_id',currentUser.id)]);if(trr.error||vrr.error){console.error(trr.error||vrr.error);showToast('تعذر تحميل التدريبات');return;}const topicMap={};(trr.data||[]).forEach(t=>{if(t.section_id&&String(t.section_id)!==String(currentUser.section_id))return;topicMap[t.id]={...t,versions:[]};});(vrr.data||[]).forEach(v=>{if(!topicMap[v.topic_id]||!v.video_url)return;topicMap[v.topic_id].versions.push({id:v.id,topic_id:v.topic_id,lang:v.video_lang||'ar',url:v.video_url,row:v});});workerTopics=Object.values(topicMap).filter(t=>t.versions.length);workerTopicProgress={};(prr.data||[]).forEach(p=>workerTopicProgress[String(p.topic_id)]=p);renderWorkerVideosV22();};
+/* (دمج v9.34: تعريف قديم اتشال: loadWorkerVideos) */
 renderWorkerVideosV22 = function(){const grid=$('worker-videos-grid'),empty=$('worker-videos-empty');if(!workerTopics.length){grid.innerHTML='';empty.textContent='لا توجد تدريبات فيديو متاحة لقسمك حالياً';empty.classList.remove('hidden');return;}empty.classList.add('hidden');grid.innerHTML=workerTopics.map(topic=>{const langs=topicLanguageOptions(topic),selected=activeTopicVideo[topic.id]||pickTopicVideo(topic,currentLang)?.lang||langs[0],ver=topic.versions.find(v=>v.lang===selected)||pickTopicVideo(topic,currentLang);const buttons=langs.map(l=>'<button class="topic-video-btn" style="width:auto;display:inline-flex;padding:7px 10px;font-size:11px;" onclick="selectTopicVideo('+topic.id+',\''+l+'\')">'+videoLanguageLabel(l)+(ver?.lang===l?' ✓':'')+'</button>').join('');return '<div class="topic-card"><div style="padding:13px 14px;border-bottom:1px solid var(--border);"><div style="font-weight:800;font-size:14px;">🎓 '+esc(tr(topic,'title')||topic.title_ar)+'</div></div><div style="padding:12px;"><div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px;">'+buttons+'</div><div id="topic-player-wrap-'+topic.id+'" class="video-thumb" style="border-radius:10px;overflow:hidden;position:relative;"><div id="topic-player-'+topic.id+'" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:#fff;background:#0f172a;"><button class="btn-primary" style="padding:7px 16px;font-size:11px;" onclick="startTopicVideo('+topic.id+')">تشغيل الفيديو</button></div></div><div id="topic-note-'+topic.id+'" class="muted" style="font-size:10px;margin-top:6px;">اللغة المختارة: '+videoLanguageLabel(ver?.lang||'ar')+'</div><div id="vq-'+topic.id+'" style="margin-top:8px;"></div><div style="margin-top:8px;"><input id="vcmt-topic-'+topic.id+'" type="text" class="input-field" style="font-size:12px;" placeholder="💬 اسأل أو علّق على هذا التدريب..."/><button class="btn-secondary btn-sm" style="margin-top:5px;font-size:11px;" onclick="addTopicComment('+topic.id+')">إرسال</button></div></div></div>';}).join('');loadTopicQuestions();};
 renderWorkerVideos=renderWorkerVideosV22;
 // Player: YouTube API continues to 100%; 60% only writes completion state. No progress bar is shown to worker.
-startTopicVideo = function(topicId){const topic=workerTopics.find(t=>String(t.id)===String(topicId));if(!topic)return;const version=pickTopicVideo(topic,activeTopicVideo[topicId]||currentLang);if(!version)return showToast('لا يوجد فيديو متاح');activeTopicVideo[topicId]=version.lang;const wrap=$('topic-player-'+topicId);if(!wrap)return;const ytId=extractYTVideoId(version.url);if(!ytId){wrap.innerHTML='<div style="color:#fff;padding:20px;text-align:center;">رابط الفيديو غير صالح</div>';return;}wrap.innerHTML='<div id="yt-topic-'+topicId+'" style="width:100%;height:100%;"></div>';const create=()=>{try{const player=new YT.Player('yt-topic-'+topicId,{width:'100%',height:'100%',videoId:ytId,playerVars:{rel:0,playsinline:1,controls:1},events:{onStateChange:ev=>{if(ev.data===YT.PlayerState.PLAYING)startTopicTracking(topicId,version,player);}}});activeVideoPlayers[topicId]=player;}catch(e){console.error(e);showToast('تعذر تشغيل الفيديو');}};if(window.YT&&ytAPIReady)create();else pendingPlayers.push({customCreate:create});};
+/* (دمج v9.34: تعريف قديم اتشال: startTopicVideo) */
 // Prevent duplicate timers for repeated play/pause.
 const topicTimersV22={};
-startTopicTracking = function(topicId,version,player){if(topicTimersV22[topicId])clearInterval(topicTimersV22[topicId]);let lastSaved=-1;topicTimersV22[topicId]=setInterval(async()=>{try{if(!player||!player.getDuration){clearInterval(topicTimersV22[topicId]);return;}const duration=player.getDuration(),current=player.getCurrentTime();if(!duration)return;const pct=Math.min(100,current/duration*100),rounded=Math.floor(pct);if(rounded>=lastSaved+5){lastSaved=rounded;await saveTopicProgress(topicId,version,rounded,false);}if(pct>=60&&!workerTopicProgress[String(topicId)]?.completed){await saveTopicProgress(topicId,version,pct,true);}}catch(e){}},2000);};
-saveTopicProgress = async function(topicId,version,pct,completed=false){if(!currentUser)return;const value=Math.min(100,Number(pct)||0),done=completed||value>=60;const payload={worker_id:currentUser.id,topic_id:topicId,video_id:version.id,language:version.lang,progress_percent:value,completed:done,updated_at:new Date().toISOString()};if(done)payload.completed_at=new Date().toISOString();const {error}=await sb.from('training_progress').upsert(payload,{onConflict:'worker_id,topic_id'});if(error){console.error(error);return;}workerTopicProgress[String(topicId)]={...workerTopicProgress[String(topicId)],...payload};if(done)showToast('تم إكمال التدريب عند تجاوز 60% ✅');};
+/* (دمج v9.34: تعريف قديم اتشال: startTopicTracking) */
+/* (دمج v9.34: تعريف قديم اتشال: saveTopicProgress) */
 // Questions: load once for topic, including questions stored against a video version or topic.
-loadTopicQuestions = async function(){if(!workerTopics.length)return;const topicIds=workerTopics.map(t=>t.id);const {data:qs}=await sb.from('content_questions').select('*').eq('item_type','video').or('topic_id.in.('+topicIds.join(',')+')');if(!qs?.length)return;const {data:ans}=await sb.from('content_answers').select('question_id').eq('worker_id',currentUser.id).in('question_id',qs.map(q=>q.id));const answered=new Set((ans||[]).map(a=>String(a.question_id)));for(const q of qs){const container=$('vq-'+q.topic_id);if(!container)continue;const {data:opts}=await sb.from('content_options').select('*').eq('question_id',q.id).order('id');container.innerHTML='<div style="background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:8px;"><div style="font-size:12px;font-weight:700;margin-bottom:6px;">❓ '+esc(tr(q,'question')||q.question_ar)+'</div>'+((opts||[]).map(o=>'<label style="display:flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--border);border-radius:6px;padding:6px 8px;margin-bottom:4px;cursor:pointer;font-size:12px;"><input type="radio" name="cq-'+q.id+'" value="'+o.id+'" '+(answered.has(String(q.id))?'disabled':'')+'/> '+esc(tr(o,'option'))+'</label>').join(''))+(answered.has(String(q.id))?'<div style="font-size:11px;color:#166534;">✔ تمت الإجابة مسبقًا</div>':'<button class="btn-primary btn-sm" style="margin-top:6px;width:100%;" onclick="submitContentAnswer(\'video\','+q.id+','+q.item_id+')">إرسال إجابتي</button>')+'</div>';}};
+/* (دمج v9.34: تعريف قديم اتشال: loadTopicQuestions) */
 // Multi-section admin creation
 saveAdmin = async function(){const name=$('ad-name').value.trim(),code=$('ad-code').value.trim(),ids=Array.from(document.querySelectorAll('.ad-section-v22:checked')).map(x=>parseInt(x.value));const msg=$('add-admin-msg');if(!name||!code||!ids.length){msg.innerHTML='<span style="color:#991b1b;">أكمل الاسم والكود واختر قسمًا واحدًا على الأقل</span>';return;}const {data:a,error}=await sb.from('admins').insert({name,code,is_super:false}).select().single();if(error){msg.innerHTML='<span style="color:#991b1b;">خطأ: '+error.message+'</span>';return;}const {error:e2}=await sb.from('admin_sections').insert(ids.map(section_id=>({admin_id:a.id,section_id})));if(e2){await sb.from('admins').delete().eq('id',a.id);msg.innerHTML='<span style="color:#991b1b;">تعذر حفظ الأقسام: '+e2.message+'</span>';return;}msg.innerHTML='<span style="color:#166534;">تمت إضافة الأدمن ✅</span>';['ad-name','ad-code'].forEach(i=>$(i).value='');document.querySelectorAll('.ad-section-v22').forEach(x=>x.checked=false);setTimeout(()=>msg.innerHTML='',3000);renderAdminAdminsV22();};
 renderAdminAdminsV22 = async function(){const {data}=await sb.from('admins').select('*').order('id');const box=$('admins-list');if(!box)return;const rows=[];for(const a of data||[]){const ids=a.is_super?[]:await loadAdminSectionsMultiV22(a.id);const names=a.is_super?'كل الأقسام':ids.map(id=>{const s=sections.find(x=>String(x.id)===String(id));return s?tr(s,'name'):'—';}).join('، ')||'بدون قسم';rows.push('<div class="card" style="padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px;"><span style="font-weight:700;">'+(a.is_super?'🛡️ ':'')+esc(a.name)+' <span class="badge '+(a.is_super?'badge-green':'badge-blue')+'" style="font-size:9px;">'+esc(names)+'</span> <span class="muted" style="font-size:10px;">كود: '+esc(a.code)+'</span></span>'+(!a.is_super?'<button class="btn-danger btn-sm" onclick="deleteAdmin('+a.id+')">حذف</button>':'')+'</div>');}box.innerHTML=rows.join('')||'<div class="muted">لا يوجد أدمن</div>';};
@@ -2797,10 +2496,10 @@ renderAdminAdmins=renderAdminAdminsV22;
 saveCard = async function(){const g=id=>$(id)?.value.trim()||'';if(!g('cd-title-ar'))return showToast('اكتب عنوان البطاقة بالعربية');const section_id=$('cd-section').value?parseInt($('cd-section').value):null;const target_department_id=$('cd-target').value?parseInt($('cd-target').value):null;if(adminUser&&!adminUser.isSuper&&!getAdminScopeIds().includes(section_id))return showToast('لا يمكنك إضافة كارت خارج قسمك');const file=$('cd-image').files[0];let image=null;try{if(file)image=await uploadSafetyCardImage(file);}catch(e){console.error(e);return showToast('فشل رفع الصورة: '+(e.message||'تحقق من Storage'));}const {error}=await insertWithOptionalSort('safety_cards',{title_ar:g('cd-title-ar'),title_en:g('cd-title-en'),title_bn:g('cd-title-bn'),title_ne:g('cd-title-ne'),title_hi:g('cd-title-hi'),description_ar:g('cd-desc-ar'),description_en:g('cd-desc-en'),description_bn:g('cd-desc-bn'),description_ne:g('cd-desc-ne'),description_hi:g('cd-desc-hi'),image,section_id,target_department_id,is_visible:false}, $('cd-sort')?.value);if(error)return showToast('خطأ: '+error.message);['cd-image','cd-title-ar','cd-title-en','cd-title-bn','cd-title-ne','cd-title-hi','cd-desc-ar','cd-desc-en','cd-desc-bn','cd-desc-ne','cd-desc-hi','cd-sort'].forEach(i=>{const e=$(i);if(e)e.value=(i==='cd-sort')?'0':'';});await loadAdminCards();showToast('تم حفظ البطاقة والصورة ✅');};
 // Quiz visibility/section targeting
 saveQuiz = async function(){const t=$('qz-title-ar').value.trim();if(!t)return showToast('اكتب عنوان الاختبار بالعربية');const section_id=$('qz-section').value?parseInt($('qz-section').value):null,target_department_id=$('qz-target').value?parseInt($('qz-target').value):null,is_visible=$('qz-visible').checked;if(adminUser&&!adminUser.isSuper&&!getAdminScopeIds().includes(section_id))return showToast('لا يمكنك إضافة اختبار خارج قسمك');const {error}=await sb.from('quizzes').insert({title_ar:t,title_en:$('qz-title-en').value.trim(),title_bn:$('qz-title-bn').value.trim(),title_ne:$('qz-title-ne').value.trim(),title_hi:$('qz-title-hi').value.trim(),section_id,target_department_id,is_visible});if(error)return showToast(error.message);['qz-title-ar','qz-title-en','qz-title-bn','qz-title-ne','qz-title-hi'].forEach(i=>$(i).value='');$('qz-section').value='';$('qz-target').value='';$('qz-visible').checked=false;loadAdminQuizzes();showToast('تم إنشاء الاختبار ✅');};
-loadWorkerQuizzes = async function(){if(!currentUser)return;const {data:quizzes,error}=await sb.from('quizzes').select('*').eq('is_visible',true).order('id');if(error){console.error(error);return;}const {data:attempts}=await sb.from('quiz_attempts').select('quiz_id,score').eq('worker_id',currentUser.id);const doneMap={};(attempts||[]).forEach(a=>doneMap[a.quiz_id]=a.score);const box=$('worker-quizzes');box.innerHTML='';const visible=(quizzes||[]).filter(q=>!q.section_id||String(q.section_id)===String(currentUser.section_id));if(!visible.length){box.innerHTML='<div class="muted" style="font-size:12px;text-align:center;padding:12px;">لا توجد اختبارات حالياً</div>';return;}for(const q of visible){const {data:questions}=await sb.from('quiz_questions').select('*').eq('quiz_id',q.id).order('id');const score=doneMap[q.id];const card=document.createElement('div');card.className='card';card.style.cssText='padding:16px;margin-bottom:14px;border:'+(score===undefined?'2px solid var(--primary-light)':'1px solid var(--border)')+';';const title=tr(q,'title')||('اختبار '+q.id);card.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><div style="font-weight:800;font-size:15px;">'+esc(title)+'</div>'+(score===undefined?'<span class="badge badge-red">جديد!</span>':'<span class="badge badge-green">النتيجة: '+score+'%</span>')+'</div>';if(score!==undefined){card.innerHTML+='<div class="muted" style="font-size:12px;">تم إنجاز هذا الاختبار بنتيجة '+score+'% ✅</div>';box.appendChild(card);continue;}const form=document.createElement('div');form.dataset.quizId=q.id;(questions||[]).forEach((qst,qi)=>{form.innerHTML+='<div style="background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;"><div style="font-weight:700;font-size:13px;margin-bottom:8px;">'+(qi+1)+'. '+esc(tr(qst,'question')||qst.question_ar)+'</div><div id="qopts-'+qst.id+'" style="display:flex;flex-direction:column;gap:6px;"></div></div>';});box.appendChild(card);card.appendChild(form);(questions||[]).forEach(async qst=>{const {data:opts}=await sb.from('quiz_options').select('*').eq('question_id',qst.id).order('id');const w=$('qopts-'+qst.id);if(w)w.innerHTML=(opts||[]).map(o=>'<label style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--border);border-radius:8px;padding:8px 10px;cursor:pointer;font-size:13px;"><input type="radio" name="qz-'+qst.id+'" value="'+o.id+'"/> '+esc(tr(o,'option'))+'</label>').join('');});const btn=document.createElement('button');btn.className='btn-primary';btn.style.cssText='width:100%;padding:11px;font-size:13px;margin-top:4px;';btn.textContent='إرسال إجابات هذا الاختبار';btn.onclick=()=>submitQuiz(q.id,questions);form.appendChild(btn);}};
+/* (دمج v9.34: تعريف قديم اتشال: loadWorkerQuizzes) */
 // Card/admin loaders use new target fields but keep old content intact.
-const oldLoadAdminCards=loadAdminCards;loadAdminCards=async function(){await oldLoadAdminCards();};
-const oldLoadAdminVideos=loadAdminVideos;loadAdminVideos=async function(){await oldLoadAdminVideos();};
+const oldLoadAdminCards=loadAdminCards;/* (دمج v9.34: تعريف قديم اتشال: loadAdminCards) */
+const oldLoadAdminVideos=loadAdminVideos;/* (دمج v9.34: تعريف قديم اتشال: loadAdminVideos) */
 // Visibility controls for cards/topics already exist; quiz controls are added below.
 async function toggleQuizVisibilityV22(id){const {data}=await sb.from('quizzes').select('is_visible').eq('id',id).single();if(!data)return;await sb.from('quizzes').update({is_visible:!data.is_visible}).eq('id',id);loadAdminQuizzes();}
 // Admin activity and worker activity
@@ -2808,7 +2507,7 @@ async function logActivityV22(actor_type,actor_id,action,item_type=null,item_id=
 // Comment moderation for Super Admin only
 async function hideCommentV22(id){if(!adminUser?.isSuper)return showToast('الحذف والإخفاء للسوبر أدمن فقط');const {error}=await sb.from('content_comments').update({is_visible:false,hidden_at:new Date().toISOString(),hidden_by:adminUser.id}).eq('id',id);if(error)return showToast(error.message);loadAdminComments();showToast('تم إخفاء التعليق');}
 async function restoreCommentV22(id){if(!adminUser?.isSuper)return;await sb.from('content_comments').update({is_visible:true,hidden_at:null,hidden_by:null}).eq('id',id);loadAdminComments();}
-loadAdminComments = async function(){const {data}=await sb.from('content_comments').select('*, workers_evaluations(worker_name)').order('created_at',{ascending:false}).limit(100);const box=$('admin-comments-list');box.innerHTML=(data||[]).map(c=>'<div class="card" style="padding:10px 14px;opacity:'+(c.is_visible===false?.55:1)+';"><div style="display:flex;justify-content:space-between;"><span style="font-weight:700;font-size:13px;">'+(c.item_type==='card'?'📸 كارت':'🎬 تدريب فيديو')+' #'+c.item_id+'</span><span class="muted" style="font-size:10px;">'+fmtDate(c.created_at)+'</span></div><div style="font-size:13px;margin:6px 0;">💬 '+esc(c.comment)+'</div><div class="muted" style="font-size:11px;">من الموظف: '+esc(c.workers_evaluations?.worker_name||'?')+'</div>'+(adminUser?.isSuper?(c.is_visible===false?'<button class="btn-secondary btn-sm" onclick="restoreCommentV22('+c.id+')">إظهار</button>':'<button class="btn-danger btn-sm" onclick="hideCommentV22('+c.id+')">إخفاء</button>'):'')+'</div>').join('')||'<div class="muted" style="font-size:12px;text-align:center;padding:10px;">لا توجد تعليقات بعد</div>';};
+/* (دمج v9.34: تعريف قديم اتشال: loadAdminComments) */
 // Hide moderated comments from workers.
 const oldAddComment=addComment;addComment=async function(type,itemId){if(!currentUser)return;const input=$((type==='card'?'ccmt':'vcmt')+'-'+itemId),text=input?.value.trim();if(!text)return showToast('اكتب تعليقك');const {error}=await sb.from('content_comments').insert({item_type:type,item_id:itemId,worker_id:currentUser.id,comment:text,is_visible:true});if(error)return showToast(error.message);input.value='';showToast('تم إرسال تعليقك للأدمن ✅');};
 // Admin tab additions
@@ -2852,13 +2551,13 @@ async function loadWorkerPerformanceSummaryV23(workerId){
 }
 async function loadActivityForWorkerV22(workerId){const {data}=await sb.from('activity_logs').select('*').eq('actor_type','worker').eq('actor_id',workerId).order('created_at',{ascending:false}).limit(100);const b=$('modal-activity');if(!b)return;b.innerHTML=(data||[]).map(a=>'<div style="background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:7px 9px;"><div style="font-size:11px;font-weight:700;">'+esc(a.action)+'</div><div class="muted" style="font-size:9px;">'+fmtDate(a.created_at)+'</div></div>').join('')||'<div class="muted" style="font-size:11px;text-align:center;">لا يوجد نشاط مسجل بعد</div>';}
 async function loadActivityForAdminV22(){const {data}=await sb.from('activity_logs').select('*').eq('actor_type','admin').order('created_at',{ascending:false}).limit(150);const b=$('admin-activity-list');if(!b)return;b.innerHTML=(data||[]).map(a=>'<div class="card" style="padding:9px 12px;"><div style="font-size:12px;font-weight:700;">🛡️ أدمن #'+a.actor_id+' — '+esc(a.action)+'</div><div class="muted" style="font-size:10px;">'+fmtDate(a.created_at)+'</div></div>').join('')||'<div class="muted" style="font-size:12px;text-align:center;">لا يوجد نشاط مسجل بعد</div>';}
-const oldOpenWorkerModalV22=openWorkerModal;openWorkerModal=async function(id){await oldOpenWorkerModalV22(id);loadActivityForWorkerV22(id);loadWorkerPerformanceSummaryV23(id);};
+const oldOpenWorkerModalV22=openWorkerModal;/* (دمج v9.34: تعريف قديم اتشال: openWorkerModal) */
 const oldAdminTabV22=adminTab;adminTab=function(tab){oldAdminTabV22(tab);if(tab==='activity')loadActivityForAdminV22();};
 // Record the most important worker/admin actions without making the activity table a dependency for normal operation.
-const _saveWorkerV22=saveWorker; saveWorker=async function(){const before=$('nw-id')?.value;const beforeAdmin=adminUser;await _saveWorkerV22();if(beforeAdmin?.id&&before)logActivityV22('admin',beforeAdmin.id,'إضافة موظف','worker',Number(before));};
+const _saveWorkerV22=saveWorker; /* (دمج v9.34: تعريف قديم اتشال: saveWorker) */
 const _saveCardV22=saveCard; saveCard=async function(){await _saveCardV22();if(adminUser)logActivityV22('admin',adminUser.id,'إضافة كارت','card',null);};
 const _saveQuizV22=saveQuiz; saveQuiz=async function(){await _saveQuizV22();if(adminUser)logActivityV22('admin',adminUser.id,'إضافة اختبار','quiz',null);};
-const _saveAdminV22=saveAdmin; saveAdmin=async function(){await _saveAdminV22();if(adminUser?.isSuper)logActivityV22('admin',adminUser.id,'إضافة أدمن','admin',null);};
+const _saveAdminV22=saveAdmin; /* (دمج v9.34: تعريف قديم اتشال: saveAdmin) */
 const _submitAnswerV22=submitContentAnswer; submitContentAnswer=async function(type,qid,itemId){await _submitAnswerV22(type,qid,itemId);if(currentUser)logActivityV22('worker',currentUser.id,'الإجابة على سؤال محتوى',type,itemId);};
 const _submitQuizV22=submitQuiz; submitQuiz=async function(quizId,questions){await _submitQuizV22(quizId,questions);if(currentUser)logActivityV22('worker',currentUser.id,'إكمال اختبار','quiz',quizId);};
 const _addCommentV22=addComment; // already wrapped; no-op alias for future compatibility
@@ -2990,8 +2689,8 @@ saveVideoTopic = async function(){
 };
 
 
-loadAdminComments = async function(){const {data,error}=await sb.from('content_comments').select('*, workers_evaluations(worker_name,section_id)').order('created_at',{ascending:false}).limit(200);if(error)return showToast('تعذر تحميل التعليقات');const ids=getAdminScopeIds();const rows=(data||[]).filter(c=>adminUser?.isSuper||!c.workers_evaluations?.section_id||ids.includes(Number(c.workers_evaluations.section_id)));const box=$('admin-comments-list');box.innerHTML=rows.map(c=>'<div class="card" style="padding:10px 14px;opacity:'+(c.is_visible===false?.55:1)+';"><div style="display:flex;justify-content:space-between;"><span style="font-weight:700;font-size:13px;">'+(c.item_type==='card'?'📸 كارت':'🎬 تدريب فيديو')+' <span class="muted">#'+c.item_id+'</span></span><span class="muted" style="font-size:10px;">'+fmtDate(c.created_at)+'</span></div><div style="font-size:13px;margin:6px 0;">💬 '+esc(c.comment)+'</div><div class="muted" style="font-size:11px;">من الموظف: '+esc(c.workers_evaluations?.worker_name||'?')+'</div>'+(adminUser?.isSuper?(c.is_visible===false?'<button class="btn-secondary btn-sm" onclick="restoreCommentV22('+c.id+')">إظهار</button>':'<button class="btn-danger btn-sm" onclick="hideCommentV22('+c.id+')">إخفاء</button>'):'')+'</div>').join('')||'<div class="muted" style="font-size:12px;text-align:center;padding:10px;">لا توجد تعليقات بعد</div>';};
-loadWorkerTrainingProgress = async function(workerId){const [{data:topics},{data:progress}]=await Promise.all([sb.from('training_topics').select('*').order('id'),sb.from('training_progress').select('*').eq('worker_id',workerId).order('updated_at',{ascending:false})]);const map={};(progress||[]).forEach(p=>map[String(p.topic_id)]=p);const ids=getAdminScopeIds();const box=$('modal-training-progress');const list=(topics||[]).filter(t=>adminUser?.isSuper||!t.section_id||ids.includes(Number(t.section_id)));box.innerHTML=list.map(t=>{const p=map[String(t.id)],pct=Math.round(Number(p?.progress_percent||0));return '<div style="background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:8px 10px;"><div style="display:flex;justify-content:space-between;gap:8px;"><span style="font-weight:700;font-size:12px;">'+esc(t.title_ar)+'</span><span class="badge '+(p?.completed?'badge-green':'badge-yellow')+'" style="font-size:9px;">'+(p?.completed?'مكتمل ✅':(p?pct+'%':'لم يبدأ'))+'</span></div></div>';}).join('')||'<div class="muted" style="font-size:11px;text-align:center;padding:8px;">لا توجد تدريبات مسجلة</div>';};
+/* (دمج v9.34: تعريف قديم اتشال: loadAdminComments) */
+/* (دمج v9.34: تعريف قديم اتشال: loadWorkerTrainingProgress) */
 
 
 /* ==================== V2.3 FINAL PROFESSIONAL LAYER ==================== */
@@ -3199,16 +2898,16 @@ async function saveEditQuizQuestionV23(qid){const {error}=await sb.from('quiz_qu
 async function renderPreviewV23(){const sec=num($('pv-sec')?.value);const body=$('pv-body');if(!body)return;body.innerHTML='<div class="preview-card muted">جاري تحميل المعاينة…</div>';const [tR,vR,cR,qR]=await Promise.all([sb.from('training_topics').select('*').eq('is_visible',true).order('id'),sb.from('training_videos').select('*').eq('is_visible',true).order('id'),sb.from('safety_cards').select('*').eq('is_visible',true).order('id'),sb.from('quizzes').select('*').eq('is_visible',true).order('id')]);const topics=(tR.data||[]).filter(t=>!sec||!t.section_id||Number(t.section_id)===sec);const videos=vR.data||[];const cards=(cR.data||[]).filter(c=>!sec||!c.section_id||Number(c.section_id)===sec);const quizzes=(qR.data||[]).filter(q=>!sec||!q.section_id||Number(q.section_id)===sec);let h='<div class="preview-card"><div class="section-title"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z"/><circle cx="12" cy="12" r="2.5"/></svg></span>واجهة الموظف <small class="nav-en">Worker View</small></div><div class="muted" style="font-size:11px;margin-top:5px">هذه معاينة فقط. لن يتم تسجيل مشاهدة أو إجابة.</div></div>';h+='<div class="preview-card"><div style="font-weight:800;margin-bottom:8px">التدريبات <small class="nav-en">Training Videos</small></div>'+(topics.map(t=>{const vs=videos.filter(v=>Number(v.topic_id)===Number(t.id));return '<div style="padding:10px;border:1px solid var(--border);border-radius:12px;margin-bottom:8px"><b>'+esc(tr(t,'title')||t.title_ar)+'</b><div class="muted" style="font-size:10px;margin-top:4px">'+vs.map(v=>videoLanguageLabel(v.video_lang||'ar')).join(' • ')+'</div></div>';}).join('')||'<div class="muted">لا توجد تدريبات ظاهرة.</div>')+'</div>';h+='<div class="preview-card"><div style="font-weight:800;margin-bottom:8px">كروت السلامة <small class="nav-en">Safety Cards</small></div><div class="worker-carousel">'+cards.map(c=>'<div class="safety-card-slide"><div class="card" style="padding:10px"><img src="'+esc(c.image||'')+'" loading="lazy" class="card-img" onerror="this.style.display=\'none\'"/><b style="display:block;margin-top:8px">'+esc(tr(c,'title'))+'</b><p class="muted" style="font-size:11px;margin-top:4px">'+esc(tr(c,'description'))+'</p></div></div>').join('')+'</div></div>';h+='<div class="preview-card"><div style="font-weight:800;margin-bottom:8px">الاختبارات <small class="nav-en">Quizzes</small></div>'+(quizzes.map(q=>'<div style="padding:9px;border:1px solid var(--border);border-radius:11px;margin-bottom:7px">'+esc(tr(q,'title')||q.title_ar)+'</div>').join('')||'<div class="muted">لا توجد اختبارات ظاهرة.</div>')+'</div>';body.innerHTML=h;$('pv-sec')?.addEventListener('change',renderPreviewV23);}
 
 /* More reliable worker card rendering + image fallback */
-renderWorkerCards=function(){const grid=$('worker-cards-grid'),empty=$('worker-cards-empty');if(!workerCards.length){grid.innerHTML='';empty.textContent='لا توجد بطاقات متاحة لقسمك حالياً';empty.classList.remove('hidden');return;}empty.classList.add('hidden');grid.className='worker-carousel';grid.innerHTML=workerCards.map(c=>{const imgHtml=c.image?('<img src="'+esc(c.image)+'" loading="lazy" class="card-img" alt="" onerror="console.error(\'تعذر تحميل صورة الكارت #'+c.id+':\',this.src);this.outerHTML=\'<div class=\\\'card-img\\\' style=\\\'display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;font-size:11px;color:#94a3b8;text-align:center;padding:8px\\\'>⚠️ تعذر تحميل الصورة<br/><span style=\\\'font-size:9px\\\'>تحقّق أن Bucket السلامة Public في Supabase Storage</span></div>\'"/>'):('<div class="card-img" style="display:flex;align-items:center;justify-content:center;font-size:30px;">📸</div>');return '<div class="safety-card-slide"><div class="card" style="padding:12px">'+imgHtml+'<div style="font-size:15px;font-weight:800;margin:9px 0 4px">'+esc(tr(c,'title'))+'</div><p style="font-size:12px;color:#475569;margin-bottom:8px">'+esc(tr(c,'description'))+'</p><div id="cq-'+c.id+'" style="margin-bottom:8px"></div><input id="ccmt-'+c.id+'" class="input-field" style="font-size:12px" placeholder="اسأل أو علّق على البطاقة…"/><button class="btn-secondary btn-sm" style="margin-top:6px" onclick="addComment(\'card\','+c.id+')">إرسال <small class="nav-en">Send</small></button></div></div>';}).join('');loadContentForItems('card',workerCards.map(c=>c.id));};
+/* (دمج v9.34: تعريف قديم اتشال: renderWorkerCards) */
 
 /* Hide YouTube progress controls, keep custom replay/continue controls */
 /* startTopicVideo (نسخة قديمة كانت بتضيف أزرار تشغيل/إيقاف/إعادة فوق الفيديو وتغطيه) — اتشالت نهائيًا.
    النسخة الوحيدة المعتمدة الآن هي window.startTopicVideo الموجودة في نهاية الملف (V2.4.1 hotfix)، بدون أي أزرار فوق الفيديو. */
-startTopicTracking=function(topicId,version,player){if(topicTimersV22[topicId])clearInterval(topicTimersV22[topicId]);let lastSaved=-1;topicTimersV22[topicId]=setInterval(async()=>{try{const duration=player.getDuration(),current=player.getCurrentTime();if(!duration)return;const pct=Math.min(100,current/duration*100),rounded=Math.floor(pct);if(rounded>=lastSaved+10){lastSaved=rounded;await saveTopicProgress(topicId,version,rounded,false);}if(pct>=60&&!workerTopicProgress[String(topicId)]?.completed)await saveTopicProgress(topicId,version,pct,true);}catch(e){}},3000);};
+/* (دمج v9.34: تعريف قديم اتشال: startTopicTracking) */
 
 /* Worker filtering: only visible + assigned section, not hidden content */
-loadWorkerCards=async function(){if(!currentUser)return;const {data,error}=await sb.from('safety_cards').select('*').eq('is_visible',true).order('id');if(error)return showToast('تعذر تحميل بطاقات السلامة');workerCards=(data||[]).filter(c=>!c.section_id||Number(c.section_id)===Number(currentUser.section_id));renderWorkerCards();};
-loadWorkerVideos=async function(){if(!currentUser)return;const [trr,vrr,prr]=await Promise.all([sb.from('training_topics').select('*').eq('is_visible',true).order('id'),sb.from('training_videos').select('*').eq('is_visible',true).order('id'),sb.from('training_progress').select('*').eq('worker_id',currentUser.id)]);if(trr.error||vrr.error)return showToast('تعذر تحميل التدريبات');const topicMap={};(trr.data||[]).forEach(t=>{if(t.section_id&&Number(t.section_id)!==Number(currentUser.section_id))return;topicMap[t.id]={...t,versions:[]};});(vrr.data||[]).forEach(v=>{if(topicMap[v.topic_id]&&v.video_url)topicMap[v.topic_id].versions.push({id:v.id,topic_id:v.topic_id,lang:v.video_lang||'ar',url:v.video_url,row:v});});workerTopics=Object.values(topicMap).filter(t=>t.versions.length);workerTopicProgress={};(prr.data||[]).forEach(p=>workerTopicProgress[String(p.topic_id)]=p);renderWorkerVideosV22();};
+/* (دمج v9.34: تعريف قديم اتشال: loadWorkerCards) */
+/* (دمج v9.34: تعريف قديم اتشال: loadWorkerVideos) */
 
 /* Admin scope for card/video saves */
 saveCardV23=saveCard;saveCard=async function(){return saveCardV23.apply(this,arguments)};
@@ -3303,58 +3002,10 @@ try{(function(){
   document.head.appendChild(addStyle);
 
   /* ---------- Worker creation/edit: role is saved; no legacy branch field ---------- */
-  window.saveWorker = async function(){
-    if(!adminUser) return showToast('هذه العملية للأدمن فقط');
-    const id=($('nw-id')?.value||'').trim();
-    const worker_name=($('nw-name')?.value||'').trim();
-    const job_role_id=$('nw-role')?.value ? Number($('nw-role').value) : null;
-    let section_id=$('nw-section')?.value ? Number($('nw-section').value) : null;
-    const msg=$('add-worker-msg');
-    if(!id||!worker_name||!job_role_id||!section_id){
-      if(msg) msg.innerHTML='<span style="color:#991b1b;">أكمل الرقم الوظيفي والاسم والوظيفة والقسم.</span>';
-      return;
-    }
-    const allowed=getAdminScopeIds();
-    if(!adminUser.isSuper && !allowed.includes(section_id)) return showToast('لا يمكنك إضافة موظف خارج أقسامك');
-    const {error}=await sb.from('workers_evaluations').insert({id:Number(id),worker_name,job_role_id,section_id,kpi_score:100,violations_count:0});
-    if(error){if(msg)msg.innerHTML='<span style="color:#991b1b;">خطأ: '+esc(String(error.message||'' ).includes('duplicate')?'الرقم الوظيفي مسجل مسبقًا':error.message)+'</span>';return;}
-    ['nw-id','nw-name'].forEach(i=>{if($(i))$(i).value='';});
-    if($('nw-role'))$('nw-role').value=''; if($('nw-section'))$('nw-section').value='';
-    if(msg){msg.innerHTML='<span style="color:#166534;">تمت إضافة الموظف بنجاح ✅</span>';setTimeout(()=>msg.innerHTML='',3000);}
-    await loadWorkers();
-  };
+  /* (دمج v9.34: تعريف قديم اتشال: saveWorker) */
 
   /* ---------- Worker table/details: restore role + reliable details button ---------- */
-  window.loadWorkers = async function(){
-    if(!adminUser) return;
-    const search=($('worker-search')?.value||'').trim().toLowerCase();
-    const filterSec=$('worker-filter-section')?.value||'';
-    let q=sb.from('workers_evaluations').select('*').order('id',{ascending:true});
-    const ids=getAdminScopeIds();
-    if(!adminUser.isSuper) q=q.in('section_id',ids.length?ids:[-1]);
-    const {data,error}=await q;
-    if(error){showToast('تعذر تحميل الموظفين');return;}
-    let rows=data||[];
-    if(filterSec) rows=rows.filter(w=>String(w.section_id)===String(filterSec));
-    if(search) rows=rows.filter(w=>String(w.id).includes(search)||(w.worker_name||'').toLowerCase().includes(search));
-    const roleIds=[...new Set(rows.map(w=>Number(w.job_role_id)).filter(Boolean))];
-    let roleMap={};
-    if(roleIds.length){const r=await sb.from('job_roles').select('id,name_ar,name_en,target_department_id').in('id',roleIds);(r.data||[]).forEach(x=>roleMap[String(x.id)]=x);}
-    const tbody=$('workers-tbody');
-    tbody.innerHTML=rows.map(w=>{
-      const sec=sections.find(s=>Number(s.id)===Number(w.section_id));
-      const role=roleMap[String(w.job_role_id)];
-      return '<tr class="worker-row" onclick="openWorkerModal('+w.id+')">'+
-        '<td style="font-weight:800;color:var(--primary);">'+w.id+'</td>'+
-        '<td style="font-weight:700;">'+esc(w.worker_name)+'</td>'+
-        '<td>'+esc(role?.name_ar||'—')+'</td>'+
-        '<td>'+esc(sec?tr(sec,'name'):'—')+'</td>'+
-        '<td><span class="badge badge-blue">ملف التدريب</span></td>'+
-        '<td>'+(w.violations_count||0)+'</td>'+
-        '<td><button class="btn-secondary btn-sm" onclick="event.stopPropagation();openWorkerModal('+w.id+')">تفاصيل <small class="nav-en" style="display:inline;font-size:8px">Details</small></button> <button class="btn-danger btn-sm" onclick="event.stopPropagation();deleteWorker('+w.id+')">حذف <small class="nav-en" style="display:inline;font-size:8px">Delete</small></button></td>'+
-      '</tr>';
-    }).join('')||'<tr><td colspan="7" class="muted" style="text-align:center;padding:20px;">لا يوجد موظفين مطابقون</td></tr>';
-  };
+  /* (دمج v9.34: تعريف قديم اتشال: loadWorkers) */
 
   window.openWorkerModal = async function(id){
     currentModalWorkerId=id;
@@ -3466,65 +3117,20 @@ try{(function(){
    ========================================================== */
 try{(function(){
   /* Worker header: show role + section; factory_branch remains legacy-only in DB. */
-  window.updateWorkerHeader=function(){
-    if(!currentUser)return;
-    const sec=sections.find(s=>Number(s.id)===Number(currentUser.section_id));
-    const role=currentUser.job_role_id;
-    const roleObj=jobRolesV22.find(r=>Number(r.id)===Number(role));
-    $('worker-meta').textContent='ID: '+currentUser.id+' | '+(roleObj?.name_ar||'—')+' | '+(sec?tr(sec,'name'):'—');
-  };
+  /* (دمج v9.34: تعريف قديم اتشال: updateWorkerHeader) */
 
   /* Server-side-ish worker search: don't download the entire worker table for every keystroke. */
-  window.loadWorkers=async function(){
-    if(!adminUser)return;
-    const search=($('worker-search')?.value||'').trim();
-    const filterSec=$('worker-filter-section')?.value||'';
-    let q=sb.from('workers_evaluations').select('*').order('id',{ascending:true}).limit(100);
-    const ids=getAdminScopeIds();
-    if(!adminUser.isSuper)q=q.in('section_id',ids.length?ids:[-1]);
-    if(filterSec)q=q.eq('section_id',Number(filterSec));
-    if(search){if(/^\d+$/.test(search))q=q.eq('id',Number(search));else q=q.ilike('worker_name','%'+search.replace(/[%_]/g,'')+'%');}
-    const {data,error}=await q;if(error){showToast('تعذر تحميل الموظفين');return;}
-    const rows=data||[];const roleIds=[...new Set(rows.map(w=>Number(w.job_role_id)).filter(Boolean))];let roleMap={};
-    if(roleIds.length){const r=await sb.from('job_roles').select('id,name_ar,name_en,target_department_id').in('id',roleIds);(r.data||[]).forEach(x=>roleMap[x.id]=x);}
-    const tbody=$('workers-tbody');
-    tbody.innerHTML=rows.map(w=>{const sec=sections.find(s=>Number(s.id)===Number(w.section_id));const role=roleMap[w.job_role_id];return '<tr class="worker-row" onclick="openWorkerModal('+w.id+')"><td style="font-weight:800;color:var(--primary);">'+w.id+'</td><td style="font-weight:700;">'+esc(w.worker_name)+'</td><td>'+esc(role?.name_ar||'—')+'</td><td>'+esc(sec?tr(sec,'name'):'—')+'</td><td style="font-weight:800;color:var(--primary);">'+(w.kpi_score??100)+'%</td><td>'+(w.violations_count||0)+'</td><td><button class="btn-secondary btn-sm" onclick="event.stopPropagation();openWorkerModal('+w.id+')">تفاصيل <small class="nav-en" style="display:inline;font-size:8px">Details</small></button> <button class="btn-danger btn-sm" onclick="event.stopPropagation();deleteWorker('+w.id+')">حذف <small class="nav-en" style="display:inline;font-size:8px">Delete</small></button></td></tr>';}).join('')||'<tr><td colspan="7" class="muted" style="text-align:center;padding:20px;">لا يوجد موظفين مطابقون</td></tr>';
-  };
+  /* (دمج v9.34: تعريف قديم اتشال: loadWorkers) */
 
   /* Safe progress write: update the existing topic row if present, otherwise insert.
      This avoids requiring a destructive deduplication/unique-index operation. */
-  window.saveTopicProgress=async function(topicId,version,pct,completed=false){
-    if(!currentUser)return;
-    const value=Math.min(100,Number(pct)||0),done=completed||value>=60,now=new Date().toISOString();
-    const {data:existing,error:readErr}=await sb.from('training_progress').select('worker_id,topic_id').eq('worker_id',currentUser.id).eq('topic_id',topicId).order('updated_at',{ascending:false}).limit(1).maybeSingle();
-    if(readErr)return;
-    const payload={worker_id:currentUser.id,topic_id:topicId,video_id:version.id,language:version.lang,progress_percent:value,completed:done,updated_at:now};if(done)payload.completed_at=now;
-    const r=existing?await sb.from('training_progress').update(payload).eq('worker_id',currentUser.id).eq('topic_id',topicId):await sb.from('training_progress').insert(payload);
-    if(r.error)return;
-    workerTopicProgress[String(topicId)]={...workerTopicProgress[String(topicId)],...payload};
-    if(done&&!workerTopicProgress[String(topicId)]._completionNotified){workerTopicProgress[String(topicId)]._completionNotified=true;showToast('تم إكمال التدريب عند تجاوز 60% ✅');}
-  };
+  /* (دمج v9.34: تعريف قديم اتشال: saveTopicProgress) */
 
   /* Admin tracking: real per-topic percentage/status, no fake day counter. */
-  window.loadWorkerTrainingProgress=async function(workerId){
-    const [{data:topics},{data:progress}]=await Promise.all([
-      sb.from('training_topics').select('id,title_ar,title_en,title_bn,title_ne,title_hi,section_id,target_department_id,is_visible').order('id'),
-      sb.from('training_progress').select('topic_id,video_id,language,progress_percent,completed,updated_at').eq('worker_id',workerId).order('updated_at',{ascending:false})
-    ]);
-    const map={};(progress||[]).forEach(p=>{if(!map[p.topic_id])map[p.topic_id]=p;});
-    const ids=getAdminScopeIds();const list=(topics||[]).filter(t=>adminUser?.isSuper||!t.section_id||ids.includes(Number(t.section_id)));
-    const box=$('modal-training-progress');if(!box)return;
-    box.innerHTML=list.map(t=>{const p=map[t.id];const pct=Math.round(Number(p?.progress_percent||0));const status=p?.completed?'مكتمل ✅':p?pct+'%':'لم يبدأ';return '<div style="background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:8px 10px;"><div style="display:flex;justify-content:space-between;gap:8px;"><span style="font-weight:700;font-size:12px;">'+esc(tr(t,'title')||t.title_ar)+'</span><span class="badge '+(p?.completed?'badge-green':'badge-yellow')+'" style="font-size:9px;">'+status+'</span></div><div class="muted" style="font-size:10px;margin-top:3px;">'+(p?'اللغة: '+videoLanguageLabel(p.language||'ar')+' | آخر مشاهدة: '+fmtDate(p.updated_at):'لم يبدأ بعد')+'</div></div>';}).join('')||'<div class="muted" style="font-size:11px;text-align:center;padding:8px;">لا توجد تدريبات مسجلة</div>';
-  };
+  /* (دمج v9.34: تعريف قديم اتشال: loadWorkerTrainingProgress) */
 
   /* Real video tracking chart: show completion percentage for topics, not an artificial day count. */
-  window.loadWorkerChart=async function(workerId){
-    const [{data:topics},{data:progress}]=await Promise.all([sb.from('training_topics').select('id,title_ar,title_en,title_bn,title_ne,title_hi,section_id').order('id'),sb.from('training_progress').select('topic_id,progress_percent,completed').eq('worker_id',workerId)]);
-    const ids=getAdminScopeIds();const rows=(topics||[]).filter(t=>adminUser?.isSuper||!t.section_id||ids.includes(Number(t.section_id)));const pm={};(progress||[]).forEach(p=>pm[p.topic_id]=p);
-    const labels=rows.map(t=>tr(t,'title')||t.title_ar),vals=rows.map(t=>Math.round(Number(pm[t.id]?.progress_percent||0)));
-    if(workerChartInstance)workerChartInstance.destroy();
-    workerChartInstance=new Chart($('worker-chart'),{type:'bar',data:{labels,datasets:[{label:'نسبة المشاهدة',data:vals,borderRadius:6}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,max:100,ticks:{callback:v=>v+'%'}}}}});
-  };
+  /* (دمج v9.34: تعريف قديم اتشال: loadWorkerChart) */
 
   /* Ensure topic questions use topic_id, while retaining compatibility with old item_id records. */
   window.loadTopicQuestions=async function(){
@@ -3537,11 +3143,7 @@ try{(function(){
 
   /* Content comments: hidden comments must not appear to workers. */
   const baseAddCommentV24=window.addComment;
-  window.addComment=async function(type,itemId){
-    if(!currentUser)return;const input=$(type==='card'?'ccmt':'vcmt')+'-'+itemId;const text=$(input)?.value.trim();if(!text)return showToast('اكتب تعليقك');
-    const payload={item_type:type,item_id:itemId,worker_id:currentUser.id,comment:text,is_visible:true};if(type==='video')payload.topic_id=itemId;
-    const {error}=await sb.from('content_comments').insert(payload);if(error)return showToast('تعذر إرسال التعليق');$(input).value='';showToast('تم إرسال تعليقك للأدمن ✅');
-  };
+  /* (دمج v9.34: تعريف قديم اتشال: addComment) */
 
   /* Admin activity tab refresh */
   const oldAdminTabFinal=window.adminTab;
@@ -3580,7 +3182,7 @@ try{(function(){
   window.loadWorkers=async function(){
     if(!adminUser)return;const search=($('worker-search')?.value||'').trim(),filterSec=$('worker-filter-section')?.value||'';let q=sb.from('workers_evaluations').select('*').order('id',{ascending:true}).limit(100);const ids=getAdminScopeIds();if(!adminUser.isSuper)q=q.in('section_id',ids.length?ids:[-1]);if(filterSec)q=q.eq('section_id',Number(filterSec));if(search){if(/^\d+$/.test(search))q=q.eq('id',Number(search));else q=q.ilike('worker_name','%'+search.replace(/[%_]/g,'')+'%');}const {data,error}=await q;if(error)return showToast('تعذر تحميل الموظفين');const rows=data||[];const roleIds=[...new Set(rows.map(w=>Number(w.job_role_id)).filter(Boolean))];let roleMap={};if(roleIds.length){const r=await sb.from('job_roles').select('id,name_ar,name_en,target_department_id').in('id',roleIds);(r.data||[]).forEach(x=>roleMap[x.id]=x);}const tbody=$('workers-tbody');tbody.innerHTML=rows.map(w=>{const sec=sections.find(s=>Number(s.id)===Number(w.section_id)),role=roleMap[w.job_role_id];return '<tr class="worker-row" onclick="openWorkerModal('+w.id+')"><td style="font-weight:800;color:var(--primary);">'+w.id+'</td><td style="font-weight:700;">'+esc(w.worker_name)+'</td><td>'+esc(role?.name_ar||'—')+'</td><td>'+esc(sec?tr(sec,'name'):'—')+'</td><td style="font-weight:800;color:var(--primary);">'+(w.kpi_score??100)+'%</td><td>'+(w.violations_count||0)+'</td><td><button class="btn-secondary btn-sm" onclick="event.stopPropagation();openWorkerModal('+w.id+')">تفاصيل <small class="nav-en" style="display:inline;font-size:8px">Details</small></button> <button class="btn-danger btn-sm" onclick="event.stopPropagation();deleteWorker('+w.id+')">حذف <small class="nav-en" style="display:inline;font-size:8px">Delete</small></button></td></tr>';}).join('')||'<tr><td colspan="7" class="muted" style="text-align:center;padding:20px;">لا يوجد موظفين مطابقون</td></tr>';};
 
-  window.saveTopicProgress=async function(topicId,version,pct,completed=false){if(!currentUser)return;const value=Math.min(100,Number(pct)||0),done=completed||value>=60,now=new Date().toISOString();const {data:existing}=await sb.from('training_progress').select('worker_id,topic_id').eq('worker_id',currentUser.id).eq('topic_id',topicId).order('updated_at',{ascending:false}).limit(1).maybeSingle();const payload={worker_id:currentUser.id,topic_id:topicId,video_id:version.id,language:version.lang,progress_percent:value,completed:done,updated_at:now};if(done)payload.completed_at=now;const r=existing?await sb.from('training_progress').update(payload).eq('worker_id',currentUser.id).eq('topic_id',topicId):await sb.from('training_progress').insert(payload);if(r.error)return;workerTopicProgress[String(topicId)]={...workerTopicProgress[String(topicId)],...payload};if(done&&!workerTopicProgress[String(topicId)]._completionNotified){workerTopicProgress[String(topicId)]._completionNotified=true;showToast('تم إكمال التدريب عند تجاوز 60% ✅');}};
+  /* (دمج v9.34: تعريف قديم اتشال: saveTopicProgress) */
 
   window.loadWorkerTrainingProgress=async function(workerId){
     const box=$('modal-training-progress');if(!box)return;
@@ -3821,30 +3423,7 @@ try{(function(){
   };
 
   /* loadWorkerVideos must use the authoritative renderer above. */
-  window.loadWorkerVideos = async function(){
-    if(!currentUser)return;
-    const [trr,vrr,prr]=await Promise.all([
-      sb.from('training_topics').select('*').eq('is_visible',true).order('id'),
-      sb.from('training_videos').select('*').eq('is_visible',true).order('id'),
-      sb.from('training_progress').select('*').eq('worker_id',currentUser.id)
-    ]);
-    if(trr.error||vrr.error){console.error(trr.error||vrr.error);return showToast('تعذر تحميل التدريبات');}
-    const topicMap={};
-    (trr.data||[]).forEach(t=>{
-      if(t.section_id&&Number(t.section_id)!==Number(currentUser.section_id))return;
-      topicMap[t.id]={...t,versions:[]};
-    });
-    (vrr.data||[]).forEach(v=>{
-      if(topicMap[v.topic_id]&&v.video_url)topicMap[v.topic_id].versions.push({id:v.id,topic_id:v.topic_id,lang:v.video_lang||'ar',url:v.video_url,row:v});
-    });
-    workerTopics=Object.values(topicMap).filter(t=>t.versions.length);
-    workerTopicProgress={};
-    (prr.data||[]).forEach(p=>{
-      const k=String(p.topic_id);
-      if(!workerTopicProgress[k] || new Date(p.updated_at||0)>new Date(workerTopicProgress[k].updated_at||0))workerTopicProgress[k]=p;
-    });
-    window.renderWorkerVideosV22();
-  };
+  /* (دمج v9.34: تعريف قديم اتشال: loadWorkerVideos) */
 })();}catch(e){console.error('طبقة 4 فشلت، الطبقات اللي بعدها هتشتغل عادي:',e);}
 
 
@@ -4498,14 +4077,7 @@ try{(function(){
     document.body.insertAdjacentHTML('beforeend', html);
     setCertLang('ar');
   };
-  window.setCertLang = function(lang){
-    certState.lang = lang;
-    $('cert-lang-ar')?.classList.toggle('btn-primary', lang==='ar');
-    $('cert-lang-ar')?.classList.toggle('btn-secondary', lang!=='ar');
-    $('cert-lang-en')?.classList.toggle('btn-primary', lang==='en');
-    $('cert-lang-en')?.classList.toggle('btn-secondary', lang!=='en');
-    renderCertificatePreview();
-  };
+  /* (دمج v9.34: تعريف قديم اتشال: setCertLang) */
   window.renderCertificatePreview = function(){
     const area=$('certificate-print-area'); if(!area) return;
     certState.date = $('cert-date')?.value || certState.date;
@@ -4549,14 +4121,7 @@ try{(function(){
         '</div>'+
       '</div>';
   };
-  window.printCertificate = function(){
-    const area=$('certificate-print-area'); if(!area) return;
-    const w=window.open('','_blank');
-    w.document.write('<html><head><title>شهادة</title><style>body{font-family:sans-serif;padding:20px;}</style></head><body>'+area.innerHTML+'</body></html>');
-    w.document.close();
-    w.focus();
-    setTimeout(()=>w.print(),300);
-  };
+  /* (دمج v9.34: تعريف قديم اتشال: printCertificate) */
 
 })();}catch(e){console.error('طبقة 7 فشلت:',e);}
 
@@ -4674,111 +4239,20 @@ try{(function(){
 
   /* ---------- فورم إنشاء جلسة جديدة ---------- */
   let osEditingId = null;
-  window.openNewOnsiteSessionForm = function(prefill, opts){
-    opts = opts || {};
-    osParticipants = {};
-    osEditingId = opts.editingId || null;
-    $('onsite-list-view')?.classList.add('hidden');
-    $('onsite-detail-view')?.classList.add('hidden');
-    $('onsite-form-view')?.classList.remove('hidden');
-    $('os-title').value=prefill?.title||''; $('os-purpose').value=prefill?.purpose||''; $('os-provider').value=prefill?.provider||''; $('os-duration').value=prefill?.duration_minutes||30;
-    $('os-date').value = (opts.keepDate && prefill?.training_date) ? prefill.training_date : new Date().toISOString().slice(0,10);
-    if($('os-section')) $('os-section').innerHTML = sectionOpts(prefill?.section_id||null);
-    $('os-same-title-results').innerHTML='';
-    $('os-section-workers').innerHTML='';
-    $('os-worker-search').value=''; $('os-worker-search-results').innerHTML='';
-    renderOsParticipants();
-    if(prefill?.title && !osEditingId) searchOnsiteSameTitle();
-    const titleEl=document.querySelector('#onsite-form-view .section-title');
-    if(titleEl) titleEl.textContent = osEditingId ? '✏️ تعديل جلسة تدريب ميداني' : '➕ جلسة تدريب ميداني جديدة';
-    const saveBtn=document.querySelector('#onsite-form-view button[onclick="saveOnsiteSession()"]');
-    if(saveBtn) saveBtn.textContent = osEditingId ? '💾 حفظ التعديلات' : '💾 حفظ الجلسة';
-  };
-  window.editOnsiteSession = async function(sessionId){
-    const {data:s} = await sb.from('onsite_trainings').select('*').eq('id',sessionId).single();
-    if(!s) return showToast('تعذر جلب بيانات الجلسة');
-    const {data:parts} = await sb.from('onsite_training_participants').select('*').eq('onsite_training_id',sessionId);
-    openNewOnsiteSessionForm(s, {editingId:sessionId, keepDate:true});
-    const workerIds=(parts||[]).map(p=>p.worker_id);
-    const {data:workers} = workerIds.length ? await sb.from('workers_evaluations').select('id,worker_name').in('id',workerIds) : {data:[]};
-    const wMap={}; (workers||[]).forEach(w=>wMap[w.id]=w.worker_name);
-    (parts||[]).forEach(p=>{
-      osParticipants[p.worker_id] = { name: wMap[p.worker_id]||('#'+p.worker_id), internal: p.is_internal, certifiedBy: p.certified_by||'', evaluation: p.admin_evaluation||'good' };
-    });
-    renderOsParticipants();
-  };
-  window.duplicateOnsiteSession = async function(sessionId){
-    const {data:s} = await sb.from('onsite_trainings').select('*').eq('id',sessionId).single();
-    if(!s) return showToast('تعذر جلب بيانات الجلسة');
-    openNewOnsiteSessionForm(s);
-    showToast('اتنسخت بيانات الجلسة، اختار الموظفين والتاريخ الجديد وسجّل 👍');
-  };
-  window.closeOnsiteSessionForm = function(){
-    osEditingId = null;
-    $('onsite-form-view')?.classList.add('hidden');
-    $('onsite-detail-view')?.classList.add('hidden');
-    $('onsite-list-view')?.classList.remove('hidden');
-    loadOnsiteSessionsList();
-  };
+  /* (دمج v9.34: تعريف قديم اتشال: openNewOnsiteSessionForm) */
+  /* (دمج v9.34: تعريف قديم اتشال: editOnsiteSession) */
+  /* (دمج v9.34: تعريف قديم اتشال: duplicateOnsiteSession) */
+  /* (دمج v9.34: تعريف قديم اتشال: closeOnsiteSessionForm) */
 
   /* ---------- بحث "نفس العنوان" — مين اتدرب قبل كده على نفس الموضوع ---------- */
-  window.searchOnsiteSameTitle = function(){
-    clearTimeout(window._osTitleT);
-    window._osTitleT = setTimeout(async ()=>{
-      const q=$('os-title').value.trim(); const box=$('os-same-title-results');
-      if(!q || q.length<2){ box.innerHTML=''; return; }
-      const {data:sessions} = await sb.from('onsite_trainings').select('id,title,training_date').ilike('title','%'+q+'%').order('training_date',{ascending:false}).limit(8);
-      if(!sessions || !sessions.length){ box.innerHTML='<div class="muted" style="font-size:11px;">مفيش جلسات سابقة بنفس العنوان ده</div>'; return; }
-      const ids=sessions.map(s=>s.id);
-      const {data:parts} = await sb.from('onsite_training_participants').select('onsite_training_id,worker_id').in('onsite_training_id',ids);
-      const {data:workers} = await sb.from('workers_evaluations').select('id,worker_name').in('id',[...new Set((parts||[]).map(p=>p.worker_id))]);
-      const wMap={}; (workers||[]).forEach(w=>wMap[w.id]=w.worker_name);
-      const byS={}; (parts||[]).forEach(p=>{(byS[p.onsite_training_id] ||= []).push(wMap[p.worker_id]||('#'+p.worker_id));});
-      box.innerHTML = '<div style="background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:8px 10px;">'+
-        '<div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:5px;">📋 جلسات سابقة بنفس العنوان — مين اتدرب فعلاً:</div>'+
-        sessions.map(s=>'<div style="font-size:11px;margin-bottom:4px;"><b>'+fmtDate(s.training_date)+'</b>: '+esc((byS[s.id]||[]).join('، ')||'لا يوجد مشاركين')+'</div>').join('')+
-      '</div>';
-    }, 350);
-  };
+  /* (دمج v9.34: تعريف قديم اتشال: searchOnsiteSameTitle) */
 
   /* ---------- البحث عن موظفين لإضافتهم ---------- */
-  window.searchOnsiteWorkers = function(){
-    clearTimeout(window._osWorkerT);
-    window._osWorkerT = setTimeout(async ()=>{
-      const q=$('os-worker-search').value.trim(); const box=$('os-worker-search-results');
-      if(!q){ box.innerHTML=''; return; }
-      let query=sb.from('workers_evaluations').select('id,worker_name,section_id').limit(8);
-      if(/^\d+$/.test(q)) query=query.eq('id',parseInt(q)); else query=query.ilike('worker_name','%'+q+'%');
-      const {data} = await query;
-      const list=(data||[]).filter(w=>!osParticipants[w.id]);
-      box.innerHTML = list.length ? list.map(w=>
-        '<div style="display:flex;justify-content:space-between;align-items:center;background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:7px 10px;margin-bottom:5px;">'+
-          '<span style="font-size:12px;"><b>#'+w.id+'</b> '+esc(w.worker_name)+'</span>'+
-          '<button class="btn-primary btn-sm" onclick="addOnsiteParticipant('+w.id+',\''+esc(w.worker_name).replace(/'/g,"\\'")+'\')">+ إضافة</button>'+
-        '</div>'
-      ).join('') : '<div class="muted" style="font-size:11px;">لا يوجد نتائج</div>';
-    }, 300);
-  };
-  window.loadOsSectionWorkers = async function(){
-    const secId = $('os-section').value, box=$('os-section-workers');
-    if(!secId){ box.innerHTML=''; return; }
-    box.innerHTML='<div class="muted" style="font-size:11px;">جاري تحميل موظفي القسم...</div>';
-    const {data} = await sb.from('workers_evaluations').select('id,worker_name').eq('section_id',secId).order('worker_name');
-    if(!data || !data.length){ box.innerHTML='<div class="muted" style="font-size:11px;">لا يوجد موظفين مسجلين في القسم ده</div>'; return; }
-    box.innerHTML = '<div class="muted" style="font-size:11px;font-weight:700;margin:8px 0 5px;">👥 موظفو القسم (دوس لإضافة أي حد):</div>'+
-      '<div style="display:flex;flex-wrap:wrap;gap:6px;">'+data.map(w=>
-        osParticipants[w.id]
-          ? '<span class="badge badge-green" style="font-size:10px;">✓ '+esc(w.worker_name)+'</span>'
-          : '<button class="btn-secondary btn-sm" style="font-size:10px;" onclick="addOnsiteParticipant('+w.id+',\''+esc(w.worker_name).replace(/'/g,"\\'")+'\');loadOsSectionWorkers();">+ '+esc(w.worker_name)+'</button>'
-      ).join('')+'</div>';
-  };
-  window.addOnsiteParticipant = function(id,name){
-    osParticipants[id] = { name, internal:true, certifiedBy:'', evaluation:'good' };
-    $('os-worker-search').value=''; $('os-worker-search-results').innerHTML='';
-    renderOsParticipants();
-  };
-  window.removeOnsiteParticipant = function(id){ delete osParticipants[id]; renderOsParticipants(); };
-  window.updateOsParticipantField = function(id, field, val){ if(osParticipants[id]) osParticipants[id][field]=val; };
+  /* (دمج v9.34: تعريف قديم اتشال: searchOnsiteWorkers) */
+  /* (دمج v9.34: تعريف قديم اتشال: loadOsSectionWorkers) */
+  /* (دمج v9.34: تعريف قديم اتشال: addOnsiteParticipant) */
+  /* (دمج v9.34: تعريف قديم اتشال: removeOnsiteParticipant) */
+  /* (دمج v9.34: تعريف قديم اتشال: updateOsParticipantField) */
   function renderOsParticipants(){
     const box=$('os-participants-list'); if(!box) return;
     const ids=Object.keys(osParticipants);
@@ -4795,42 +4269,7 @@ try{(function(){
   }
 
   /* ---------- حفظ الجلسة (إنشاء جديد أو تعديل موجود) ---------- */
-  window.saveOnsiteSession = async function(){
-    const title=$('os-title').value.trim(), msg=$('os-save-msg');
-    if(!title) return msg.innerHTML='<span style="color:#991b1b;">اكتب عنوان التدريب</span>';
-    const ids=Object.keys(osParticipants);
-    if(!ids.length) return msg.innerHTML='<span style="color:#991b1b;">ضيف موظف واحد على الأقل</span>';
-    const payload = { title, training_date:$('os-date').value||new Date().toISOString().slice(0,10), duration_minutes:Number($('os-duration').value)||null, purpose:$('os-purpose').value.trim(), provider:$('os-provider').value.trim(), section_id: num($('os-section').value), created_by: adminUser?.name||'' };
-
-    if(osEditingId){
-      const {error} = await sb.from('onsite_trainings').update(payload).eq('id',osEditingId);
-      if(error) return msg.innerHTML='<span style="color:#991b1b;">'+esc(error.message)+'</span>';
-      const {data:existingParts} = await sb.from('onsite_training_participants').select('id,worker_id').eq('onsite_training_id',osEditingId);
-      const currentIds = new Set(ids.map(Number));
-      const existingByWorker = {}; (existingParts||[]).forEach(p=>existingByWorker[p.worker_id]=p.id);
-      const toDelete = (existingParts||[]).filter(p=>!currentIds.has(p.worker_id)).map(p=>p.id);
-      if(toDelete.length) await sb.from('onsite_training_participants').delete().in('id',toDelete);
-      for(const id of ids){
-        const p=osParticipants[id];
-        if(existingByWorker[id]){
-          await sb.from('onsite_training_participants').update({is_internal:p.internal, certified_by:p.certifiedBy||null, admin_evaluation:p.evaluation}).eq('id',existingByWorker[id]);
-        } else {
-          await sb.from('onsite_training_participants').insert({onsite_training_id:osEditingId, worker_id:Number(id), is_internal:p.internal, certified_by:p.certifiedBy||null, admin_evaluation:p.evaluation});
-        }
-      }
-      showToast('تم حفظ التعديلات ✅');
-      closeOnsiteSessionForm();
-      return;
-    }
-
-    const {data:session, error} = await sb.from('onsite_trainings').insert(payload).select().single();
-    if(error) return msg.innerHTML='<span style="color:#991b1b;">'+esc(error.message)+'</span>';
-    const rows = ids.map(id=>({ onsite_training_id:session.id, worker_id:Number(id), is_internal:osParticipants[id].internal, certified_by:osParticipants[id].certifiedBy||null, admin_evaluation:osParticipants[id].evaluation }));
-    const {error:e2} = await sb.from('onsite_training_participants').insert(rows);
-    if(e2){ msg.innerHTML='<span style="color:#991b1b;">تم حفظ الجلسة لكن حصل خطأ في المشاركين: '+esc(e2.message)+'</span>'; return; }
-    showToast('تم حفظ جلسة التدريب الميداني ✅');
-    closeOnsiteSessionForm();
-  };
+  /* (دمج v9.34: تعريف قديم اتشال: saveOnsiteSession) */
   window.deleteOnsiteSession = async function(sessionId){
     if(!confirm('متأكد من حذف الجلسة دي؟ هيتحذف معاها كل بيانات المشاركين وتقييماتهم، والإجراء ده نهائي.')) return;
     const {error} = await sb.from('onsite_trainings').delete().eq('id',sessionId);
@@ -4933,12 +4372,7 @@ try{(function(){
         '<tr><td colspan="6" style="border:1px solid #000;padding:10px;height:40px;">القسم/المصنع: '+esc(secName)+' &nbsp;&nbsp;&nbsp; التوقيع: ______________</td></tr>'+
       '</table>';
   }
-  window.printOnsiteSession = function(){
-    const area=$('onsite-print-area'); if(!area) return;
-    const w=window.open('','_blank');
-    w.document.write('<html><head><title>سجل تدريب</title><style>body{font-family:sans-serif;padding:16px;} td{font-family:sans-serif;}</style></head><body>'+area.innerHTML+'</body></html>');
-    w.document.close(); w.focus(); setTimeout(()=>w.print(),300);
-  };
+  /* (دمج v9.34: تعريف قديم اتشال: printOnsiteSession) */
 
   /* ---------- ربط تحميل القايمة عند فتح التاب ---------- */
   const oldAdminTabForOnsite=adminTab;
@@ -9445,7 +8879,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
 /* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
 (function(){
-  const VERSION = 'v9.33';
+  const VERSION = 'v9.34';
   const $ = id => document.getElementById(id);
   let running = false;
   async function tx(text, lang){
