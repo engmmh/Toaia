@@ -1560,7 +1560,7 @@ async function destroyAllPlayers(){
   activeTopicVideo={};
 }
 function extractYTVideoId(url){ if(!url) return ''; const m=url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{6,})/); return m?m[1]:''; }
-function daysSince(iso){ if(!iso) return 0; return Math.max(0, Math.round((Date.now()-new Date(iso).getTime())/86400000)); }
+
 function fmtDate(iso){ if(!iso) return ''; try{ return new Date(iso).toLocaleString('ar-EG',{dateStyle:'short',timeStyle:'short'}); }catch(e){ return ''; } }
 function hoursSince(iso){ if(!iso) return 999; return Math.max(0,(Date.now()-new Date(iso).getTime())/3600000); }
 
@@ -1910,16 +1910,7 @@ async function recordViolation(){
 }
 
 // ==================== WORKER VIDEO CHART ====================
-async function loadWorkerChart(workerId){
-  const [{data:views},{data:vids}] = await Promise.all([
-    sb.from('video_views').select('*').eq('worker_id',workerId),
-    sb.from('training_videos').select('*')
-  ]);
-  const labels=[],vals=[],colors=[];
-  (vids||[]).forEach(v=>{ labels.push(tr(v,'title')||('فيديو '+v.id)); const first=(views||[]).filter(x=>x.video_id===v.id).sort((a,b)=>new Date(a.viewed_at)-new Date(b.viewed_at))[0]; if(first){ vals.push(Math.max(0,daysSince(first.viewed_at)-daysSince(v.published_at))); colors.push('#0284c7'); } else { vals.push(0); colors.push('#e11d48'); } });
-  if(workerChartInstance) workerChartInstance.destroy();
-  workerChartInstance=new Chart($('worker-chart'),{ type:'bar', data:{labels,datasets:[{label:'أيام بعد النشر حتى المشاهدة',data:vals,backgroundColor:colors,borderRadius:6}]}, options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}}} });
-}
+
 
 
 // ==================== TRAINING VIDEOS / TOPICS ====================
@@ -9426,7 +9417,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
 /* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
 (function(){
-  const VERSION = 'v9.27';
+  const VERSION = 'v9.29';
   const $ = id => document.getElementById(id);
   let running = false;
   async function tx(text, lang){
@@ -10361,10 +10352,10 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   window.__v20hid = new Set();
   async function refreshHidden(){
     try{
-      const [s, d] = await Promise.all([sb.from('sections').select('id,name_ar,name_en,department_id'), sb.from('target_departments').select('id,exclude_from_stats')]);
+      const [s, d] = await Promise.all([sb.from('sections').select('id,name_ar,name_en,department_id,brand'), sb.from('target_departments').select('id,exclude_from_stats')]);
       const exd = new Set(((d && d.data) || []).filter(x => x.exclude_from_stats).map(x => Number(x.id)));
       const h = new Set();
-      ((s && s.data) || []).forEach(x => { if(/جود|quality/i.test((x.name_ar || '') + ' ' + (x.name_en || '')) || (x.department_id != null && exd.has(Number(x.department_id)))) h.add(String(x.id)); });
+      ((s && s.data) || []).forEach(x => { if(/جود|quality/i.test((x.name_ar || '') + ' ' + (x.name_en || '')) || (x.department_id != null && exd.has(Number(x.department_id))) || (window.__v22on && window.__v22brand && x.brand !== window.__v22brand)) h.add(String(x.id)); });
       window.__v20hid = h;
     }catch(e){ console.error('v20 hidden', e); }
   }
@@ -10452,6 +10443,249 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   }
   let t = null;
   new MutationObserver(() => { clearTimeout(t); t = setTimeout(() => { meta = null; regroup().catch(() => {}); }, 120); }).observe(document.body, {childList: true, subtree: true});
+})();
+
+
+/* ===== V21 — اختيار الفرع ثم البراند + فتح محتوى التعليق ===== */
+(function(){
+  const $ = id => document.getElementById(id);
+  const E = s => (typeof esc === 'function' ? esc(s) : String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])));
+
+  /* ---------- الفرع ← البراند ---------- */
+  let meta = null, metaAt = 0;
+  async function loadMeta(force){
+    if(!force && meta && Date.now() - metaAt < 15000) return meta;
+    const m = {};
+    try{ const r = await sb.from('sections').select('id,branch_name,brand'); ((r && r.data) || []).forEach(x => m[x.id] = x); }catch(e){}
+    meta = m; metaAt = Date.now(); return m;
+  }
+  const css = document.createElement('style');
+  css.textContent = '.v21-bs{display:grid;grid-template-columns:1fr;gap:6px}.v21-bs select.hidden{display:none}';
+  document.head.appendChild(css);
+
+  function enhance(selId){
+    const sel = $(selId); if(!sel || sel.dataset.v21) return;
+    sel.dataset.v21 = '1';
+    const wrap = document.createElement('div'); wrap.className = 'v21-bs'; wrap.id = 'v21-bs-' + selId;
+    wrap.innerHTML = '<select class="input-field v21-branch"></select><select class="input-field v21-brand hidden"></select>';
+    sel.parentNode.insertBefore(wrap, sel); sel.style.display = 'none';
+    const bSel = wrap.querySelector('.v21-branch'), rSel = wrap.querySelector('.v21-brand');
+    let last = null, sig = '', prevVal = '';
+    const fire = () => sel.dispatchEvent(new Event('change', {bubbles: true}));
+
+    async function rebuild(){
+      const m = await loadMeta();
+      const units = [...sel.options].filter(o => o.value).map(o => {
+        const x = m[o.value] || {}; return {id: String(o.value), name: o.textContent, branch: x.branch_name || o.textContent, brand: x.brand || ''};
+      });
+      const keys = []; units.forEach(u => { if(!keys.includes(u.branch)) keys.push(u.branch); });
+      keys.sort((a, b) => a.localeCompare(b, 'en', {numeric: true}));
+      const cur = units.find(u => u.id === String(sel.value));
+      bSel.innerHTML = '<option value="">— اختر الفرع —</option>' + keys.map(k => '<option value="' + E(k) + '">' + E(k) + '</option>').join('');
+      if(cur) bSel.value = cur.branch;
+      paintBrand(units, cur ? cur.id : '');
+      bSel._units = units;
+    }
+    function paintBrand(units, curId){
+      const k = bSel.value, list = units.filter(u => u.branch === k);
+      if(!k || !list.length){ rSel.classList.add('hidden'); rSel.innerHTML = ''; return; }
+      if(list.length === 1){
+        rSel.classList.add('hidden'); rSel.innerHTML = '';
+        if(String(sel.value) !== list[0].id){ sel.value = list[0].id; fire(); }
+        return;
+      }
+      rSel.innerHTML = '<option value="">— اختر البراند —</option>' + list.map(u => '<option value="' + u.id + '">' + E(u.brand || u.name) + '</option>').join('');
+      rSel.classList.remove('hidden');
+      rSel.value = list.some(u => u.id === String(curId)) ? String(curId) : '';
+      if(String(sel.value) !== rSel.value){ sel.value = rSel.value; fire(); }
+    }
+    bSel.addEventListener('change', () => { sel.value = ''; paintBrand(bSel._units || [], ''); if(!rSel.classList.contains('hidden')) fire(); });
+    rSel.addEventListener('change', () => { sel.value = rSel.value; fire(); });
+    new MutationObserver(() => { sig = ''; rebuild(); }).observe(sel, {childList: true});
+    // لو الكود غيّر قيمة القايمة من برّه (تعديل موظف، تصفير النموذج)
+    const poll = () => {
+      const s = sel.options.length + '|' + sel.value;
+      if(s === sig) return; sig = s;
+      const units = bSel._units;
+      if(!units) return rebuild();
+      const cur = units.find(u => u.id === String(sel.value));
+      if(!sel.value){ if(prevVal){ bSel.value = ''; rSel.classList.add('hidden'); rSel.innerHTML = ''; } prevVal = ''; return; }
+      prevVal = String(sel.value);
+      if(cur && (bSel.value !== cur.branch || rSel.value !== cur.id)){ bSel.value = cur.branch; paintBrand(units, cur.id); }
+    };
+    if(typeof window.__tick === 'function') window.__tick(poll, 500); else setInterval(poll, 500);
+    rebuild();
+  }
+  function scan(){ ['nw-section', 'ed-section'].forEach(id => { const s = $(id); if(s && !s.dataset.v21 && s.options.length > 1) enhance(id); }); }
+  let t = null;
+  new MutationObserver(() => { clearTimeout(t); t = setTimeout(scan, 150); }).observe(document.body, {childList: true, subtree: true});
+  setTimeout(scan, 600);
+  window.V21 = { scan, enhance };
+
+  /* ---------- التعليق ← المحتوى اللي اتعلّق عليه ---------- */
+  const css2 = document.createElement('style');
+  css2.textContent = '#admin-comments-list .card[data-v21c]{cursor:pointer;transition:box-shadow .15s,border-color .15s}#admin-comments-list .card[data-v21c]:hover{border-color:#818cf8;box-shadow:0 6px 18px rgba(79,70,229,.14)}.v21-hint{font-size:10.5px;color:#4f46e5;font-weight:800;margin-top:6px}.v21-pv{width:100%;border-radius:12px;background:#0f172a;max-height:62vh}.v21-pv-img{width:100%;border-radius:12px;max-height:62vh;object-fit:contain;background:#f1f5f9}.v21-lg{display:flex;gap:6px;margin:8px 0;flex-wrap:wrap}.v21-lg button{border:1px solid #cbd5e1;background:#fff;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:800;cursor:pointer}.v21-lg button.on{background:#4f46e5;color:#fff;border-color:#4f46e5}';
+  document.head.appendChild(css2);
+  function decorate(){
+    document.querySelectorAll('#admin-comments-list > .card').forEach(card => {
+      if(card.dataset.v21c) return;
+      const tr = card.querySelector('[id^="cmt-tr-"]'); if(!tr) return;
+      const head = card.querySelector('.muted'); const mm = head && head.textContent.match(/#(\d+)/);
+      const isCard = /كارت صورة/.test(card.textContent.slice(0, 40));
+      if(!mm) return;
+      card.dataset.v21c = '1'; card.dataset.type = isCard ? 'card' : 'video'; card.dataset.item = mm[1];
+      card.insertAdjacentHTML('beforeend', '<div class="v21-hint">' + (isCard ? '🖼️ اضغط لمعاينة الصورة' : '🎬 اضغط لمشاهدة الفيديو') + '</div>');
+    });
+  }
+  function yt(u){ return (typeof extractYTVideoId === 'function' ? extractYTVideoId(u) : ''); }
+  function player(v){
+    const y = yt(v.video_url);
+    if(y) return '<iframe class="v21-pv" style="aspect-ratio:16/9;border:0" src="https://www.youtube.com/embed/' + y + '" allowfullscreen allow="encrypted-media;picture-in-picture"></iframe>';
+    return '<video class="v21-pv" controls playsinline preload="metadata" src="' + E(v.video_url) + '"></video>';
+  }
+  async function openPreview(type, id, comment){
+    const old = $('v21-pv-modal'); if(old) old.remove();
+    const ov = document.createElement('div'); ov.className = 'preview-modal'; ov.id = 'v21-pv-modal';
+    ov.innerHTML = '<div class="preview-panel" style="max-width:640px"><div class="preview-top"><b>' + (type === 'card' ? '🖼️ الصورة اللي اتعلّق عليها' : '🎬 الفيديو اللي اتعلّق عليه') + '</b><button class="btn-secondary btn-sm" type="button" id="v21-x">إغلاق ✕</button></div><div id="v21-pv-body" class="muted" style="padding:14px;text-align:center">جاري التحميل…</div></div>';
+    document.body.appendChild(ov); $('v21-x').onclick = () => ov.remove(); ov.addEventListener('click', e => { if(e.target === ov) ov.remove(); });
+    const body = $('v21-pv-body'); const cm = comment ? '<div style="background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:8px 10px;margin-top:10px;font-size:12.5px;text-align:start">💬 ' + E(comment) + '</div>' : '';
+    try{
+      if(type === 'card'){
+        const {data} = await sb.from('safety_cards').select('*').eq('id', id).maybeSingle();
+        if(!data){ body.innerHTML = '⚠️ الكارت ده اتحذف.' + cm; return; }
+        body.className = ''; body.style.textAlign = 'start';
+        body.innerHTML = '<div style="font-weight:800;font-size:14px;margin-bottom:8px">' + E(data.title_ar || data.title_en || ('كارت #' + id)) + '</div>' +
+          (data.image ? '<img class="v21-pv-img" src="' + E(data.image) + '" alt=""/>' : '<div class="muted">الكارت مالوش صورة.</div>') +
+          (data.description_ar ? '<div class="muted" style="font-size:12px;margin-top:6px">' + E(data.description_ar) + '</div>' : '') + cm;
+      } else {
+        const [t, v] = await Promise.all([sb.from('training_topics').select('*').eq('id', id).maybeSingle(), sb.from('training_videos').select('*').eq('topic_id', id).order('id')]);
+        const topic = t && t.data, vids = ((v && v.data) || []).filter(x => x.video_url);
+        if(!topic && !vids.length){ body.innerHTML = '⚠️ الفيديو ده اتحذف.' + cm; return; }
+        const order = ['ar', 'en', 'bn', 'ne', 'hi']; vids.sort((a, b) => order.indexOf(a.video_lang || 'ar') - order.indexOf(b.video_lang || 'ar'));
+        body.className = ''; body.style.textAlign = 'start';
+        const draw = i => {
+          body.innerHTML = '<div style="font-weight:800;font-size:14px;margin-bottom:8px">' + E((topic && (topic.title_ar || topic.title_en)) || ('تدريب #' + id)) + '</div>' +
+            (vids.length > 1 ? '<div class="v21-lg">' + vids.map((x, j) => '<button type="button" data-i="' + j + '" class="' + (j === i ? 'on' : '') + '">' + E((x.video_lang || 'ar').toUpperCase()) + '</button>').join('') + '</div>' : '') +
+            (vids.length ? player(vids[i]) : '<div class="muted">مفيش فيديو مرفوع للتدريب ده.</div>') + cm;
+          body.querySelectorAll('.v21-lg button').forEach(b => b.onclick = () => draw(Number(b.dataset.i)));
+        };
+        draw(0);
+      }
+    }catch(e){ body.textContent = 'تعذر تحميل المحتوى: ' + (e.message || e); }
+  }
+  document.addEventListener('click', e => {
+    const card = e.target.closest && e.target.closest('#admin-comments-list > .card[data-v21c]'); if(!card) return;
+    if(e.target.closest('button,a,input,select,textarea')) return;
+    const txt = card.querySelector('div[style*="font-size:13px;margin"]');
+    openPreview(card.dataset.type, Number(card.dataset.item), txt ? txt.textContent : '');
+  });
+  const _lc = window.loadAdminComments;
+  if(_lc){
+    const W = async function(){ const r = await _lc.apply(this, arguments); try{ decorate(); }catch(e){} return r; };
+    window.loadAdminComments = W; try{ loadAdminComments = W; }catch(e){}
+  }
+  window.V21.openPreview = openPreview;
+})();
+
+
+/* ===== V22 — الداشبورد حسب الفرع + فلتر البراند ===== */
+(function(){
+  const $ = id => document.getElementById(id);
+  const E = s => (typeof esc === 'function' ? esc(s) : String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])));
+  window.__v22brand = ''; window.__v22on = false;
+
+  /* ---------- فلتر البراند: بيشتغل بس أثناء حساب الداشبورد ---------- */
+  let bx = null, bxKey = '', bxAt = 0;
+  async function brandExcluded(brand){
+    if(bx && bxKey === brand && Date.now() - bxAt < 20000) return bx;
+    const s = new Set();
+    try{
+      const secs = (await sb.from('sections').select('id,brand')).data || [];
+      const ok = new Set(secs.filter(x => x.brand === brand).map(x => Number(x.id)));
+      let from = 0;
+      for(;;){
+        const r = await sb.from('workers_evaluations').select('id,section_id').order('id').range(from, from + 999);
+        const d = (r && r.data) || [];
+        d.forEach(w => { if(!ok.has(Number(w.section_id))) s.add(Number(w.id)); });
+        if(d.length < 1000) break; from += 1000;
+      }
+    }catch(e){ console.error('v22 brand', e); }
+    bx = s; bxKey = brand; bxAt = Date.now(); return s;
+  }
+  if(window.V19 && window.V19.excludedWorkers){
+    const _ex = window.V19.excludedWorkers;
+    window.V19.excludedWorkers = async function(force){
+      const base = await _ex.apply(window.V19, arguments);
+      if(!window.__v22on || !window.__v22brand) return base;
+      const extra = await brandExcluded(window.__v22brand);
+      return new Set([...base, ...extra]);
+    };
+  }
+
+  const css = document.createElement('style');
+  css.textContent = '#v22-brandbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:12px}#v22-brandbar .lb{font-size:11.5px;font-weight:800;color:#475569}#v22-brandbar button{font-family:inherit;border:1px solid #cbd5e1;background:#fff;border-radius:999px;padding:5px 13px;font-size:11.5px;font-weight:800;cursor:pointer}#v22-brandbar button.on{background:#4f46e5;border-color:#4f46e5;color:#fff}' +
+    '.v22-br{background:#f8fafc;border:1px solid var(--border);border-radius:12px;margin-bottom:8px}.v22-br summary{list-style:none;cursor:pointer;padding:10px 13px}.v22-br summary::-webkit-details-marker{display:none}.v22-brh{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;font-weight:800;font-size:13px}.v22-brh small{font-weight:600;color:#64748b;font-size:11px}.v22-bar{background:#e2e8f0;border-radius:20px;height:8px;overflow:hidden}.v22-bar i{display:block;height:100%}.v22-us{padding:2px 13px 10px;display:flex;flex-direction:column;gap:5px}.v22-u{display:flex;justify-content:space-between;font-size:12px;background:#fff;border:1px solid var(--border);border-radius:8px;padding:6px 10px}';
+  document.head.appendChild(css);
+
+  const colr = p => p >= 80 ? '#16a34a' : p >= 50 ? '#d97706' : '#dc2626';
+
+  async function paintBranches(){
+    const kpis = $('dashboard-kpis'); if(!kpis) return;
+    let secs = [];
+    try{ secs = (await sb.from('sections').select('id,name_ar,branch_name,brand,department_id')).data || []; }catch(e){ return; }
+    const hid = window.__v20hid || new Set();
+    let list = secs.filter(s => !hid.has(String(s.id)));
+    if(typeof getAdminScopeIds === 'function' && typeof adminUser !== 'undefined' && adminUser && !adminUser.isSuper){ const ids = getAdminScopeIds().map(Number); list = list.filter(s => ids.includes(Number(s.id))); }
+    // شريط البراند (فوق الأرقام)
+    const brands = [...new Set(secs.map(s => s.brand).filter(Boolean))].sort();
+    let bar = $('v22-brandbar');
+    if(brands.length){
+      if(!bar){ bar = document.createElement('div'); bar.id = 'v22-brandbar'; kpis.parentNode.insertBefore(bar, kpis); }
+      bar.innerHTML = '<span class="lb">🏷️ البراند:</span>' + ['', ...brands].map(b => '<button type="button" data-b="' + E(b) + '" class="' + (window.__v22brand === b ? 'on' : '') + '">' + (b ? E(b) : 'الكل') + '</button>').join('');
+      bar.onclick = e => { const b = e.target.closest('button[data-b]'); if(!b) return; window.__v22brand = b.dataset.b; window.loadAdminDashboard(); };
+    }
+    // الفروع
+    const rows = window._dashPerWorker || [];
+    const by = {};
+    rows.forEach(r => { const k = String(r.worker && r.worker.section_id); (by[k] ||= []).push(Number(r.compliance) || 0); });
+    const br = {};
+    list.forEach(s => {
+      const key = s.branch_name || s.name_ar;
+      const b = (br[key] ||= {name: key, units: [], vals: []});
+      const v = by[String(s.id)] || [];
+      b.units.push({name: s.brand || s.name_ar, n: v.length, p: v.length ? v.reduce((a, c) => a + c, 0) / v.length : 0});
+      b.vals.push(...v);
+    });
+    const arr = Object.values(br).map(b => ({...b, n: b.vals.length, p: b.vals.length ? b.vals.reduce((a, c) => a + c, 0) / b.vals.length : 0}));
+    arr.sort((a, b) => (a.n === 0) - (b.n === 0) || a.p - b.p);
+    let card = $('v22-branch-card');
+    if(!card){
+      const anchor = $('dash-sections-total') && $('dash-sections-total').closest('.card'); if(!anchor) return;
+      card = document.createElement('div'); card.className = 'card'; card.id = 'v22-branch-card'; card.style.cssText = 'padding:16px;margin-bottom:14px;';
+      anchor.parentNode.insertBefore(card, anchor);
+    }
+    const active = arr.filter(b => b.n > 0).length;
+    card.innerHTML = '<div class="section-title" style="margin-bottom:6px">🏪 الالتزام حسب الفرع <span class="muted" style="font-size:11px;font-weight:600">(الأضعف أولًا' + (window.__v22brand ? ' — براند ' + E(window.__v22brand) : '') + ')</span></div>' +
+      '<div class="muted" style="font-size:11.5px;margin-bottom:10px">' + arr.length + ' فرع • ' + active + ' فرع فيه موظفين. اضغط على الفرع لعرض وحداته.</div>' +
+      (arr.map(b => '<details class="v22-br"><summary><div class="v22-brh"><span>🏪 ' + E(b.name) + ' <small>(' + b.units.length + ' وحدة • ' + b.n + ' موظف)</small></span>' +
+        (b.n ? '<b style="color:' + colr(b.p) + '">' + Math.round(b.p) + '%</b>' : '<b style="color:#94a3b8;font-size:12px">غير مستخدم</b>') + '</div>' +
+        '<div class="v22-bar"><i style="width:' + Math.min(100, b.p) + '%;background:' + colr(b.p) + '"></i></div></summary>' +
+        '<div class="v22-us">' + b.units.map(u => '<div class="v22-u"><span>' + E(u.name) + ' <span class="muted">(' + u.n + ' موظف)</span></span>' + (u.n ? '<b style="color:' + colr(u.p) + '">' + Math.round(u.p) + '%</b>' : '<span class="muted">غير مستخدم</span>') + '</div>').join('') + '</div></details>').join('') || '<div class="muted" style="text-align:center;padding:10px">لا توجد فروع</div>');
+  }
+
+  const _ld = window.loadAdminDashboard;
+  if(_ld){
+    const W = async function(){
+      window.__v22on = true;
+      let r; try{ r = await _ld.apply(this, arguments); } finally { window.__v22on = false; }
+      try{ await paintBranches(); }catch(e){ console.error('v22 branches', e); }
+      return r;
+    };
+    window.loadAdminDashboard = W; try{ loadAdminDashboard = W; }catch(e){}
+  }
+  const _lo = window.logout;
+  if(_lo){ const W2 = function(){ window.__v22brand = ''; return _lo.apply(this, arguments); }; window.logout = W2; try{ logout = W2; }catch(e){} }
+  window.V22 = { paintBranches };
 })();
 
 </script>
