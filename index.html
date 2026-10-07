@@ -155,6 +155,7 @@ body{background:linear-gradient(180deg,#f4f7f9 0%,#eef3f6 100%);font-family:'Cai
   .admin-shell-nav.open{transform:translateX(0);box-shadow:-8px 0 24px rgba(0,0,0,.15);}
 }
 @media(min-width:901px){#admin-sidebar-backdrop{display:none!important;}}
+#quiz-report-modal,#video-watchers-modal,#v21-pv-modal{z-index:100010!important}
 .preview-modal{position:fixed;inset:0;background:rgba(15,23,42,.64);z-index:90;display:flex;align-items:center;justify-content:center;padding:12px}
 .preview-panel{width:100%;max-width:760px;max-height:94vh;overflow:auto;background:#f4f7f9;border-radius:22px;box-shadow:0 24px 70px rgba(0,0,0,.24);padding:14px}
 .preview-panel .preview-top{position:sticky;top:0;z-index:2;background:#fff;border-radius:16px;padding:11px 13px;margin-bottom:12px;border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:8px}
@@ -8756,8 +8757,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     e.stopPropagation();
     const type = hubType(), id = Number(card.dataset.id), title = (card.querySelector('.v6-title') || {}).textContent || '';
     if(b.dataset.v11 === 'rep') return openReport(type, id, title);
-    if(b.dataset.v11 === 'qrep' && typeof window.openQuizReportPanel === 'function') return window.openQuizReportPanel(id, title);
-    if(b.dataset.v11 === 'vrep' && typeof window.openVideoWatchersPanel === 'function') return window.openVideoWatchersPanel(id, title);
+    if(b.dataset.v11 === 'qrep' || b.dataset.v11 === 'vrep') return openReport(type, id, title, 'ok');
     if(b.dataset.v11 === 'edit'){
       const ch = await askTimer(type, title, { edit: true }); if(!ch) return;
       if(await saveTimes(type, id, { visible_until: ch.until })){ toast('تم حفظ المدة ✅'); log('تعديل مدة ' + NM[type], type, id, { until: ch.until }); }
@@ -8797,7 +8797,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     for(;;){ const r = await mk().range(from, from + 999); if(r.error) throw r.error; const d = r.data || []; out.push(...d); if(d.length < 1000) break; from += 1000; }
     return out;
   }
-  async function openReport(type, id, title){
+  async function openReport(type, id, title, initTab){
     const ov = document.createElement('div'); ov.className = 'v11-ov';
     ov.innerHTML = '<div class="v11-m wide" dir="rtl"><div class="v11-h"><b>👥 متابعة ' + NM[type] + '</b><button type="button" class="v11-x">✕</button></div><div class="v11-t">' + E(title) + '</div><div id="v11-rb" class="v11-hint">جاري التحميل…</div></div>';
     document.body.appendChild(ov); ov.querySelector('.v11-x').onclick = () => ov.remove();
@@ -8840,10 +8840,11 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
       $q('v11-rb').className = '';
       $q('v11-rb').innerHTML = '<div class="v11-win">' + E(win) + '</div>' +
         '<div class="v11-sum"><div class="ok"><b>' + ent.length + '</b>دخلوا</div><div class="no"><b>' + non.length + '</b>لم يدخلوا</div><div><b>' + list.length + '</b>الإجمالي</div></div>' +
-        '<div class="v11-tabs"><button type="button" class="on" data-k="no">❌ لم يدخلوا (' + non.length + ')</button><button type="button" data-k="ok">✅ دخلوا (' + ent.length + ')</button><button type="button" data-k="all">👥 الكل</button><button type="button" id="v11-csv">⬇️ Excel</button></div>' +
+        '<div class="v11-tabs"><button type="button" class="on" data-k="no">❌ ' + (type === 'quiz' ? 'لم يختبروا' : 'لم يشاهدوا') + ' (' + non.length + ')</button><button type="button" data-k="ok">✅ ' + (type === 'quiz' ? 'اختبروا' : 'شاهدوا') + ' (' + ent.length + ')</button><button type="button" data-k="all">👥 الكل</button><button type="button" id="v11-csv">⬇️ Excel</button></div>' +
         '<div id="v11-list"></div>';
       const paint = k => { $q('v11-list').innerHTML = ((k === 'ok' ? ent.map(w => row(w, true)) : k === 'no' ? non.map(w => row(w, false)) : list.map(w => row(w, !!rec[w.id]))).join('')) || '<div class="v11-hint">لا يوجد</div>'; };
-      paint('no');
+      const it0 = initTab || 'no'; paint(it0);
+      $q('v11-rb').querySelectorAll('.v11-tabs button[data-k]').forEach(x => x.classList.toggle('on', x.dataset.k === it0));
       $q('v11-rb').querySelectorAll('.v11-tabs button[data-k]').forEach(b => b.onclick = () => { $q('v11-rb').querySelectorAll('.v11-tabs button').forEach(x => x.classList.remove('on')); b.classList.add('on'); paint(b.dataset.k); });
       $q('v11-csv').onclick = () => {
         const q = s => '"' + String(s == null ? '' : s).replace(/"/g, '""') + '"';
@@ -9417,7 +9418,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
 /* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
 (function(){
-  const VERSION = 'v9.29';
+  const VERSION = 'v9.30';
   const $ = id => document.getElementById(id);
   let running = false;
   async function tx(text, lang){
@@ -10624,7 +10625,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
   const css = document.createElement('style');
   css.textContent = '#v22-brandbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:12px}#v22-brandbar .lb{font-size:11.5px;font-weight:800;color:#475569}#v22-brandbar button{font-family:inherit;border:1px solid #cbd5e1;background:#fff;border-radius:999px;padding:5px 13px;font-size:11.5px;font-weight:800;cursor:pointer}#v22-brandbar button.on{background:#4f46e5;border-color:#4f46e5;color:#fff}' +
-    '.v22-br{background:#f8fafc;border:1px solid var(--border);border-radius:12px;margin-bottom:8px}.v22-br summary{list-style:none;cursor:pointer;padding:10px 13px}.v22-br summary::-webkit-details-marker{display:none}.v22-brh{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;font-weight:800;font-size:13px}.v22-brh small{font-weight:600;color:#64748b;font-size:11px}.v22-bar{background:#e2e8f0;border-radius:20px;height:8px;overflow:hidden}.v22-bar i{display:block;height:100%}.v22-us{padding:2px 13px 10px;display:flex;flex-direction:column;gap:5px}.v22-u{display:flex;justify-content:space-between;font-size:12px;background:#fff;border:1px solid var(--border);border-radius:8px;padding:6px 10px}';
+    '.v22-nd{background:#fff;border:1.5px solid #c7d2fe;border-radius:14px;margin-bottom:10px}.v22-nd>summary{list-style:none;cursor:pointer;padding:12px 14px}.v22-nd>summary::-webkit-details-marker{display:none}.v22-in{padding:2px 10px 10px}.v22-sm{padding:10px 13px}.v22-br{background:#f8fafc;border:1px solid var(--border);border-radius:12px;margin-bottom:8px}.v22-br summary{list-style:none;cursor:pointer;padding:10px 13px}.v22-br summary::-webkit-details-marker{display:none}.v22-brh{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;font-weight:800;font-size:13px}.v22-brh small{font-weight:600;color:#64748b;font-size:11px}.v22-bar{background:#e2e8f0;border-radius:20px;height:8px;overflow:hidden}.v22-bar i{display:block;height:100%}.v22-us{padding:2px 13px 10px;display:flex;flex-direction:column;gap:5px}.v22-u{display:flex;justify-content:space-between;font-size:12px;background:#fff;border:1px solid var(--border);border-radius:8px;padding:6px 10px}';
   document.head.appendChild(css);
 
   const colr = p => p >= 80 ? '#16a34a' : p >= 50 ? '#d97706' : '#dc2626';
@@ -10632,7 +10633,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   async function paintBranches(){
     const kpis = $('dashboard-kpis'); if(!kpis) return;
     let secs = [];
-    try{ secs = (await sb.from('sections').select('id,name_ar,branch_name,brand,department_id')).data || []; }catch(e){ return; }
+    try{ secs = (await sb.from('sections').select('id,name_ar,branch_name,brand,department_id,region_id')).data || []; }catch(e){ return; }
     const hid = window.__v20hid || new Set();
     let list = secs.filter(s => !hid.has(String(s.id)));
     if(typeof getAdminScopeIds === 'function' && typeof adminUser !== 'undefined' && adminUser && !adminUser.isSuper){ const ids = getAdminScopeIds().map(Number); list = list.filter(s => ids.includes(Number(s.id))); }
@@ -10644,33 +10645,43 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
       bar.innerHTML = '<span class="lb">🏷️ البراند:</span>' + ['', ...brands].map(b => '<button type="button" data-b="' + E(b) + '" class="' + (window.__v22brand === b ? 'on' : '') + '">' + (b ? E(b) : 'الكل') + '</button>').join('');
       bar.onclick = e => { const b = e.target.closest('button[data-b]'); if(!b) return; window.__v22brand = b.dataset.b; window.loadAdminDashboard(); };
     }
-    // الفروع
+    // المستويات: (الإدارة - المنطقة) ← الفرع ← الوحدة/البراند
+    let regs = [], deps = [];
+    try{ regs = (await sb.from('regions').select('id,name_ar')).data || []; deps = (await sb.from('target_departments').select('id,name_ar')).data || []; }catch(e){}
+    const rn = {}; regs.forEach(r => rn[r.id] = r.name_ar); const dn = {}; deps.forEach(d => dn[d.id] = d.name_ar);
     const rows = window._dashPerWorker || [];
     const by = {};
     rows.forEach(r => { const k = String(r.worker && r.worker.section_id); (by[k] ||= []).push(Number(r.compliance) || 0); });
-    const br = {};
+    const avg = v => v.length ? v.reduce((a, c) => a + c, 0) / v.length : 0;
+    const nodes = {};
     list.forEach(s => {
+      const nk = (s.department_id || 0) + '|' + (s.region_id || 0);
+      const node = (nodes[nk] ||= {name: (dn[s.department_id] || 'بدون إدارة') + (s.region_id ? ' - ' + (rn[s.region_id] || '') : ''), br: {}, vals: [], units: 0});
       const key = s.branch_name || s.name_ar;
-      const b = (br[key] ||= {name: key, units: [], vals: []});
+      const b = (node.br[key] ||= {name: key, single: !s.branch_name, units: [], vals: []});
       const v = by[String(s.id)] || [];
-      b.units.push({name: s.brand || s.name_ar, n: v.length, p: v.length ? v.reduce((a, c) => a + c, 0) / v.length : 0});
-      b.vals.push(...v);
+      b.units.push({name: s.brand || s.name_ar, n: v.length, p: avg(v)});
+      b.vals.push(...v); node.vals.push(...v); node.units++;
     });
-    const arr = Object.values(br).map(b => ({...b, n: b.vals.length, p: b.vals.length ? b.vals.reduce((a, c) => a + c, 0) / b.vals.length : 0}));
-    arr.sort((a, b) => (a.n === 0) - (b.n === 0) || a.p - b.p);
+    const nodeArr = Object.values(nodes).map(n => ({...n, n: n.vals.length, p: avg(n.vals), brs: Object.values(n.br).map(b => ({...b, n: b.vals.length, p: avg(b.vals)})).sort((a, b) => (a.n === 0) - (b.n === 0) || a.p - b.p)}));
+    nodeArr.sort((a, b) => b.n - a.n || a.name.localeCompare(b.name, 'ar'));
     let card = $('v22-branch-card');
     if(!card){
       const anchor = $('dash-sections-total') && $('dash-sections-total').closest('.card'); if(!anchor) return;
       card = document.createElement('div'); card.className = 'card'; card.id = 'v22-branch-card'; card.style.cssText = 'padding:16px;margin-bottom:14px;';
       anchor.parentNode.insertBefore(card, anchor);
     }
-    const active = arr.filter(b => b.n > 0).length;
-    card.innerHTML = '<div class="section-title" style="margin-bottom:6px">🏪 الالتزام حسب الفرع <span class="muted" style="font-size:11px;font-weight:600">(الأضعف أولًا' + (window.__v22brand ? ' — براند ' + E(window.__v22brand) : '') + ')</span></div>' +
-      '<div class="muted" style="font-size:11.5px;margin-bottom:10px">' + arr.length + ' فرع • ' + active + ' فرع فيه موظفين. اضغط على الفرع لعرض وحداته.</div>' +
-      (arr.map(b => '<details class="v22-br"><summary><div class="v22-brh"><span>🏪 ' + E(b.name) + ' <small>(' + b.units.length + ' وحدة • ' + b.n + ' موظف)</small></span>' +
-        (b.n ? '<b style="color:' + colr(b.p) + '">' + Math.round(b.p) + '%</b>' : '<b style="color:#94a3b8;font-size:12px">غير مستخدم</b>') + '</div>' +
-        '<div class="v22-bar"><i style="width:' + Math.min(100, b.p) + '%;background:' + colr(b.p) + '"></i></div></summary>' +
-        '<div class="v22-us">' + b.units.map(u => '<div class="v22-u"><span>' + E(u.name) + ' <span class="muted">(' + u.n + ' موظف)</span></span>' + (u.n ? '<b style="color:' + colr(u.p) + '">' + Math.round(u.p) + '%</b>' : '<span class="muted">غير مستخدم</span>') + '</div>').join('') + '</div></details>').join('') || '<div class="muted" style="text-align:center;padding:10px">لا توجد فروع</div>');
+    const head = (t, sm, n, p) => '<div class="v22-brh"><span>' + t + ' <small>(' + sm + ')</small></span>' + (n ? '<b style="color:' + colr(p) + '">' + Math.round(p) + '%</b>' : '<b style="color:#94a3b8;font-size:12px">غير مستخدم</b>') + '</div>' +
+      '<div class="v22-bar"><i style="width:' + Math.min(100, p) + '%;background:' + colr(p) + '"></i></div>';
+    const unitRow = u => '<div class="v22-u"><span>' + E(u.name) + ' <span class="muted">(' + u.n + ' موظف)</span></span>' + (u.n ? '<b style="color:' + colr(u.p) + '">' + Math.round(u.p) + '%</b>' : '<span class="muted">غير مستخدم</span>') + '</div>';
+    const brHtml = b => b.single
+      ? '<div class="v22-br v22-leaf"><div class="v22-sm">' + head('🏪 ' + E(b.name), b.n + ' موظف', b.n, b.p) + '</div></div>'
+      : '<details class="v22-br"><summary>' + head('🏪 ' + E(b.name), b.units.length + ' وحدة • ' + b.n + ' موظف', b.n, b.p) + '</summary><div class="v22-us">' + b.units.map(unitRow).join('') + '</div></details>';
+    const totalBr = nodeArr.reduce((a, n) => a + n.brs.length, 0);
+    card.innerHTML = '<div class="section-title" style="margin-bottom:6px">🏪 الالتزام حسب الإدارة والفرع' + (window.__v22brand ? ' <span class="muted" style="font-size:11px;font-weight:600">— براند ' + E(window.__v22brand) + '</span>' : '') + '</div>' +
+      '<div class="muted" style="font-size:11.5px;margin-bottom:10px">النسبة المعروضة على كل مستوى = متوسط كل الموظفين تحته. اضغط على الإدارة لعرض فروعها، وعلى الفرع لعرض وحداته.</div>' +
+      (nodeArr.map(n => '<details class="v22-nd"><summary>' + head('🏬 ' + E(n.name), n.brs.length + ' فرع • ' + n.units + ' وحدة • ' + n.n + ' موظف', n.n, n.p) + '</summary><div class="v22-in">' +
+        n.brs.map(brHtml).join('') + '</div></details>').join('') || '<div class="muted" style="text-align:center;padding:10px">لا توجد بيانات</div>');
   }
 
   const _ld = window.loadAdminDashboard;
