@@ -417,8 +417,14 @@ body.v4d-open{overflow:hidden}
 .v6-sw i::after{content:"";position:absolute;top:3px;right:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:.15s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
 .v6-sw input:checked+i{background:var(--primary)}.v6-sw input:checked+i::after{right:19px}
 .v6-foot{margin-top:18px;text-align:center}
-.v6-legacy{font-family:inherit;font-size:12px;font-weight:700;color:var(--muted);background:transparent;border:1px dashed var(--border);border-radius:12px;padding:9px 16px;cursor:pointer}
-.v6-legacy:hover{background:#f8fafc;color:var(--text)}
+.v6-foot{display:flex;justify-content:center}
+.v6-legacy{font-family:inherit;display:flex;align-items:center;gap:12px;width:100%;max-width:560px;text-align:start;color:#0f172a;background:linear-gradient(135deg,#f8fafc,#eef2ff);border:1px solid #c7d2fe;border-radius:16px;padding:12px 16px;cursor:pointer;box-shadow:0 1px 2px rgba(15,23,42,.06);transition:all .15s}
+.v6-legacy:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(79,70,229,.16);border-color:#818cf8}
+.v6-legacy .lg-ic{flex:none;width:38px;height:38px;border-radius:12px;background:#4f46e5;color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px}
+.v6-legacy .lg-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.v6-legacy .lg-t{font-size:13.5px;font-weight:800}
+.v6-legacy .lg-s{font-size:11.5px;font-weight:600;color:#64748b;white-space:normal;line-height:1.5}
+.v6-legacy .lg-ar{flex:none;font-size:18px;color:#6366f1;font-weight:800}
 .v6-legacy-bar{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:12px;color:var(--muted);font-weight:700}
 .v6-legacy-bar button{font-family:inherit;font-weight:800;font-size:12.5px;border:1px solid var(--border);background:#fff;border-radius:12px;padding:8px 14px;cursor:pointer;color:var(--text)}
 /* نموذج الإضافة/التعديل */
@@ -4316,7 +4322,7 @@ try{(function(){
 
     /* ---------- نظرة عامة على الأقسام: إجمالي، مواضيع نشطة/مخفية، الأكثر مشاركة، يحتاج متابعة ---------- */
     const ids2=getAdminScopeIds();
-    let scopedSections = adminUser?.isSuper ? sections.slice() : sections.filter(s=>ids2.includes(Number(s.id)));
+    let scopedSections = (adminUser?.isSuper ? sections.slice() : sections.filter(s=>ids2.includes(Number(s.id)))).filter(s=>!(window.__v20hid&&window.__v20hid.has(String(s.id))));
     let topicsAll=[];
     try{ const {data}=await sb.from('training_topics').select('id,section_id,is_visible'); topicsAll=data||[]; }catch(e){}
     const scopedSectionIds=new Set(scopedSections.map(s=>String(s.id)));
@@ -6312,7 +6318,7 @@ try{(function(){
     ).join('') || '<div class="muted" style="text-align:center;padding:10px;">لا توجد بيانات كافية بعد</div>';
     // الأكثر التزامًا / يحتاج متابعة (على مستوى الوحدة)
     const ids = getAdminScopeIds().map(Number);
-    const scoped = adminUser?.isSuper ? secs() : secs().filter(x => ids.includes(Number(x.id)));
+    const scoped = (adminUser?.isSuper ? secs() : secs().filter(x => ids.includes(Number(x.id)))).filter(x => !(window.__v20hid&&window.__v20hid.has(String(x.id))));
     const full = scoped.map(x => list.find(r => String(r.sid) === String(x.id)) || {sid:String(x.id), name:x.name_ar, pct:0, count:0});
     const top = full.filter(r => r.count > 0).sort((a, b) => b.pct - a.pct).slice(0, 3);
     const follow = full.filter(r => r.count === 0 || r.pct < 50).sort((a, b) => a.pct - b.pct).slice(0, 5);
@@ -6598,7 +6604,7 @@ try{(function(){
       '<button type="button" class="v6-add" id="v6-add">＋ ' + T.add + '</button></div>' +
       '<div class="v6-tools"><div class="v6-tabs" id="v6-tabs"></div><input id="v6-q" class="input-field v6-search" placeholder="🔍 ابحث بالعنوان…" value="' + esc(hub.q) + '"/></div>' +
       '<div id="v6-grid" class="v6-grid"><div class="v6-empty">جاري التحميل…</div></div>' +
-      '<div class="v6-foot"><button type="button" class="v6-legacy" id="v6-legacy">⚙️ الإدارة المتقدمة (' + (type === 'quiz' ? 'الأسئلة والتقارير' : type === 'video' ? 'أسئلة الفيديو، من شاهد، حذف نسخة لغة' : 'الأسئلة تحت الصورة') + ')</button></div>';
+      '<div class="v6-foot"><button type="button" class="v6-legacy" id="v6-legacy"><span class="lg-ic">⚙️</span><span class="lg-tx"><span class="lg-t">الإدارة المتقدمة</span><span class="lg-s">' + (type === 'quiz' ? 'الأسئلة والإجابات وتقارير النتائج' : type === 'video' ? 'أسئلة الفيديو وحذف نسخة لغة' : 'الأسئلة تحت الصورة') + '</span></span><span class="lg-ar">‹</span></button></div>';
     $q('v6-back').onclick = hubHome;
     $q('v6-add').onclick = () => openForm(type, null);
     $q('v6-legacy').onclick = () => openLegacy(T.legacy);
@@ -8749,6 +8755,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
         line = ms > 0 && vis ? '<span class="v11-b live">⏳ متبقي ' + left(ms) + ' — ينتهي ' + E(fmt(t.until)) + '</span>' : '<span class="v11-b done">⌛ انتهت مدة العرض ' + E(fmt(t.until)) + '</span>';
       } else if(vis && t.since){ line = '<span class="v11-b open">♾️ مفتوح بدون تايمر</span>'; }
       box.innerHTML = line + '<div class="v11-btns"><button type="button" class="v11-btn" data-v11="rep">👥 المتابعة</button>' +
+        (type === 'quiz' ? '<button type="button" class="v11-btn" data-v11="qrep">📊 من اختبر؟</button>' : type === 'video' ? '<button type="button" class="v11-btn" data-v11="vrep">👁️ من شاهد؟</button>' : '') +
         (vis ? '<button type="button" class="v11-btn" data-v11="edit">⏱️ المدة</button>' : '') + '</div>';
     });
   }
@@ -8758,6 +8765,8 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     e.stopPropagation();
     const type = hubType(), id = Number(card.dataset.id), title = (card.querySelector('.v6-title') || {}).textContent || '';
     if(b.dataset.v11 === 'rep') return openReport(type, id, title);
+    if(b.dataset.v11 === 'qrep' && typeof window.openQuizReportPanel === 'function') return window.openQuizReportPanel(id, title);
+    if(b.dataset.v11 === 'vrep' && typeof window.openVideoWatchersPanel === 'function') return window.openVideoWatchersPanel(id, title);
     if(b.dataset.v11 === 'edit'){
       const ch = await askTimer(type, title, { edit: true }); if(!ch) return;
       if(await saveTimes(type, id, { visible_until: ch.until })){ toast('تم حفظ المدة ✅'); log('تعديل مدة ' + NM[type], type, id, { until: ch.until }); }
@@ -9417,7 +9426,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
 /* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
 (function(){
-  const VERSION = 'v9.26';
+  const VERSION = 'v9.27';
   const $ = id => document.getElementById(id);
   let running = false;
   async function tx(text, lang){
@@ -10340,6 +10349,109 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
       window.V9.switchTo = function(role){ if(role === 'worker') return; return _sw.apply(this, arguments); };
     }
   }catch(e){}
+})();
+
+
+/* ===== V20 — الفروع والبراندات + إخفاء وحدات الجودة من الداشبورد ===== */
+(function(){
+  const $ = id => document.getElementById(id);
+  const E = s => (typeof esc === 'function' ? esc(s) : String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])));
+
+  /* ---------- الوحدات اللي متظهرش في الداشبورد: اسمها فيه "جودة" أو تابعة لإدارة خارج الإحصائيات ---------- */
+  window.__v20hid = new Set();
+  async function refreshHidden(){
+    try{
+      const [s, d] = await Promise.all([sb.from('sections').select('id,name_ar,name_en,department_id'), sb.from('target_departments').select('id,exclude_from_stats')]);
+      const exd = new Set(((d && d.data) || []).filter(x => x.exclude_from_stats).map(x => Number(x.id)));
+      const h = new Set();
+      ((s && s.data) || []).forEach(x => { if(/جود|quality/i.test((x.name_ar || '') + ' ' + (x.name_en || '')) || (x.department_id != null && exd.has(Number(x.department_id)))) h.add(String(x.id)); });
+      window.__v20hid = h;
+    }catch(e){ console.error('v20 hidden', e); }
+  }
+  window.V20 = { refreshHidden, hidden: () => window.__v20hid };
+  const _ld = window.loadAdminDashboard;
+  if(_ld){
+    const W = async function(){ await refreshHidden(); return _ld.apply(this, arguments); };
+    window.loadAdminDashboard = W; try{ loadAdminDashboard = W; }catch(e){}
+  }
+
+  /* ---------- حفظ الفرع/البراند مع الوحدة ---------- */
+  window.__v20pending = null;
+  const _from = sb.from.bind(sb);
+  sb.from = function(table){
+    const q = _from(table);
+    if(table !== 'sections' || !window.__v20pending) return q;
+    const inj = p => { const pd = window.__v20pending; if(pd && p && typeof p === 'object' && !Array.isArray(p)){ window.__v20pending = null; return Object.assign({}, p, pd); } return p; };
+    ['insert', 'update'].forEach(m => { const o = q[m] && q[m].bind(q); if(o) q[m] = (p, ...r) => o(inj(p), ...r); });
+    return q;
+  };
+  function unitFields(sec){
+    return '<div class="v20-fields"><label class="field-label" style="margin-top:8px;">اسم الفرع (اختياري — بيجمّع وحدات الفرع الواحد)</label><input id="v20-branch" class="input-field" placeholder="مثال: B37 (Munsiyah)" value="' + E(sec && sec.branch_name || '') + '"/>' +
+      '<label class="field-label" style="margin-top:8px;">البراند (اختياري)</label><input id="v20-brand" class="input-field" placeholder="مثال: M DEE" value="' + E(sec && sec.brand || '') + '"/></div>';
+  }
+  const _um = window.v4UnitModal;
+  if(_um){
+    window.v4UnitModal = function(id){
+      const r = _um.apply(this, arguments);
+      setTimeout(async () => {
+        const nm = $('v4u-name'); if(!nm || $('v20-branch')) return;
+        let sec = null;
+        if(id){ try{ const x = await sb.from('sections').select('branch_name,brand').eq('id', id).maybeSingle(); sec = x.data; }catch(e){} }
+        const anchor = nm.nextElementSibling && nm.nextElementSibling.tagName === 'LABEL' ? nm.nextElementSibling : nm;
+        nm.insertAdjacentHTML('afterend', unitFields(sec));
+      }, 80);
+      return r;
+    };
+  }
+  const _us = window.v4SaveUnit;
+  if(_us){
+    window.v4SaveUnit = function(){
+      const b = $('v20-branch'), r = $('v20-brand');
+      if(b && r){ const bn = b.value.trim(), br = r.value.trim(); window.__v20pending = {branch_name: bn || null, brand: br || null}; setTimeout(() => { window.__v20pending = null; }, 4000); }
+      return _us.apply(this, arguments);
+    };
+  }
+
+  /* ---------- شجرة الهيكل: الفرع أب للوحدات ---------- */
+  const css = document.createElement('style');
+  css.textContent = '.v20-branch{border:1px solid var(--border);border-radius:12px;background:#f8fafc;margin:8px 0;padding:8px 10px}.v20-bh{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;font-weight:800;font-size:12.5px;margin-bottom:6px}.v20-chip{display:inline-block;background:#eef2ff;color:#3730a3;border-radius:999px;padding:2px 8px;font-size:10px;font-weight:800;margin-inline-start:4px}.v20-branch .v4-units{margin:0}';
+  document.head.appendChild(css);
+  let meta = null, metaAt = 0;
+  async function loadMeta(){
+    if(meta && Date.now() - metaAt < 8000) return meta;
+    const m = {};
+    try{ const r = await sb.from('sections').select('id,branch_name,brand,other_brands'); ((r && r.data) || []).forEach(x => m[x.id] = x); }catch(e){}
+    meta = m; metaAt = Date.now(); return m;
+  }
+  async function regroup(){
+    const box = $('org-tree'); if(!box) return;
+    const lists = [...box.querySelectorAll('.v4-units')].filter(u => !u.dataset.v20 && u.querySelector('.v4-unit'));
+    if(!lists.length) return;
+    const m = await loadMeta();
+    lists.forEach(u => {
+      u.dataset.v20 = '1';
+      const groups = {}, order = [], plain = [];
+      [...u.querySelectorAll('.v4-unit')].forEach(b => {
+        const mm = (b.getAttribute('onclick') || '').match(/v4UnitModal\((\d+)\)/), s = mm && m[mm[1]];
+        if(s && s.branch_name){
+          if(!groups[s.branch_name]){ groups[s.branch_name] = {other: s.other_brands, btns: []}; order.push(s.branch_name); }
+          const bt = b.querySelector('b'); if(bt && s.brand) bt.textContent = s.brand;
+          groups[s.branch_name].btns.push(b);
+        } else plain.push(b);
+      });
+      if(!order.length) return;
+      u.innerHTML = '';
+      order.sort((a, b) => a.localeCompare(b, 'en', {numeric: true})).forEach(k => {
+        const g = groups[k], wrap = document.createElement('div'); wrap.className = 'v20-branch';
+        const others = g.other ? g.other.split(',').map(x => '<span class="v20-chip">' + E(x.trim()) + '</span>').join('') : '';
+        wrap.innerHTML = '<div class="v20-bh"><span>🏪 ' + E(k) + '</span><span>' + others + '</span></div><div class="v4-units" data-v20="1"></div>';
+        const inner = wrap.querySelector('.v4-units'); g.btns.forEach(b => inner.appendChild(b)); u.appendChild(wrap);
+      });
+      if(plain.length){ const w = document.createElement('div'); w.className = 'v4-units'; w.dataset.v20 = '1'; plain.forEach(b => w.appendChild(b)); u.appendChild(w); }
+    });
+  }
+  let t = null;
+  new MutationObserver(() => { clearTimeout(t); t = setTimeout(() => { meta = null; regroup().catch(() => {}); }, 120); }).observe(document.body, {childList: true, subtree: true});
 })();
 
 </script>
