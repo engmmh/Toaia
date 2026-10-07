@@ -671,7 +671,7 @@ body.v9-login-en .login-hero *{text-align:left!important}
 
 </style>
 </head>
-<body>
+<body class="on-login">
 <main class="app-main" style="padding-bottom:60px;">
 
   <!-- ============ تسجيل الدخول ============ -->
@@ -703,8 +703,8 @@ body.v9-login-en .login-hero *{text-align:left!important}
         <div class="card" style="width:100%;max-width:380px;padding:26px;" id="login-form-card">
           <h2 style="font-size:16px;font-weight:800;text-align:center;margin-bottom:18px;">تسجيل الدخول / Login</h2>
           <input id="login-id" type="number" class="input-field" placeholder="أدخل رقم الهوية (ID)" style="font-size:16px;text-align:center;padding:13px;margin-bottom:12px;"/>
-          <input id="login-password" type="password" class="input-field" placeholder="كلمة السر / Password" style="font-size:16px;text-align:center;padding:13px;margin-bottom:12px;"/>
-          <button class="btn-primary" onclick="doLogin()" style="width:100%;padding:13px;font-size:16px;">دخول / Enter</button>
+          <input id="login-password" type="password" class="input-field" placeholder="كلمة السر / Password" style="font-size:16px;text-align:center;padding:13px;margin-bottom:12px;display:none;"/>
+          <button class="btn-primary" onclick="doLogin()" style="width:100%;padding:13px;font-size:16px;">التالي / Next</button>
           <div id="login-error" class="hidden" style="margin-top:12px;background:#fee2e2;color:#991b1b;padding:10px 14px;border-radius:8px;font-size:13px;text-align:center;"></div>
         </div>
         <!-- شاشة اختيار الدور (تظهر بس لو نفس الحساب موظف ومشرف مع بعض) -->
@@ -719,6 +719,49 @@ body.v9-login-en .login-hero *{text-align:left!important}
       </div>
     </div>
   </section>
+
+  <!-- حالة صفحة الدخول النهائية: بتتطبّق هنا قبل أول رسم (من التخزين المحلي) عشان الصفحة تظهر مرة واحدة من غير وميض -->
+  <script>
+  window.FSLogin=(function(){
+    var $=function(i){return document.getElementById(i)};
+    var get=function(k){try{return localStorage.getItem(k)}catch(e){return null}};
+    var set=function(k,v){try{localStorage.setItem(k,v)}catch(e){}};
+    var IDS={headline_ar:'login-headline-ar',headline_en:'login-headline-en',subtitle_ar:'login-subtitle-ar',subtitle_en:'login-subtitle-en',feature1_ar:'login-feature1-ar',feature1_en:'login-feature1-en',feature2_ar:'login-feature2-ar',feature2_en:'login-feature2-en',feature3_ar:'login-feature3-ar',feature3_en:'login-feature3-en',trust_ar:'login-trust-ar',trust_en:'login-trust-en'};
+    var ftAr=null;
+    function texts(t,save){
+      if(!t) return;
+      for(var k in IDS){ var el=$(IDS[k]); if(!el||t[k]==null) continue; if(k==='headline_ar') el.innerHTML=t[k]; else el.textContent=t[k]; }
+      if(save) set('fs_login_texts',JSON.stringify(t));
+    }
+    function btn(){
+      var b=document.querySelector('#login-form-card .btn-primary'), p=$('login-password'); if(!b||!p) return;
+      var en=(get('v9_login_lang')==='en'), pw=p.style.display!=='none';
+      b.innerHTML=pw?(en?'Enter':'دخول / Enter'):(en?'Next':'التالي / Next');
+    }
+    function lang(l){
+      var en=(l==='en'), ls=$('login-section'); if(!ls) return;
+      document.body.classList.toggle('v9-login-en',en); ls.setAttribute('dir',en?'ltr':'rtl');
+      var h=document.querySelector('#login-form-card h2'); if(h) h.textContent=en?'Login':'تسجيل الدخول / Login';
+      var i=$('login-id'); if(i) i.placeholder=en?'Enter your ID number':'أدخل رقم الهوية (ID)';
+      var p=$('login-password'); if(p) p.placeholder=en?'Password':'كلمة السر / Password';
+      var rh=document.querySelector('#login-role-card h2'); if(rh) rh.textContent=en?'Choose your page':'اختر صفحتك / Choose your page';
+      var ft=document.querySelector('#login-section .login-footer-note');
+      if(ft&&ft.firstChild&&ft.firstChild.nodeType===3){ if(ftAr===null) ftAr=ft.firstChild.textContent; ft.firstChild.textContent=en?'© 2026 UFUQ Trading Co. | All rights reserved':ftAr; }
+      btn();
+    }
+    function brand(l){
+      var cName=get('v26_site_name'), cLogo=get('v26_site_logo'), nm=$('login-app-name');
+      if(cName) document.title=cName;
+      if(nm){ if(l==='en') nm.textContent=get('fs_app_name_en')||'Food Safety Training Platform'; else if(cName) nm.textContent=cName; }
+      if(cLogo&&$('login-img')){ $('login-img').src=cLogo; $('login-img').classList.remove('hidden'); if($('login-icon')) $('login-icon').classList.add('hidden'); }
+    }
+    var l0=get('v9_login_lang')==='en'?'en':'ar';
+    if(get('v9_dark')==='1') document.body.classList.add('v9-dark');
+    var c=get('fs_login_texts'); if(c){ try{ texts(JSON.parse(c)); }catch(e){} }
+    lang(l0); brand(l0);
+    return {texts:texts,lang:lang,btn:btn,brand:brand};
+  })();
+  </script>
 
   <!-- مودال تغيير كلمة السر (مشترك بين الموظف والمشرف) -->
   <div id="password-change-modal" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;">
@@ -2680,7 +2723,6 @@ async function loadWorkerData(){
 
 // ==================== INIT ====================
 window.addEventListener('DOMContentLoaded', ()=>{
-  document.body.classList.add('on-login');
   renderLangButtons(); loadBranding(); if(typeof applyLoginTexts==='function') applyLoginTexts();
   // ربط البحث بالكتابة
   const ws=$('worker-search'); ws.addEventListener('input', ()=>{ setTimeout(loadWorkers, 250); });
@@ -4152,11 +4194,8 @@ try{(function(){
   try{
     const cName=localStorage.getItem('v26_site_name');
     const cLogo=localStorage.getItem('v26_site_logo');
-    if(cName){ document.title=cName; if($('login-app-name')) $('login-app-name').textContent=cName; }
-    if(cLogo){
-      if($('login-img')){ $('login-img').src=cLogo; $('login-img').classList.remove('hidden'); $('login-icon')?.classList.add('hidden'); }
-      if($('w-img')){ $('w-img').src=cLogo; $('w-img').classList.remove('hidden'); $('w-icon')?.classList.add('hidden'); }
-    }
+    if(cName) document.title=cName;
+    if(cLogo && $('w-img')){ $('w-img').src=cLogo; $('w-img').classList.remove('hidden'); $('w-icon')?.classList.add('hidden'); }
   }catch(e){}
   const _loadBrandingV26=loadBranding;
   loadBranding=async function(){
@@ -4529,29 +4568,20 @@ try{(function(){
   async function fetchLoginTexts(){
     const keys = LOGIN_TEXT_KEYS.map(k=>'login_'+k);
     try{
-      const {data}=await sb.from('app_settings').select('key,value').in('key',keys);
+      const {data,error}=await sb.from('app_settings').select('key,value').in('key',keys);
+      if(error) return null;                 // فشل التحميل (نت ضعيف): نسيب المعروض والمحفوظ زي ما هو
       const m={}; (data||[]).forEach(r=>m[r.key.replace('login_','')]=r.value);
       const merged={}; LOGIN_TEXT_KEYS.forEach(k=>merged[k]= (m[k]!=null && m[k]!=='') ? m[k] : LOGIN_TEXT_DEFAULTS[k]);
       return merged;
-    }catch(e){ return {...LOGIN_TEXT_DEFAULTS}; }
+    }catch(e){ return null; }
   }
   window.applyLoginTexts = async function(){
     const t = await fetchLoginTexts();
-    if($('login-headline-ar')) $('login-headline-ar').innerHTML = t.headline_ar;
-    if($('login-headline-en')) $('login-headline-en').textContent = t.headline_en;
-    if($('login-subtitle-ar')) $('login-subtitle-ar').textContent = t.subtitle_ar;
-    if($('login-subtitle-en')) $('login-subtitle-en').textContent = t.subtitle_en;
-    if($('login-feature1-ar')) $('login-feature1-ar').textContent = t.feature1_ar;
-    if($('login-feature1-en')) $('login-feature1-en').textContent = t.feature1_en;
-    if($('login-feature2-ar')) $('login-feature2-ar').textContent = t.feature2_ar;
-    if($('login-feature2-en')) $('login-feature2-en').textContent = t.feature2_en;
-    if($('login-feature3-ar')) $('login-feature3-ar').textContent = t.feature3_ar;
-    if($('login-feature3-en')) $('login-feature3-en').textContent = t.feature3_en;
-    if($('login-trust-ar')) $('login-trust-ar').textContent = t.trust_ar;
-    if($('login-trust-en')) $('login-trust-en').textContent = t.trust_en;
+    if(!t) return;
+    window.FSLogin.texts(t, true);          // نفس الدالة اللي بتطبّق المحفوظ قبل أول رسم + تحديث المحفوظ
   };
   window.loadLoginTextsForAdmin = async function(){
-    const t = await fetchLoginTexts();
+    const t = (await fetchLoginTexts()) || {...LOGIN_TEXT_DEFAULTS};
     LOGIN_TEXT_KEYS.forEach(k=>{ const el=$('lt-'+k.replace('_','-')); if(el) el.value = (t[k]||'').replace(/<[^>]+>/g,''); });
   };
   window.saveLoginTexts = async function(){
@@ -8413,30 +8443,18 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   let wasEn = false;
   let lang = lsGet(KEY) === 'en' ? 'en' : 'ar';
   const ERR = { 'رقم غير مسجل': 'ID not registered', 'كلمة السر غير صحيحة / Incorrect password': 'Incorrect password' };
-  const saved = new Map();      // نص عربي أصلي لكل عنصر، عشان الرجوع للعربي بدون فقدان أي تعديل من الأدمن
-  const setTxt = (el, en) => { if(!el) return; if(!saved.has(el)) saved.set(el, el.textContent); el.textContent = lang === 'en' ? en : saved.get(el); };
-  const setPh = (el, en) => { if(!el) return; if(!el.dataset.v9ph) el.dataset.v9ph = el.placeholder; el.placeholder = lang === 'en' ? en : el.dataset.v9ph; };
-
   async function appNameEn(){
     try{ const {data} = await sb.from('app_settings').select('value').eq('key', 'app_name_en').maybeSingle(); return (data && data.value) || 'Food Safety Training Platform'; }
     catch(e){ return 'Food Safety Training Platform'; }
   }
   async function apply(){
-    const en = lang === 'en', ls = $q('login-section'); if(!ls) return;
-    document.body.classList.toggle('v9-login-en', en);
-    ls.setAttribute('dir', en ? 'ltr' : 'rtl');
-    const fc = $q('login-form-card');
-    if(fc){
-      setTxt(fc.querySelector('h2'), 'Login');
-      setTxt(fc.querySelector('.btn-primary'), 'Enter');
-    }
-    setPh($q('login-id'), 'Enter your ID number');
-    setPh($q('login-password'), 'Password');
-    const rc = $q('login-role-card'); if(rc) setTxt(rc.querySelector('h2'), 'Choose your page');
+    const en = lang === 'en'; if(!$q('login-section')) return;
+    window.FSLogin.lang(lang);               // الجزء الثابت (اتجاه/نصوص/أزرار) بيتطبّق من نفس الدالة اللي بتشتغل قبل أول رسم
     const nm = $q('login-app-name');
-    if(nm){ if(en){ nm.textContent = await appNameEn(); wasEn = true; } else if(wasEn){ wasEn = false; try{ await loadBranding(); }catch(e){} } }
-    const ft = document.querySelector('#login-section .login-footer-note');
-    if(ft && ft.firstChild && ft.firstChild.nodeType === 3){ if(!saved.has(ft)) saved.set(ft, ft.firstChild.textContent); ft.firstChild.textContent = en ? '© 2026 UFUQ Trading Co. | All rights reserved' : saved.get(ft); }
+    if(nm){
+      if(en){ const n = await appNameEn(); nm.textContent = n; try{ localStorage.setItem('fs_app_name_en', n); }catch(e){} wasEn = true; }
+      else if(wasEn){ wasEn = false; try{ await loadBranding(); }catch(e){} }
+    }
     const b = $q('v9-lang-l'); if(b) b.textContent = en ? 'ع' : 'EN';
     const er = $q('login-error'); if(er) trErr();
   }
@@ -9418,7 +9436,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
 /* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
 (function(){
-  const VERSION = 'v9.30';
+  const VERSION = 'v9.32';
   const $ = id => document.getElementById(id);
   let running = false;
   async function tx(text, lang){
@@ -9769,7 +9787,6 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   const WELCOME = {
     ar:'Welcome, {n} 👋', en:'Welcome, {n} 👋', bn:'Welcome, {n} 👋', ne:'Welcome, {n} 👋', hi:'Welcome, {n} 👋'
   };
-  const NEXT = { ar:'التالي / Next', en:'Next', bn:'পরবর্তী / Next', ne:'अर्को / Next', hi:'आगे / Next' };
   const CHANGE = { ar:'تغيير الرقم', en:'Change ID', bn:'আইডি পরিবর্তন', ne:'आईडी परिवर्तन', hi:'आईडी बदलें' };
   const lang = () => { try{ return (typeof currentLang !== 'undefined' && WELCOME[currentLang]) ? currentLang : 'ar'; }catch(e){ return 'ar'; } };
   const SHOW_MS = 1400;                  // مدة ظهور الشاشة (الإجمالي مع التلاشي < 2 ثانية)
@@ -9836,14 +9853,12 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     const idEl = $('login-id'), pwEl = $('login-password'), card = $('login-form-card'); if(!idEl || !pwEl || !card) return;
     const btn = card.querySelector('button.btn-primary');
     if(!$('v17-who')){ const w = document.createElement('div'); w.id = 'v17-who'; idEl.parentNode.insertBefore(w, idEl); }
-    if(!btn.dataset.v17orig) btn.dataset.v17orig = btn.innerHTML;
     if(step === 'id'){
       idEl.style.display = ''; pwEl.style.display = 'none'; $('v17-who').style.display = 'none';
-      btn.innerHTML = NEXT[lang()] || NEXT.ar;
     } else {
       idEl.style.display = 'none'; pwEl.style.display = ''; $('v17-who').style.display = 'flex';
-      btn.innerHTML = btn.dataset.v17orig;
     }
+    window.FSLogin.btn();                       // التسمية (التالي / دخول) من مكان واحد
   }
   function toStep(s, name){
     step = s;
