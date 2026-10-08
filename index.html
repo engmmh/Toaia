@@ -1550,6 +1550,7 @@ function __layer(name, isAsync, fresh){
 function afterCall(name, fn, fresh){ __layer(name, false, fresh).post.push(fn); }
 function afterCallAsync(name, fn, fresh){ __layer(name, true, fresh).post.push(fn); }
 function beforeCall(name, fn, fresh){ __layer(name, false, fresh).pre.unshift(fn); }
+function beforeCallAsync(name, fn, fresh){ __layer(name, true, fresh).pre.unshift(fn); }
 function showToast(msg){
   /* رسائل الموظف بتتترجم للغته (V17T.trText بيتعرّف بعد كده) */
   try{ if(currentUser && !adminUser && currentLang !== 'ar' && window.V17T) msg = window.V17T.trText(String(msg), currentLang); }catch(e){}
@@ -2414,7 +2415,6 @@ async function editTargetDepartmentV22(id){const r=targetDepartmentsV22.find(x=>
 async function loadAdminSectionsMultiV22(adminId){const {data}=await sb.from('admin_sections').select('section_id').eq('admin_id',adminId);return (data||[]).map(x=>x.section_id);}
 async function loginAdminV22(adm){const ids=await loadAdminSectionsMultiV22(adm.id);adminUser={isSuper:false,name:adm.name,section_id:ids[0]||adm.section_id,section_ids:ids,id:adm.id};await enterAdmin();}
 // Override login to support multi-section admins while retaining V2.1 login codes.
-doLogin = async function(){const val=$('login-id').value.trim(),err=$('login-error');err.classList.add('hidden');if(!val)return;if(val==='592001'){adminUser={isSuper:true,name:'المدير الرئيسي',section_id:null,section_ids:sections.map(s=>s.id)};await enterAdmin();return;}const {data:adm}=await sb.from('admins').select('*').eq('code',String(val)).maybeSingle();if(adm&&adm.id){await loginAdminV22(adm);return;}const id=parseInt(val);const {data}=await sb.from('workers_evaluations').select('*').eq('id',id).single();if(!data){err.textContent='رقم غير مسجل (موظف أو أدمن)';err.classList.remove('hidden');return;}currentUser=data;adminUser=null;$('login-section').classList.add('hidden');$('worker-section').classList.remove('hidden');$('worker-section').style.display='block';await loadBranding();await loadSections();$('worker-name-display').textContent=data.worker_name;updateWorkerHeader();loadWorkerData();};
 // Worker fields: role + section, no branch field in UI. Keep factory_branch in DB for legacy data.
 // Robust image rendering: use native image URL and an explicit error fallback, never silently break the worker screen.
 renderWorkerCardsV22 = function(){const grid=$('worker-cards-grid'),empty=$('worker-cards-empty');if(!workerCards.length){grid.innerHTML='';empty.textContent='لا توجد بطاقات متاحة لقسمك حالياً';empty.classList.remove('hidden');return;}empty.classList.add('hidden');grid.className='worker-carousel';grid.innerHTML=workerCards.map(c=>{const img=c.image?'<img loading="lazy" src="'+esc(c.image)+'" class="card-img" onerror="this.style.display=\'none\';this.parentElement.querySelector(\'.img-fallback\').classList.remove(\'hidden\')"/><div class="img-fallback hidden" style="height:170px;border-radius:10px;background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-size:30px;">📸</div>':'<div style="height:170px;border-radius:10px;background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-size:30px;">📸</div>';return '<div class="safety-card-slide card" style="padding:12px;">'+img+'<div style="font-size:15px;font-weight:800;margin:8px 0 4px;">'+esc(tr(c,'title'))+'</div><p style="font-size:13px;color:#475569;margin-bottom:8px;">'+esc(tr(c,'description'))+'</p><div id="cq-'+c.id+'" style="margin-bottom:8px;"></div><input id="ccmt-'+c.id+'" type="text" class="input-field" style="font-size:12px;" placeholder="💬 اسأل أو علّق على هذه البطاقة..."/><button class="btn-secondary btn-sm" style="margin-top:5px;font-size:11px;" onclick="addComment(\'card\','+c.id+')">إرسال</button></div>';}).join('');loadContentForItems('card',workerCards.map(c=>c.id));};
@@ -2635,20 +2635,6 @@ async function loadAdminSectionsMultiV23(adminId){
   const {data,error}=await sb.from('admin_sections').select('section_id').eq('admin_id',adminId);
   if(error){console.error(error);return [];} return (data||[]).map(x=>Number(x.section_id)).filter(Boolean);
 }
-async function doLoginV23(){
-  const val=$('login-id').value.trim(),err=$('login-error'); err.classList.add('hidden'); if(!val)return;
-  if(val==='592001'){adminUser={isSuper:true,name:'المدير الرئيسي',section_id:null,section_ids:[]};await enterAdmin();return;}
-  const {data:adm}=await sb.from('admins').select('*').eq('code',String(val)).maybeSingle();
-  if(adm&&adm.id){
-    if(adm.is_super){ adminUser={isSuper:true,name:adm.name,section_id:null,section_ids:sections.map(s=>s.id),id:adm.id}; await enterAdmin(); return; }
-    const ids=await loadAdminSectionsMultiV23(adm.id);if(!ids.length&&adm.section_id)ids.push(Number(adm.section_id));adminUser={isSuper:false,name:adm.name,section_id:ids[0]||null,section_ids:ids,id:adm.id};await enterAdmin();return;
-  }
-  const id=parseInt(val);const {data}=await sb.from('workers_evaluations').select('*').eq('id',id).maybeSingle();
-  if(!data){err.textContent='رقم غير مسجل (موظف أو أدمن)';err.classList.remove('hidden');return;}
-  currentUser=data;adminUser=null;$('login-section').classList.add('hidden');$('worker-section').classList.remove('hidden');$('worker-section').style.display='block';
-  await loadBranding();await loadSections();$('worker-name-display').textContent=data.worker_name;updateWorkerHeader();await loadWorkerData();
-}
-doLogin=doLoginV23;
 
 /* ---------- نظام الدخول بـID + كلمة سر، مع اختيار الدور لو نفس الحساب موظف ومشرف ---------- */
 let pendingLoginWorker=null, pendingLoginAdmin=null;
@@ -2670,6 +2656,7 @@ async function enterAsWorkerFinal(worker){
   try{ window.dispatchEvent(new Event('resize')); }catch(e){}
 }
 window.chooseLoginRole=async function(role){
+  if(window.V9 && V9.beforeRole) role = V9.beforeRole(role);   // الحساب المزدوج (موظف + مشرف) — V9
   $('login-role-card')?.classList.add('hidden');
   $('login-form-card')?.classList.remove('hidden');
   const worker=pendingLoginWorker, adm=pendingLoginAdmin;
@@ -2687,10 +2674,13 @@ window.chooseLoginRole=async function(role){
     await enterAdmin();
   }
   pendingLoginWorker=null; pendingLoginAdmin=null;
+  if(window.V9 && V9.afterEnter) V9.afterEnter();
 };
 async function doLoginFinal(){
   const val=$('login-id').value.trim(), pass=$('login-password').value.trim(), err=$('login-error');
   err.classList.add('hidden'); if(!val) return;
+  /* مفيش إنترنت: دخول الموظف من آخر بيانات محفوظة على الجهاز (V9) */
+  if(!navigator.onLine && /^\d+$/.test(val) && val!=='592001' && window.V9 && V9.offlineLogin) return V9.offlineLogin(val, pass);
   if(val==='592001'){
     adminUser={isSuper:true,name:'المدير الرئيسي',section_id:null,section_ids:sections.map(s=>s.id)};
     await enterAdmin(); return;
@@ -7227,32 +7217,25 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   try{ me = await computeMe(); updateBanner(); saveSnap(); renderRankLine(); }catch(e){}
 });
   }
-  const _ew9 = enterAsWorkerFinal;
-  enterAsWorkerFinal = async function(worker){
+  beforeCallAsync('enterAsWorkerFinal', async function(worker){
     await loadSettings();
     if(reportsOk === null) await detectReports();
-    const r = await _ew9.apply(this, arguments);
+  }, true);
+  afterCallAsync('enterAsWorkerFinal', async function(worker){
     try{
       ensureUI(); refreshLabels(); netBar();
       rememberLogin(worker);
       applyAutoLang(worker);
       measure(); setTimeout(measure, 400);
-      // لو الفيديوهات مفيهاش حاجة نفتح أول تبويب فيه شغل
       updateBanner();
     }catch(e){ console.error('v9 enter', e); }
-    return r;
-  };
+  });
   beforeCall('logout', function() {
   $q('v9-banner')?.classList.add('hidden');
   V9.closeModal();
   me = null;
 }, true);
-  const _dl9 = doLogin;
-  doLogin = async function(){
-    const val = ($q('login-id') || {}).value ? $q('login-id').value.trim() : '';
-    if(!navigator.onLine && /^\d+$/.test(val) && val !== '592001') return offlineLogin(val, ($q('login-password') || {}).value);
-    return _dl9.apply(this, arguments);
-  };
+  V9.offlineLogin = offlineLogin;   // doLoginFinal بينادي عليه لما مفيش إنترنت
   V9.detectReports = detectReports;
   V9.refreshLabels = refreshLabels;
 })();
@@ -7517,8 +7500,8 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   }
   V.switchTo = switchTo;
 
-  const _cr = window.chooseLoginRole;
-  window.chooseLoginRole = async function(role){
+  /* chooseLoginRole (الأصلية) بتنادي الدالتين دول: قبل الدخول بتحدد الدور وتسجّل الحساب المزدوج، وبعده بترسم أزرار التبديل */
+  V.beforeRole = function(role){
     if(pendingLoginWorker && pendingLoginAdmin){
       if(pendingLoginAdmin.is_super){ V.dual = null; role = 'admin'; }          // السوبر أدمن مالوش حساب موظف
       else{
@@ -7527,10 +7510,9 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
         if(first) logRole('admin', 'login');
       }
     }
-    const r = await _cr.apply(this, arguments);
-    try{ afterEnter(); }catch(e){ console.error(e); }
-    return r;
+    return role;
   };
+  V.afterEnter = () => { try{ afterEnter(); }catch(e){ console.error(e); } };
   afterCallAsync('doLogin', async function() {
   try{ if(pendingLoginWorker && pendingLoginAdmin) await window.chooseLoginRole('admin'); }catch(e){ console.error(e); }
 });
@@ -8580,7 +8562,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
 /* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
 (function(){
-  const VERSION = 'v9.42';
+  const VERSION = 'v9.43';
   const $ = id => document.getElementById(id);
   let running = false;
   async function tx(text, lang){
