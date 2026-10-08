@@ -7,6 +7,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <link rel="manifest" href="manifest.json"/>
+<link rel="preload" as="image" href="logo-ufuq.svg"/>
 <meta name="theme-color" content="#176b43"/>
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
@@ -8705,7 +8706,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
 /* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
 (function(){
-  const VERSION = 'v9.38';
+  const VERSION = 'v9.39';
   const $ = id => document.getElementById(id);
   let running = false;
   async function tx(text, lang){
@@ -9053,8 +9054,13 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 (function(){
   const $ = id => document.getElementById(id);
   const WELCOME = {
-    ar:'Welcome, {n} 👋', en:'Welcome, {n} 👋', bn:'Welcome, {n} 👋', ne:'Welcome, {n} 👋', hi:'Welcome, {n} 👋'
+    ar:{ hi:'مرحباً بك {n}', sub:'خطوة جديدة نحو التميز ✨', dir:'rtl' },
+    en:{ hi:'Welcome {n}', sub:'A new step toward excellence ✨', dir:'ltr' },
+    bn:{ hi:'স্বাগতম {n}', sub:'শ্রেষ্ঠত্বের দিকে একটি নতুন পদক্ষেপ ✨', dir:'ltr' },
+    ne:{ hi:'स्वागत छ {n}', sub:'उत्कृष्टतातर्फ एउटा नयाँ कदम ✨', dir:'ltr' },
+    hi:{ hi:'आपका स्वागत है {n}', sub:'उत्कृष्टता की ओर एक नया कदम ✨', dir:'ltr' }
   };
+  const SPLASH_LOGO = 'logo-ufuq.svg';      // شعار أفق (رسم متجهي: حاد على أي شاشة)
   const CHANGE = { ar:'تغيير الرقم', en:'Change ID', bn:'আইডি পরিবর্তন', ne:'आईडी परिवर्तन', hi:'आईडी बदलें' };
   const lang = () => { try{ return (typeof currentLang !== 'undefined' && WELCOME[currentLang]) ? currentLang : 'ar'; }catch(e){ return 'ar'; } };
   const SHOW_MS = 1400;                  // مدة ظهور الشاشة (الإجمالي مع التلاشي < 2 ثانية)
@@ -9064,12 +9070,12 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   css.textContent = `
   #v17-splash{position:fixed;inset:0;z-index:100000;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;opacity:0;transition:opacity .25s ease;padding:24px;text-align:center}
   #v17-splash.on{opacity:1}
-  #v17-splash img{width:min(62vw,270px);height:auto;max-height:42vh;object-fit:contain;animation:v17pop .55s ease both;background:transparent}
-  #v17-splash .emo{font-size:84px}
-  #v17-splash .msg{font-size:clamp(20px,5.4vw,28px);font-weight:800;color:#0f172a;animation:v17up .6s .15s ease both}
+  #v17-splash img{width:min(52vw,220px);height:auto;max-height:50vh;object-fit:contain;animation:v17pop .55s ease both;background:transparent}
+  #v17-splash .msg{font-size:clamp(22px,6vw,30px);font-weight:800;color:#0f172a;line-height:1.5;animation:v17up .6s .15s ease both}
+  #v17-splash .sub{font-size:clamp(14px,4vw,18px);font-weight:600;color:#475569;margin-top:6px;animation:v17up .6s .3s ease both}
   #v17-splash .bar{display:none;width:min(46vw,190px);height:3px;border-radius:3px;background:#e2e8f0;overflow:hidden}
   #v17-splash .bar i{display:block;height:100%;width:0;background:#16a34a;animation:v17bar ${SHOW_MS}ms linear forwards}
-  body.v9-dark #v17-splash{background:#0f172a}body.v9-dark #v17-splash .msg{color:#f8fafc}
+  body.v9-dark #v17-splash{background:#0f172a}body.v9-dark #v17-splash img{filter:invert(1)}body.v9-dark #v17-splash .msg{color:#f8fafc}body.v9-dark #v17-splash .sub{color:#cbd5e1}
   @keyframes v17pop{from{transform:scale(.86);opacity:0}to{transform:scale(1);opacity:1}}
   @keyframes v17up{from{transform:translateY(10px);opacity:0}to{transform:none;opacity:1}}
   @keyframes v17bar{to{width:100%}}
@@ -9079,43 +9085,17 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   document.head.appendChild(css);
 
   function firstName(n){ return String(n||'').trim().split(/\s+/)[0] || ''; }
-  function logoSrc(){ const im = $('login-img'); return (im && im.src && !im.classList.contains('hidden')) ? im.src : ''; }
-  // يشيل الخلفية الرمادية من الشعار (يجعل لون الخلفية أبيض) عشان يظهر مدمج في الصفحة
-  function cleanLogo(src){
-    return new Promise(res=>{
-      if(!src) return fin('');
-      let done=false; const fin=v=>{ if(!done){ done=true; res(v); } }; setTimeout(()=>fin(src),250);
-      const im = new Image(); im.crossOrigin = 'anonymous';
-      im.onload = ()=>{
-        try{
-          const w = im.naturalWidth, h = im.naturalHeight; if(!w||!h) return fin(src);
-          const c = document.createElement('canvas'); c.width = w; c.height = h;
-          const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0,0,w,h); x.drawImage(im,0,0);
-          const d = x.getImageData(0,0,w,h), a = d.data;
-          // لون الخلفية = أكثر لون في الحواف
-          const cnt = {}; let best = null, bn = 0;
-          const st = Math.max(1, Math.floor(a.length/4/6000));
-          for(let q=0;q<a.length/4;q+=st){ const o=q*4; const k=(a[o]>>3)+','+(a[o+1]>>3)+','+(a[o+2]>>3); cnt[k]=(cnt[k]||0)+1; if(cnt[k]>bn){ bn=cnt[k]; best=[a[o],a[o+1],a[o+2]]; } }
-          if(!best || Math.min(best[0],best[1],best[2])>=245) return fin(src);   // الخلفية أصلاً بيضاء
-          const f = best.map(v=>255/Math.max(v,1));
-          for(let i=0;i<a.length;i+=4){ a[i]=Math.min(255,a[i]*f[0]); a[i+1]=Math.min(255,a[i+1]*f[1]); a[i+2]=Math.min(255,a[i+2]*f[2]); }
-          x.putImageData(d,0,0); fin(c.toDataURL('image/png'));
-        }catch(e){ fin(src); }
-      };
-      im.onerror = ()=>fin(src);
-      im.src = src;
-    });
-  }
   function showSplash(name, l){
-    return cleanLogo(logoSrc()).then(src=>new Promise(res=>{
-      const d = document.createElement('div'); d.id = 'v17-splash';
-      d.innerHTML = (src ? '<img alt="" src="'+src.replace(/"/g,'&quot;')+'">' : '<div class="emo">🛡️</div>') +
-        '<div class="msg" dir="ltr"></div><div class="bar"><i></i></div>';
-      d.querySelector('.msg').textContent = 'Welcome, ' + firstName(name) + ' 👋';
+    const T = WELCOME[l] || WELCOME.ar;
+    return new Promise(res => {
+      const d = document.createElement('div'); d.id = 'v17-splash'; d.dir = T.dir;
+      d.innerHTML = '<img alt="" src="' + SPLASH_LOGO + '"><div><div class="msg"></div><div class="sub"></div></div><div class="bar"><i></i></div>';
+      d.querySelector('.msg').textContent = T.hi.replace('{n}', firstName(name));
+      d.querySelector('.sub').textContent = T.sub;
       document.body.appendChild(d);
-      requestAnimationFrame(()=>d.classList.add('on'));
-      setTimeout(()=>{ d.classList.remove('on'); setTimeout(()=>{ d.remove(); res(); }, 260); }, SHOW_MS);
-    }));
+      requestAnimationFrame(() => d.classList.add('on'));
+      setTimeout(() => { d.classList.remove('on'); setTimeout(() => { d.remove(); res(); }, 260); }, SHOW_MS);
+    });
   }
   function ui(){
     const idEl = $('login-id'), pwEl = $('login-password'), card = $('login-form-card'); if(!idEl || !pwEl || !card) return;
