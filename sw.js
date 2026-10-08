@@ -1,5 +1,5 @@
 /* Service worker: يخزّن ملفات الواجهة فقط. لا يلمس أي طلب لقاعدة البيانات (Supabase) أو غيره من الدومينات. */
-const CACHE = 'fs-shell-v37';
+const CACHE = 'fs-shell-v38';
 const SHELL = ['./', 'manifest.json', 'icon-192.png', 'icon-512.png', 'logo-ufuq.svg'];
 
 self.addEventListener('install', e => {

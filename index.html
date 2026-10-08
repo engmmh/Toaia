@@ -1425,6 +1425,72 @@ const SUPABASE_URL = 'https://aljtbakbfhgmpxslbzaw.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFsanRiYWtiZmhnbXB4c2xiemF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2MTAyODAsImV4cCI6MjEwMzE4NjI4MH0.MCYHzFUNgnSrNIaoS0lyFNMBSG-Wu7YvH4Jz9TY83M4';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+/* ===== Warm — كاش قراءة قصير (20 ثانية) للبيانات العامة بس، لشاشة الدخول وصفحة الموظف =====
+   الهدف: دخول الموظف أسرع. نفس الاستعلام اللي بيتكرر (أقسام، وظائف، تدريبات، كروت، اختبارات...) بيتنفّذ مرة واحدة،
+   ومعاه تسخين مسبق وقت شاشة الترحيب. بيانات الموظف الشخصية (تقدمه، مخالفاته، نتايجه، كلمة سره) عمرها ما بتتكاشّى ولا بتتحمّل قبل كلمة السر.
+   أي كتابة (insert/update/upsert/delete) على جدول بتمسح كاش الجدول ده فوراً. */
+const Warm = (function(){
+  const cfg = { ttl: 20000 };   // مدة الكاش بالمللي ثانية (0 = من غير كاش)
+  const PUBLIC = new Set(['app_settings','sections','regions','job_roles','target_departments','content_audience','training_topics','training_videos','safety_cards','quizzes','quiz_questions','quiz_options']);
+  const WRITES = new Set(['insert','update','upsert','delete']);
+  const store = new Map();
+  const clone = r => (r && r.data != null) ? Object.assign({}, r, { data: JSON.parse(JSON.stringify(r.data)) }) : r;
+  const inval = table => { for(const k of [...store.keys()]) if(k.startsWith(table + '|')) store.delete(k); };
+  function wrap(table, real, chain0, cacheable0){
+    const chain = chain0.slice(); let cacheable = cacheable0;
+    const self = new Proxy(real, {
+      get(t, p){
+        if(p === 'then') return function(res, rej){
+          if(!cacheable) return Promise.resolve(real).then(r => { if(chain.some(c => WRITES.has(c[0]))) inval(table); return r; }).then(res, rej);
+          // لوحة الأدمن دايماً طازة: الكاش للدخول وصفحة الموظف بس
+          if(typeof adminUser !== 'undefined' && adminUser) return Promise.resolve(real).then(res, rej);
+          const k = table + '|' + JSON.stringify(chain), hit = store.get(k);
+          if(hit && Date.now() - hit.t < cfg.ttl) return hit.p.then(clone).then(res, rej);
+          const ent = { t: Date.now(), p: Promise.resolve(real).then(r => { if(r && r.error) store.delete(k); return clone(r); }, e => { store.delete(k); throw e; }) };
+          store.set(k, ent);
+          return ent.p.then(clone).then(res, rej);
+        };
+        const v = t[p];
+        if(typeof v !== 'function') return v;
+        return function(){
+          if(WRITES.has(p)){ inval(table); cacheable = false; }
+          const args = [].slice.call(arguments), r = v.apply(t, args);
+          chain.push([p, args]);
+          // الـ builder بيرجّع نفسه: نرجّع نفس الـ Proxy (طبقات تانية بتعتمد على r === this)
+          if(r === t) return self;
+          return (r && typeof r.then === 'function') ? wrap(table, r, chain, cacheable) : r;
+        };
+      }
+    });
+    return self;
+  }
+  const realFrom = sb.from.bind(sb);
+  sb.from = function(table){
+    const q = realFrom(table);
+    if(!PUBLIC.has(table)) return q;
+    return new Proxy(q, { get(t, p){
+      const v = t[p]; if(typeof v !== 'function') return v;
+      return function(){
+        if(WRITES.has(p)) inval(table);
+        const r = v.apply(t, arguments);
+        return (r && typeof r.then === 'function') ? wrap(table, r, [[p, [].slice.call(arguments)]], p === 'select') : r;
+      };
+    }});
+  };
+  /* تسخين مسبق: بيتنادى أول ما الرقم يتعرف (شاشة الترحيب) — البيانات العامة اللي دخول الموظف هيحتاجها.
+     الاستعلامات هنا لازم تطابق اللي في الدوال (loadWorkerCards/Videos/Quizzes...) عشان تتكاشّى؛ لو اختلفت مفيش ضرر، بس مفيش تسريع. */
+  function prefetch(){
+    const go = f => { try{ Promise.resolve(f()).catch(() => {}); }catch(e){} };   // Promise.resolve بتشغّل الاستعلام فعلاً (الـ builder thenable)
+    go(() => loadBranding()); go(() => loadSections());
+    go(() => window.V9 && V9.loadSettings && V9.loadSettings()); go(() => window.V9 && V9.detectReports && V9.detectReports());
+    ['training_topics','training_videos','safety_cards','quizzes'].forEach(t => go(() => sb.from(t).select('*').eq('is_visible', true).order('id')));
+    go(() => sb.from('content_audience').select('item_type,item_id,kind,ref_id').order('id').range(0, 999));
+    go(() => sb.from('job_roles').select('id,target_department_id').order('id').range(0, 999));
+    go(() => sb.from('target_departments').select('*'));
+  }
+  return { cfg, clear(){ store.clear(); }, keys(){ return [...store.keys()]; }, prefetch };
+})();
+
 // ==================== STATE ====================
 let currentLang = 'ar';
 let browserVideoLang = (navigator.language||'').toLowerCase().startsWith('bn') ? 'bn' : null;
@@ -8706,7 +8772,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
 /* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
 (function(){
-  const VERSION = 'v9.39';
+  const VERSION = 'v9.40';
   const $ = id => document.getElementById(id);
   let running = false;
   async function tx(text, lang){
@@ -9063,7 +9129,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   const SPLASH_LOGO = 'logo-ufuq.svg';      // شعار أفق (رسم متجهي: حاد على أي شاشة)
   const CHANGE = { ar:'تغيير الرقم', en:'Change ID', bn:'আইডি পরিবর্তন', ne:'आईडी परिवर्तन', hi:'आईडी बदलें' };
   const lang = () => { try{ return (typeof currentLang !== 'undefined' && WELCOME[currentLang]) ? currentLang : 'ar'; }catch(e){ return 'ar'; } };
-  const SHOW_MS = 1400;                  // مدة ظهور الشاشة (الإجمالي مع التلاشي < 2 ثانية)
+  const SHOW_MS = 2500;                  // مدة ظهور شاشة الترحيب؛ وقتها بيتسخّن تحميل صفحة الموظف (Warm.prefetch)
   let step = 'id', busy = false;
 
   const css = document.createElement('style');
@@ -9136,6 +9202,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
       if(!worker) return await _dl.apply(this, arguments);       // رقم غير مسجل / أدمن: نفس الرسائل القديمة
       const l = (worker.preferred_lang && WELCOME[worker.preferred_lang]) ? worker.preferred_lang : lang();
       $('login-error').classList.add('hidden');
+      Warm.prefetch();                                   // تحميل البيانات العامة من دلوقتي، والموظف بيشوف الترحيب ويكتب كلمة السر
       await showSplash(worker.worker_name, l);
       if(await needsPassword(worker)) toStep('pw', worker.worker_name);
       else { step = 'pw'; return await _dl.apply(this, arguments); } // مفيش كلمة سر: يدخل علطول
