@@ -1540,9 +1540,9 @@ function __layer(name, isAsync, fresh){
   if(r && !fresh && window[name] === r.W && r.isAsync === isAsync) return r;
   const base = window[name];
   if(typeof base !== 'function') console.error('hook: الدالة مش موجودة', name);
-  r = { pre: [], post: [], isAsync, base };
+  r = { pre: [], post: [], fin: [], isAsync, base };
   r.W = isAsync
-    ? async function(){ for(const h of r.pre) await h.apply(this, arguments); const v = await base.apply(this, arguments); for(const h of r.post) await h.apply(this, arguments); return v; }
+    ? async function(){ for(const h of r.pre) await h.apply(this, arguments); let v; try{ v = await base.apply(this, arguments); for(const h of r.post) await h.apply(this, arguments); } finally { for(const h of r.fin) await h.apply(this, arguments); } return v; }
     : function(){ r.pre.forEach(h => h.apply(this, arguments)); const v = base.apply(this, arguments); r.post.forEach(h => h.apply(this, arguments)); return v; };
   window[name] = r.W; __hooks[name] = r;
   return r;
@@ -1551,6 +1551,7 @@ function afterCall(name, fn, fresh){ __layer(name, false, fresh).post.push(fn); 
 function afterCallAsync(name, fn, fresh){ __layer(name, true, fresh).post.push(fn); }
 function beforeCall(name, fn, fresh){ __layer(name, false, fresh).pre.unshift(fn); }
 function beforeCallAsync(name, fn, fresh){ __layer(name, true, fresh).pre.unshift(fn); }
+function finallyCallAsync(name, fn, fresh){ __layer(name, true, fresh).fin.push(fn); }   // بيشتغل دايماً حتى لو الدالة فشلت
 function showToast(msg){
   /* رسائل الموظف بتتترجم للغته (V17T.trText بيتعرّف بعد كده) */
   try{ if(currentUser && !adminUser && currentLang !== 'ar' && window.V17T) msg = window.V17T.trText(String(msg), currentLang); }catch(e){}
@@ -5561,29 +5562,25 @@ try{(function(){
   }
 
   /* ---------- ربط بالداشبورد الحالية ---------- */
-  const base = window.loadAdminDashboard;
-  if(typeof base === 'function'){
-    window.loadAdminDashboard = async function(){
-      await base.apply(this, arguments);                       // الداشبورد القديمة زي ما هي
-      try{
-        const box = $q('dash-extra');
-        if(box) box.innerHTML = '<div class="card" style="padding:16px;text-align:center;"><span class="muted">جاري حساب الأرقام بدقة...</span></div>';
-        const [r, rg, dp, ov] = await Promise.all([
-          compute(),
-          safe(async () => (await sb.from('regions').select('*').order('id')).data, []),
-          safe(async () => (await sb.from('target_departments').select('*').order('id')).data, []),
-          safe(() => fetchAll(() => sb.from('worker_violations').select('id,worker_id,violation_title,deduction_points,status,created_at').neq('status', 'closed').order('id')), [])
-        ]);
-        rows = r; regions = rg || []; depts = dp || [];
-        const ids = new Set(rows.map(x => Number(x.worker.id)));
-        openViol = (ov || []).filter(v => ids.has(Number(v.worker_id)));
-        window._dashPerWorker = rows;                          // نفس شكل البيانات القديم، بس بأرقام كاملة
-        const bs = {}; rows.forEach(x => { const sid = x.worker.section_id || 'none'; (bs[sid] ||= []).push(x); });
-        window._dashBySection = bs;
-        paintDash(); patchLegacy();
-      }catch(e){ console.error('dash v4', e); }
-    };
-  }
+  afterCallAsync('loadAdminDashboard', async function(){   // الداشبورد القديمة زي ما هي، وده بيضيف الأرقام الدقيقة بعدها
+    try{
+      const box = $q('dash-extra');
+      if(box) box.innerHTML = '<div class="card" style="padding:16px;text-align:center;"><span class="muted">جاري حساب الأرقام بدقة...</span></div>';
+      const [r, rg, dp, ov] = await Promise.all([
+        compute(),
+        safe(async () => (await sb.from('regions').select('*').order('id')).data, []),
+        safe(async () => (await sb.from('target_departments').select('*').order('id')).data, []),
+        safe(() => fetchAll(() => sb.from('worker_violations').select('id,worker_id,violation_title,deduction_points,status,created_at').neq('status', 'closed').order('id')), [])
+      ]);
+      rows = r; regions = rg || []; depts = dp || [];
+      const ids = new Set(rows.map(x => Number(x.worker.id)));
+      openViol = (ov || []).filter(v => ids.has(Number(v.worker_id)));
+      window._dashPerWorker = rows;                          // نفس شكل البيانات القديم، بس بأرقام كاملة
+      const bs = {}; rows.forEach(x => { const sid = x.worker.section_id || 'none'; (bs[sid] ||= []).push(x); });
+      window._dashBySection = bs;
+      paintDash(); patchLegacy();
+    }catch(e){ console.error('dash v4', e); }
+  });
 })();
 /* =====================================================================
    V6 — مركز المحتوى: أيقونة واحدة ← (كروت / اختبارات / فيديوهات) + جمهور متعدد (مناطق × إدارات × وحدات)
@@ -8562,7 +8559,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
 /* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
 (function(){
-  const VERSION = 'v9.43';
+  const VERSION = 'v9.44';
   const $ = id => document.getElementById(id);
   let running = false;
   async function tx(text, lang){
@@ -9474,11 +9471,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     }catch(e){ console.error('v20 hidden', e); }
   }
   window.V20 = { refreshHidden, hidden: () => window.__v20hid };
-  const _ld = window.loadAdminDashboard;
-  if(_ld){
-    const W = async function(){ await refreshHidden(); return _ld.apply(this, arguments); };
-    window.loadAdminDashboard = W; try{ loadAdminDashboard = W; }catch(e){}
-  }
+  beforeCallAsync('loadAdminDashboard', async function(){ await refreshHidden(); });
 
   /* ---------- حفظ الفرع/البراند مع الوحدة ---------- */
   window.__v20pending = null;
@@ -9798,16 +9791,12 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     const old = $('v22-branch-card'); if(old) old.remove();
   }
 
-  const _ld = window.loadAdminDashboard;
-  if(_ld){
-    const W = async function(){
-      window.__v22on = true;
-      let r; try{ r = await _ld.apply(this, arguments); } finally { window.__v22on = false; }
-      try{ await paintBranches(); }catch(e){ console.error('v22 branches', e); }
-      return r;
-    };
-    window.loadAdminDashboard = W; try{ loadAdminDashboard = W; }catch(e){}
-  }
+  beforeCallAsync('loadAdminDashboard', async function(){ window.__v22on = true; });
+  afterCallAsync('loadAdminDashboard', async function(){
+    window.__v22on = false;
+    try{ await paintBranches(); }catch(e){ console.error('v22 branches', e); }
+  });
+  finallyCallAsync('loadAdminDashboard', async function(){ window.__v22on = false; });
   const _lo = window.logout;
   if(_lo){ const W2 = function(){ window.__v22brand = ''; return _lo.apply(this, arguments); }; window.logout = W2; try{ logout = W2; }catch(e){} }
   window.V22 = { paintBranches };
