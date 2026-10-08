@@ -1550,7 +1550,10 @@ function __layer(name, isAsync, fresh){
 function afterCall(name, fn, fresh){ __layer(name, false, fresh).post.push(fn); }
 function afterCallAsync(name, fn, fresh){ __layer(name, true, fresh).post.push(fn); }
 function beforeCall(name, fn, fresh){ __layer(name, false, fresh).pre.unshift(fn); }
-function showToast(msg){ const t=document.createElement('div'); t.className='toast'; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),2800); }
+function showToast(msg){
+  /* رسائل الموظف بتتترجم للغته (V17T.trText بيتعرّف بعد كده) */
+  try{ if(currentUser && !adminUser && currentLang !== 'ar' && window.V17T) msg = window.V17T.trText(String(msg), currentLang); }catch(e){}
+  const t=document.createElement('div'); t.className='toast'; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),2800); }
 function toggleAdminSidebar(force){
   const sb2=$('admin-sidebar'), bd=$('admin-sidebar-backdrop');
   const willOpen = force===undefined ? !sb2.classList.contains('open') : force;
@@ -2737,32 +2740,21 @@ window.openPasswordChangeModal=function(){
   if($('pw-cancel-btn')) $('pw-cancel-btn').textContent=pwText('cancel');
   $('password-change-modal').classList.remove('hidden');
 };
-/* أول دخول بكلمة سر مؤقتة (must_change_password): الشاشة بتتفتح إجباري (checkForced في طبقة الدخول)، مينفعش تتقفل،
-   وكلمة السر الجديدة لازم تختلف عن الحالية/الافتراضية. بعد النجاح بتتشال العلامة ويرجع زرار الإلغاء. */
-let pwForced = false;
-window.closePasswordChangeModal=function(){ if(pwForced) return; $('password-change-modal').classList.add('hidden'); };
+/* تغيير كلمة السر اختياري دايماً. لو الأدمن فعّل "اقتراح التغيير" (must_change_password) بتظهر الشاشة مرة عند الدخول
+   والموظف يختار يغيّر أو يقفلها؛ وأي تغيير ناجح بيشيل العلامة. */
+window.closePasswordChangeModal=function(){ $('password-change-modal').classList.add('hidden'); };
 window.submitPasswordChange=async function(){
   const p1=$('pw-new').value.trim(), p2=$('pw-confirm').value.trim(), err=$('pw-change-error');
   const workerId = currentUser?.id || adminUser?.workerId;
-  if(pwForced){
-    const cur = await sb.from('workers_evaluations').select('password').eq('id', workerId).maybeSingle();
-    const s = await sb.from('app_settings').select('value').eq('key', 'default_worker_password').maybeSingle();
-    const old = (cur.data && cur.data.password) || (s.data && s.data.value) || '';
-    if(p1 && old && p1 === old){ err.textContent = 'اختار كلمة سر مختلفة عن الحالية'; err.classList.remove('hidden'); return; }
-  }
   if(!p1||p1.length<4){ err.textContent=pwText('tooShort'); err.classList.remove('hidden'); return; }
   if(p1!==p2){ err.textContent=pwText('mismatch'); err.classList.remove('hidden'); return; }
   if(!workerId){ err.textContent='تعذر تحديد الحساب'; err.classList.remove('hidden'); return; }
   const {error}=await sb.from('workers_evaluations').update({password:p1}).eq('id',workerId);
   if(error){ err.textContent='خطأ: '+error.message; err.classList.remove('hidden'); return; }
   if(currentUser) currentUser.password=p1;
-  const wasForced = pwForced; pwForced = false;
   closePasswordChangeModal();
   showToast(pwText('success'));
-  if(wasForced){
-    await sb.from('workers_evaluations').update({must_change_password:false}).eq('id', workerId);
-    $('pw-cancel-btn')?.classList.remove('hidden');
-  }
+  if(window.__pwSuggested){ window.__pwSuggested = false; await sb.from('workers_evaluations').update({must_change_password:false}).eq('id', workerId); }
 }
 
 /* ---------- كلمة السر الموحّدة الافتراضية ---------- */
@@ -2977,6 +2969,7 @@ try{(function(){
 
   /* ---------- Logout: no refresh required ---------- */
   window.logout = function(){
+    document.getElementById('v12-push')?.remove();   // بانر الإشعارات (V12)
     try{destroyAllPlayers();}catch(e){}
     Object.keys(topicTimersV22||{}).forEach(k=>{try{clearInterval(topicTimersV22[k]);}catch(e){}});
     currentUser=null;adminUser=null;currentModalWorkerId=null;activeTopicVideo={};activeVideoPlayers={};pendingPlayers=[];
@@ -6163,7 +6156,7 @@ try{(function(){
   ensureNav();
 })();
 /* =====================================================================
-   V7 — كلمة السر الموحدة: تطبيق على الكل أو نطاق محدد + إجبار التغيير عند أول دخول
+   V7 — كلمة السر الموحدة: تطبيق على الكل أو نطاق محدد + اقتراح تغيير كلمة السر عند الدخول (اختياري)
    للسوبر أدمن فقط (تبويب الأدمن). إضافات فقط — بتعدّل عمود password وعمود must_change_password.
    ===================================================================== */
 (function(){
@@ -6209,7 +6202,7 @@ try{(function(){
       '<div class="v7-sub">اختار مين تنطبق عليه الكلمة الجديدة. المعاينة بتوريك العدد قبل أي تنفيذ، ومفيش حاجة بتتغير قبل التأكيد.</div>' +
       '<div class="v7-step"><div class="v7-step-t"><span>1</span> كلمة السر الجديدة</div>' +
         '<input id="v7-new" type="text" class="input-field" placeholder="اكتب كلمة السر (4 حروف/أرقام على الأقل)" autocomplete="off"/>' +
-        '<label class="v7-opt"><input type="checkbox" id="v7-force"/><div><b>إجبار الموظف يغيّر كلمة السر عند أول دخول</b><small id="v7-force-note">هيظهر له شاشة تغيير كلمة السر ومايقدرش يكمل قبلها. لو سبت خانة الكلمة فاضية هيتفعل الإجبار بس من غير تغيير الكلمة.</small></div></label></div>' +
+        '<label class="v7-opt"><input type="checkbox" id="v7-force"/><div><b>اقتراح تغيير كلمة السر على الموظف عند الدخول (اختياري له)</b><small id="v7-force-note">هتظهر له شاشة تغيير كلمة السر وهو يختار يغيّر أو يقفلها ويكمل. لو سبت خانة الكلمة فاضية هيتفعل الاقتراح بس من غير تغيير الكلمة.</small></div></label></div>' +
       '<div class="v7-step"><div class="v7-step-t"><span>2</span> تنطبق على مين؟</div>' +
         '<label class="v7-radio"><input type="radio" name="v7-scope" value="all" checked/> 🌍 كل الموظفين</label>' +
         '<label class="v7-radio"><input type="radio" name="v7-scope" value="unit"/> 🏭 نطاق محدد (منطقة / إدارة / وحدة)</label>' +
@@ -6248,7 +6241,7 @@ try{(function(){
     const p = await sb.from('workers_evaluations').select('must_change_password').limit(1);
     hasForce = !p.error;
     $q('v7-force').disabled = !hasForce;
-    if(!hasForce) $q('v7-force-note').innerHTML = '⚠️ خاصية الإجبار محتاجة تشغيل <b>phase3.sql</b> مرة واحدة في Supabase.';
+    if(!hasForce) $q('v7-force-note').innerHTML = '⚠️ خاصية الاقتراح محتاجة تشغيل <b>phase3.sql</b> مرة واحدة في Supabase.';
   }
   function reset(){ last = null; $q('v7-summary')?.classList.add('hidden'); $q('v7-confirm')?.classList.add('hidden'); }
 
@@ -6268,7 +6261,7 @@ try{(function(){
 
   async function preview(){
     const pw = $q('v7-new').value.trim(), force = $q('v7-force').checked;
-    if(!pw && !force) return showToast('اكتب كلمة السر أو فعّل خيار الإجبار');
+    if(!pw && !force) return showToast('اكتب كلمة السر أو فعّل خيار الاقتراح');
     if(pw && pw.length < 4) return showToast('كلمة السر لازم تكون 4 حروف/أرقام على الأقل');
     const sc = document.querySelector('input[name="v7-scope"]:checked').value;
     if(sc === 'ids' && !ids().length) return showToast('اكتب رقم موظف واحد على الأقل');
@@ -6291,7 +6284,7 @@ try{(function(){
         '<div class="muted" style="margin-top:4px">' + esc(affected.slice(0, 6).map(w => w.worker_name).join('، ')) + (affected.length > 6 ? '…' : '') + '</div>';
       el.classList.remove('hidden');
       const warn = $q('v7-warn');
-      const act = (pw ? 'تعيين كلمة السر الجديدة' : 'تفعيل إجبار التغيير') + (last.force && pw ? ' + إجبار التغيير عند أول دخول' : '') + ' على ' + affected.length + ' موظف';
+      const act = (pw ? 'تعيين كلمة السر الجديدة' : 'تفعيل اقتراح التغيير') + (last.force && pw ? ' + اقتراح التغيير عند الدخول' : '') + ' على ' + affected.length + ' موظف';
       warn.className = 'v7-warn' + (chg.length ? ' v7-danger' : '');
       warn.innerHTML = (chg.length ? '⚠️ <b>' + chg.length + '</b> موظف غيّروا كلمة سرهم بنفسهم — <u>كلمتهم الحالية هتتلغي</u> وتتبدل بالجديدة. ' : '') + esc(act) + '.';
       $q('v7-wordbox').classList.toggle('hidden', !chg.length);
@@ -6364,16 +6357,16 @@ try{(function(){
   afterCall('applyAdminScope', function(){ try{ ensurePwTab(); }catch(e){} });
   try{ ensurePwTab(); }catch(e){}
 
-  /* =====================  إجبار تغيير كلمة السر عند أول دخول  ===================== */
+  /* =====================  اقتراح تغيير كلمة السر عند أول دخول (اختياري)  ===================== */
   async function checkForced(){
     try{
       const wid = (typeof currentUser !== 'undefined' && currentUser && currentUser.id) || (typeof adminUser !== 'undefined' && adminUser && adminUser.workerId);
       if(!wid) return;
       const r = await sb.from('workers_evaluations').select('must_change_password').eq('id', wid).maybeSingle();
       if(r.error || !r.data || !r.data.must_change_password) return;
-      pwForced = true; openPasswordChangeModal();
-      $q('pw-cancel-btn')?.classList.add('hidden');
-      const t = $q('pw-modal-title'); if(t) t.innerHTML = '🔑 لازم تغيّر كلمة السر قبل ما تكمل <small class="nav-en">Please set a new password</small>';
+      window.__pwSuggested = true; openPasswordChangeModal();
+      $q('pw-cancel-btn')?.classList.remove('hidden');
+      const t = $q('pw-modal-title'); if(t) t.innerHTML = '🔑 تحب تغيّر كلمة السر؟ (اختياري) <small class="nav-en">Change your password (optional)</small>';
     }catch(e){}
   }
   afterCallAsync('enterAsWorkerFinal', async function() {
@@ -6442,7 +6435,7 @@ Object.assign(E, {
 'e.g.: «الرياض + كل الإدارات» = كل وحدات الرياض • «كل المناطق + الإنتاج» = كل مصانع الإنتاج • «القصيم + التشغيل» = فروع القصيم • أو وحدة بعينها.':'e.g.: «Riyadh + all departments» = all Riyadh units • «all regions + Production» = all production factories • «Qassim + Operations» = Qassim branches • or a specific unit.',
 'منح الصلاحية':'Grant access','لا توجد إدارات إدارية معلّمة حاليًا (من تاب "الإدارات المستهدفة")':'No administrative departments are marked (from the "Target Departments" tab)',
 'اختار مين تنطبق عليه الكلمة الجديدة. المعاينة بتوريك العدد قبل أي تنفيذ، ومفيش حاجة بتتغير قبل التأكيد.':'Choose who the new password applies to. The preview shows the count before anything runs, and nothing changes before you confirm.',
-'إجبار الموظف يغيّر كلمة السر عند أول دخول':'Force the employee to change the password at first login','هيظهر له شاشة تغيير كلمة السر ومايقدرش يكمل قبلها. لو سبت خانة الكلمة فاضية هيتفعل الإجبار بس من غير تغيير الكلمة.':'A change-password screen appears and they cannot continue before it. If you leave the password field empty, only the forced change is enabled without changing the password.',
+'اقتراح تغيير كلمة السر على الموظف عند الدخول (اختياري له)':'Suggest the employee change the password at login (optional for them)','هتظهر له شاشة تغيير كلمة السر وهو يختار يغيّر أو يقفلها ويكمل. لو سبت خانة الكلمة فاضية هيتفعل الاقتراح بس من غير تغيير الكلمة.':'A change-password screen appears; the employee may change it or close it and continue. If you leave the password field empty, only the suggestion is enabled without changing the password.',
 '🏭 نطاق محدد (منطقة / إدارة / وحدة)':'🏭 Specific scope (region / department / unit)','🔢 موظفين محددين بالأرقام':'🔢 Specific employees by ID','طبّقها بس على اللي لسه على كلمة السر الافتراضية':'Apply only to those still on the default password','الموظفين اللي غيّروا كلمة سرهم بنفسهم مايتأثروش.':'Employees who changed their own password are not affected.','نزّل نسخة احتياطية قبل التنفيذ':'Download a backup before applying','ملف فيه كلمات السر القديمة للمتأثرين — تقدر ترجّعها من زر الاسترجاع تحت. احفظه في مكان آمن.':'A file containing the old passwords of affected employees — you can restore them with the restore button below. Keep it somewhere safe.','اكتب كلمة "':'Type the word "','تطبيق':'Apply','" للتأكيد':'" to confirm',
 '+ سؤال':'+ Question','📊 من اختبر؟':'📊 Who took it?','إضافة سؤال':'Add question','السؤال (Arabic)':'Question (Arabic)','+ لغات':'+ Languages','+لغات':'+Languages','+ خيار':'+ Option','حفظ السؤال':'Save question','العربية —':'Arabic —','👁️ من شاهد؟':'👁️ Who watched?','حذف التدريب':'Delete training','🖼️ كروت السلامة':'🖼️ Safety Cards','➕ كارت':'➕ Card','العنوان (Arabic) *':'Title (Arabic) *','🌐 Other languages (العنوان)':'🌐 Other languages (title)','🌐 Other languages (الوصف)':'🌐 Other languages (description)','🌍 المناطق':'🌍 Regions','اختار واحدة أو أكتر — لو ما اخترتش = كل المناطق':'Pick one or more — none = all regions','🏢 الإدارات':'🏢 Departments','اختار واحدة أو أكتر — لو ما اخترتش = كل الإدارات':'Pick one or more — none = all departments','🏭 وحدات محددة بالاسم (optional)':'🏭 Specific units by name (optional)',
 '⚙️ الإدارة المتقدمة (الأسئلة والتقارير)':'⚙️ Advanced management (questions & reports)','⚙️ الإدارة المتقدمة (الأسئلة تحت الصورة)':'⚙️ Advanced management (questions under the image)','⚙️ الإدارة المتقدمة (أسئلة الفيديو، من شاهد، حذف نسخة لغة)':'⚙️ Advanced management (video questions, who watched, delete a language version)','➕ اختبار':'➕ Quiz','عنوان الاختبار (Arabic) *':'Quiz title (Arabic) *','بعد الإنشاء تقدر تضيف الأسئلة من "⚙️ الإدارة المتقدمة" أسفل الشاشة.':'After creating, you can add questions from "⚙️ Advanced management" at the bottom.','🎬 الفيديوهات':'🎬 Videos','➕ تدريب':'➕ Training','اسم التدريب (Arabic) *':'Training name (Arabic) *','🌐 Other languages (الاسم)':'🌐 Other languages (name)','أضف رابط لغة واحدة أو أكتر — الموظف يشاهد نسخة واحدة، وأي نسخة توصل 60% تكمّل التدريب.':'Add one or more language links — the employee watches one version, and any version reaching 60% completes the training.','الفيديو العربي':'Arabic video','الفيديو الإنجليزي':'English video','الفيديو البنغالي':'Bengali video','الفيديو النيبالي':'Nepali video','الفيديو الهندي':'Hindi video',
@@ -8195,11 +8188,6 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 }, true);
     window.setLang = setLang;
   }
-  const _lo = window.logout;
-  if(typeof _lo === 'function'){
-    window.logout = function(){ const h = $q('v12-push'); if(h) h.remove(); return _lo.apply(this, arguments); };
-    logout = window.logout;
-  }
   afterCall('adminTab', function(tab) {
   if(tab === 'passwords') setTimeout(adminCard, 400);
 });
@@ -8592,7 +8580,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
 /* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
 (function(){
-  const VERSION = 'v9.41';
+  const VERSION = 'v9.42';
   const $ = id => document.getElementById(id);
   let running = false;
   async function tx(text, lang){
@@ -8723,14 +8711,6 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   const ws = $('worker-section');
   if(ws) new MutationObserver(schedule).observe(ws, {childList:true, subtree:true, characterData:true});
   __tick(schedule, 2500);
-  // الرسائل المنبثقة (toast) للموظف
-  const _t = window.showToast || (typeof showToast === 'function' ? showToast : null);
-  if(_t){
-    showToast = function(msg){
-      try{ if(typeof currentUser !== 'undefined' && currentUser && !(typeof adminUser !== 'undefined' && adminUser) && lang() !== 'ar') msg = trText(String(msg), lang()); }catch(e){}
-      return _t.call(this, msg);
-    };
-  }
   window.V17T = { trText, walk };
 
   /* ---------- 3) الترجمة التلقائية: قاموس لكلمات ثابتة (نعم/لا/صح/غلط...) + تصحيح مصطلحات ---------- */
