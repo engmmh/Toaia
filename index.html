@@ -2421,8 +2421,7 @@ async function loginAdminV22(adm){const ids=await loadAdminSectionsMultiV22(adm.
 renderWorkerCardsV22 = function(){const grid=$('worker-cards-grid'),empty=$('worker-cards-empty');if(!workerCards.length){grid.innerHTML='';empty.textContent='لا توجد بطاقات متاحة لقسمك حالياً';empty.classList.remove('hidden');return;}empty.classList.add('hidden');grid.className='worker-carousel';grid.innerHTML=workerCards.map(c=>{const img=c.image?'<img loading="lazy" src="'+esc(c.image)+'" class="card-img" onerror="this.style.display=\'none\';this.parentElement.querySelector(\'.img-fallback\').classList.remove(\'hidden\')"/><div class="img-fallback hidden" style="height:170px;border-radius:10px;background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-size:30px;">📸</div>':'<div style="height:170px;border-radius:10px;background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-size:30px;">📸</div>';return '<div class="safety-card-slide card" style="padding:12px;">'+img+'<div style="font-size:15px;font-weight:800;margin:8px 0 4px;">'+esc(tr(c,'title'))+'</div><p style="font-size:13px;color:#475569;margin-bottom:8px;">'+esc(tr(c,'description'))+'</p><div id="cq-'+c.id+'" style="margin-bottom:8px;"></div><input id="ccmt-'+c.id+'" type="text" class="input-field" style="font-size:12px;" placeholder="💬 اسأل أو علّق على هذه البطاقة..."/><button class="btn-secondary btn-sm" style="margin-top:5px;font-size:11px;" onclick="addComment(\'card\','+c.id+')">إرسال</button></div>';}).join('');loadContentForItems('card',workerCards.map(c=>c.id));};
 renderWorkerCards=renderWorkerCardsV22;
 // Video loading: only active/visible topics for this worker. No video player is created until user presses play.
-renderWorkerVideosV22 = function(){const grid=$('worker-videos-grid'),empty=$('worker-videos-empty');if(!workerTopics.length){grid.innerHTML='';empty.textContent='لا توجد تدريبات فيديو متاحة لقسمك حالياً';empty.classList.remove('hidden');return;}empty.classList.add('hidden');grid.innerHTML=workerTopics.map(topic=>{const langs=topicLanguageOptions(topic),selected=activeTopicVideo[topic.id]||pickTopicVideo(topic,currentLang)?.lang||langs[0],ver=topic.versions.find(v=>v.lang===selected)||pickTopicVideo(topic,currentLang);const buttons=langs.map(l=>'<button class="topic-video-btn" style="width:auto;display:inline-flex;padding:7px 10px;font-size:11px;" onclick="selectTopicVideo('+topic.id+',\''+l+'\')">'+videoLanguageLabel(l)+(ver?.lang===l?' ✓':'')+'</button>').join('');return '<div class="topic-card"><div style="padding:13px 14px;border-bottom:1px solid var(--border);"><div style="font-weight:800;font-size:14px;">🎓 '+esc(tr(topic,'title')||topic.title_ar)+'</div></div><div style="padding:12px;"><div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px;">'+buttons+'</div><div id="topic-player-wrap-'+topic.id+'" class="video-thumb" style="border-radius:10px;overflow:hidden;position:relative;"><div id="topic-player-'+topic.id+'" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:#fff;background:#0f172a;"><button class="btn-primary" style="padding:7px 16px;font-size:11px;" onclick="startTopicVideo('+topic.id+')">تشغيل الفيديو</button></div></div><div id="topic-note-'+topic.id+'" class="muted" style="font-size:10px;margin-top:6px;">اللغة المختارة: '+videoLanguageLabel(ver?.lang||'ar')+'</div><div id="vq-'+topic.id+'" style="margin-top:8px;"></div><div style="margin-top:8px;"><input id="vcmt-topic-'+topic.id+'" type="text" class="input-field" style="font-size:12px;" placeholder="💬 اسأل أو علّق على هذا التدريب..."/><button class="btn-secondary btn-sm" style="margin-top:5px;font-size:11px;" onclick="addTopicComment('+topic.id+')">إرسال</button></div></div></div>';}).join('');loadTopicQuestions();};
-renderWorkerVideos=renderWorkerVideosV22;
+/* (تنظيف v9.38: تعريف قديم اتشال: renderWorkerVideosV22) */
 // Player: YouTube API continues to 100%; 60% only writes completion state. No progress bar is shown to worker.
 // Prevent duplicate timers for repeated play/pause.
 const topicTimersV22={};
@@ -3400,58 +3399,7 @@ try{(function(){
   renderWorkerVideos = window.renderWorkerVideosV22;
 
   /* ---------- الاختبارات: تختفي بعد إتمامها، وترجع بعد سماح الأدمن ---------- */
-  window.loadWorkerQuizzes = async function(){
-    if(!currentUser) return;
-    const box=$('worker-quizzes'); if(!box) return;
-    const {data:quizzes,error}=await sb.from('quizzes').select('*').eq('is_visible',true).order('id');
-    if(error){console.error(error);box.innerHTML='<div class="muted" style="font-size:12px;text-align:center;">تعذر تحميل الاختبارات</div>';return;}
-    const visible=(quizzes||[]).filter(q=>(!q.section_id||Number(q.section_id)===Number(currentUser.section_id)) && matchesWorkerTarget(q));
-    if(!visible.length){box.innerHTML='<div class="muted" style="font-size:12px;text-align:center;padding:12px;">لا توجد اختبارات حالياً</div>';workerQuizStats={total:0,completed:0};if(typeof updateWorkerProgressSummary==='function')updateWorkerProgressSummary();if(typeof updateWorkerIconBadges==='function')updateWorkerIconBadges();return;}
-
-    const quizIds = visible.map(q=>q.id);
-    const [{data:attempts},{data:unlocks},{data:allQuestions}]=await Promise.all([
-      sb.from('quiz_attempts').select('quiz_id,score,created_at').eq('worker_id',currentUser.id).order('created_at',{ascending:false}),
-      sb.from('quiz_unlocks').select('quiz_id,unlocked_at').eq('worker_id',currentUser.id).order('unlocked_at',{ascending:false}),
-      sb.from('quiz_questions').select('id,quiz_id,created_at').in('quiz_id', quizIds.length?quizIds:[-1])
-    ]);
-    const lastAttempt={}; (attempts||[]).forEach(a=>{ if(!lastAttempt[a.quiz_id]) lastAttempt[a.quiz_id]=a; });
-    // وجود إذن إعادة (لسه ما اتستخدمش) كافي إن الاختبار يفضل ظاهر — الإذن بيتقفل تلقائيًا في submitQuiz أول ما الموظف يحل ويبعت
-    const hasUnlock={}; (unlocks||[]).forEach(u=>{ hasUnlock[u.quiz_id]=true; });
-    const questionsByQuiz={}; (allQuestions||[]).forEach(qs=>{ (questionsByQuiz[qs.quiz_id]=questionsByQuiz[qs.quiz_id]||[]).push(qs); });
-
-    const toShow = visible.filter(q=>{
-      const att=lastAttempt[q.id];
-      if(!att) return true; // لم يختبر بعد
-      if(hasUnlock[q.id]) return true; // الأدمن سمح له بإعادة الاختبار ولسه ما استخدمش الإذن
-      // لو الأدمن ضاف سؤال جديد على نفس الاختبار بعد آخر محاولة للموظف، يظهر له الاختبار تلقائيًا بكل أسئلته الحالية
-      const qs=questionsByQuiz[q.id]||[];
-      const hasNewQuestion = qs.some(x=>x.created_at && new Date(x.created_at) > new Date(att.created_at));
-      if(hasNewQuestion) return true;
-      return false; // اختبره ومفيش سؤال جديد ولا إذن إعادة — يختفي من القائمة
-    });
-    workerQuizStats = {total: visible.length, completed: visible.length - toShow.length};
-    if(typeof updateWorkerProgressSummary==='function') updateWorkerProgressSummary();
-    if(typeof updateWorkerIconBadges==='function') updateWorkerIconBadges();
-
-    box.innerHTML='';
-    if(!toShow.length){ box.innerHTML='<div class="muted" style="font-size:12px;text-align:center;padding:12px;">لا توجد اختبارات متاحة لك حاليًا — أحسنت! 🎉</div>'; return; }
-
-    for(const q of toShow){
-      const {data:questions}=await sb.from('quiz_questions').select('*').eq('quiz_id',q.id).order('id');
-      const card=document.createElement('div'); card.className='card'; card.style.cssText='padding:16px;margin-bottom:14px;border:2px solid var(--primary-light);';
-      const title=tr(q,'title')||('اختبار '+q.id);
-      card.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><div style="font-weight:800;font-size:15px;">'+esc(title)+'</div><span class="badge badge-red">جديد!</span></div>';
-      const form=document.createElement('div'); form.dataset.quizId=q.id;
-      (questions||[]).forEach((qst,qi)=>{ form.innerHTML+='<div style="background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;"><div style="font-weight:700;font-size:13px;margin-bottom:8px;">'+(qi+1)+'. '+esc(tr(qst,'question')||qst.question_ar)+'</div><div id="qopts-'+qst.id+'" style="display:flex;flex-direction:column;gap:6px;"></div></div>'; });
-      box.appendChild(card); card.appendChild(form);
-      (questions||[]).forEach(async qst=>{
-        const {data:opts}=await sb.from('quiz_options').select('*').eq('question_id',qst.id).order('id');
-        const w=$('qopts-'+qst.id); if(w) w.innerHTML=(opts||[]).map(o=>'<label style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--border);border-radius:8px;padding:8px 10px;cursor:pointer;font-size:13px;"><input type="radio" name="qz-'+qst.id+'" value="'+o.id+'"/> '+esc(tr(o,'option'))+'</label>').join('');
-      });
-      const btn=document.createElement('button'); btn.className='btn-primary'; btn.style.cssText='width:100%;padding:11px;font-size:13px;margin-top:4px;'; btn.textContent='إرسال إجابات هذا الاختبار'; btn.onclick=()=>submitQuiz(q.id,questions); form.appendChild(btn);
-    }
-  };
-  loadWorkerQuizzes = window.loadWorkerQuizzes;
+  /* (تنظيف v9.38: تعريف قديم اتشال: loadWorkerQuizzes) */
 
   beforeCallAsync('loadWorkerData', async function(){ await resolveWorkerTargetDept(); });
 
@@ -5718,7 +5666,6 @@ try{(function(){
     }
   };
 
-    loadWorkerQuizzes = window.loadWorkerQuizzes;
   }catch(e){ console.error('V6 worker filters', e); }
 
   /* =====================  بيانات الهيكل  ===================== */
@@ -8556,7 +8503,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
 /* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
 (function(){
-  const VERSION = 'v9.46';
+  const VERSION = 'v9.48';
   const $ = id => document.getElementById(id);
   let running = false;
   async function tx(text, lang){
@@ -9112,51 +9059,36 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
       const d = document.createElement('div'); d.className = 'v18-slot'; d.dataset.topic = tp.id; note.parentNode.appendChild(d);
     });
   }
-  const _rv = window.renderWorkerVideosV22;
-  if(typeof _rv === 'function'){
-    const W = function(){ const r = _rv.apply(this, arguments); try{ addSlots(); refresh().then(paintSlots); }catch(e){ console.error(e); } return r; };
-    window.renderWorkerVideosV22 = W; try{ renderWorkerVideos = W; }catch(e){}
-  }
+  afterCall('renderWorkerVideosV22', function(){ try{ addSlots(); refresh().then(paintSlots); }catch(e){ console.error(e); } });
+  renderWorkerVideos = window.renderWorkerVideosV22;   // الاسم القديم يشاور على نفس الدالة
 
   /* فتح الاختبار فور وصول الموظف لنسبة المشاهدة */
-  const _stp = window.saveTopicProgress;
-  if(typeof _stp === 'function'){
-    const W2 = async function(topicId, version, pct, completed){
-      const r = await _stp.apply(this, arguments);
-      try{
-        if(completed || Number(pct) >= 60){
-          const was = !!ST.done[String(topicId)];
-          if(!was){ await refresh(); paintSlots(); try{ if(quizFor(topicId)) loadWorkerQuizzes(); }catch(e){} if(quizFor(topicId) && ST.done[String(topicId)] && ST.pending[quizFor(topicId).id]) showToast(t('unlocked')); }
-        }
-      }catch(e){}
-      return r;
-    };
-    window.saveTopicProgress = W2; try{ saveTopicProgress = W2; }catch(e){}
-  }
+  afterCallAsync('saveTopicProgress', async function(topicId, version, pct, completed) {
+    try{
+      if(completed || Number(pct) >= 60){
+        const was = !!ST.done[String(topicId)];
+        if(!was){ await refresh(); paintSlots(); try{ if(quizFor(topicId)) loadWorkerQuizzes(); }catch(e){} if(quizFor(topicId) && ST.done[String(topicId)] && ST.pending[quizFor(topicId).id]) showToast(t('unlocked')); }
+      }
+    }catch(e){}
+  });
 
   /* ---------- قسم الاختبارات عند الموظف ---------- */
-  const _lwq = window.loadWorkerQuizzes;
-  if(typeof _lwq === 'function'){
-    const W3 = async function(){
-      const r = await _lwq.apply(this, arguments);
-      try{
-        await refresh();
-        document.querySelectorAll('#worker-quizzes [data-quiz-id]').forEach(form => {
-          const qid = form.dataset.quizId, q = ST.linked.find(x => String(x.id) === String(qid)); if(!q) return;
-          const card = form.parentElement; if(!card) return;
-          const v = ST.vtitle[String(q.topic_id)] || '';
-          const ready = !!ST.done[String(q.topic_id)];
-          if(ready) return;   // الفيديو خلص: الاختبار يظهر عادي بأسئلته في صفحة الاختبارات
-          card.innerHTML = '<div style="font-weight:800;font-size:15px;margin-bottom:8px;">' + E(TR(q, 'title') || ('#' + q.id)) + '</div>' +
-            '<div class="v18-sec"><div>' + E(t(ready ? 'secReady' : 'secLocked', v)) + '</div><button type="button" class="btn-primary" data-t="' + q.topic_id + '">' + E(t(ready ? 'openQ' : 'goVid')) + '</button></div>';
-          card.querySelector('button').onclick = () => goVideo(q.topic_id, ready);
-        });
-        paintSlots();
-      }catch(e){ console.error('v18 quizzes', e); }
-      return r;
-    };
-    window.loadWorkerQuizzes = W3; try{ loadWorkerQuizzes = W3; }catch(e){}
-  }
+  afterCallAsync('loadWorkerQuizzes', async function() {
+    try{
+      await refresh();
+      document.querySelectorAll('#worker-quizzes [data-quiz-id]').forEach(form => {
+        const qid = form.dataset.quizId, q = ST.linked.find(x => String(x.id) === String(qid)); if(!q) return;
+        const card = form.parentElement; if(!card) return;
+        const v = ST.vtitle[String(q.topic_id)] || '';
+        const ready = !!ST.done[String(q.topic_id)];
+        if(ready) return;   // الفيديو خلص: الاختبار يظهر عادي بأسئلته في صفحة الاختبارات
+        card.innerHTML = '<div style="font-weight:800;font-size:15px;margin-bottom:8px;">' + E(TR(q, 'title') || ('#' + q.id)) + '</div>' +
+          '<div class="v18-sec"><div>' + E(t(ready ? 'secReady' : 'secLocked', v)) + '</div><button type="button" class="btn-primary" data-t="' + q.topic_id + '">' + E(t(ready ? 'openQ' : 'goVid')) + '</button></div>';
+        card.querySelector('button').onclick = () => goVideo(q.topic_id, ready);
+      });
+      paintSlots();
+    }catch(e){ console.error('v18 quizzes', e); }
+  });
   function goVideo(tid, open){
     try{ toggleWorkerSection('videos'); }catch(e){}
     setTimeout(() => {
@@ -9196,16 +9128,15 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     row.innerHTML = '<label class="field-label">🔗 الفيديو المرتبط بالاختبار (يفتح للموظف بعد ما يخلص الفيديو)</label><select id="v18-qz-topic" class="input-field">' + opts(list) + '</select>';
     const host = vis.closest('label') || vis.parentElement; host.parentNode.insertBefore(row, host);
   }
-  const _sq = window.saveQuiz;
-  if(typeof _sq === 'function'){
-    const W4 = async function(){
-      const s = $('v18-qz-topic'), v = s && s.value ? Number(s.value) : null;
-      window.__v18pending = v ? {topic_id: v} : null;
-      try{ return await _sq.apply(this, arguments); }
-      finally{ setTimeout(() => { window.__v18pending = null; }, 4000); try{ if(s) s.value = ''; }catch(e){} }
-    };
-    window.saveQuiz = W4; try{ saveQuiz = W4; }catch(e){}
-  }
+  /* ربط الاختبار بفيديو: قبل الحفظ نحدد الفيديو المختار، وبعد الحفظ (نجح أو فشل) نفضّي الاختيار */
+  beforeCallAsync('saveQuiz', async function(){
+    const s = $('v18-qz-topic'), v = s && s.value ? Number(s.value) : null;
+    window.__v18pending = v ? {topic_id: v} : null;
+  });
+  finallyCallAsync('saveQuiz', async function(){
+    setTimeout(() => { window.__v18pending = null; }, 4000);
+    try{ const s = $('v18-qz-topic'); if(s) s.value = ''; }catch(e){}
+  });
 
   // لكل اختبار في الإدارة المتقدمة
   async function perQuiz(){
@@ -9228,11 +9159,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
       const head = card.firstElementChild; head.insertAdjacentElement('afterend', d);
     });
   }
-  const _laq = window.loadAdminQuizzes;
-  if(typeof _laq === 'function'){
-    const W5 = async function(){ const r = await _laq.apply(this, arguments); try{ await legacyForm(); await perQuiz(); }catch(e){ console.error('v18 admin', e); } return r; };
-    window.loadAdminQuizzes = W5; try{ loadAdminQuizzes = W5; }catch(e){}
-  }
+  afterCallAsync('loadAdminQuizzes', async function(){ try{ await legacyForm(); await perQuiz(); }catch(e){ console.error('v18 admin', e); } });
 
   // مركز المحتوى (نموذج اختبار جديد)
   new MutationObserver(() => {
@@ -9483,10 +9410,8 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     return '<div class="v20-fields"><label class="field-label" style="margin-top:8px;">اسم الفرع (اختياري — بيجمّع وحدات الفرع الواحد)</label><input id="v20-branch" class="input-field" placeholder="مثال: B37 (Munsiyah)" value="' + E(sec && sec.branch_name || '') + '"/>' +
       '<label class="field-label" style="margin-top:8px;">البراند (اختياري)</label><input id="v20-brand" class="input-field" placeholder="مثال: M DEE" value="' + E(sec && sec.brand || '') + '"/></div>';
   }
-  const _um = window.v4UnitModal;
-  if(_um){
-    window.v4UnitModal = function(id){
-      const r = _um.apply(this, arguments);
+  if(window.v4UnitModal){
+    afterCall('v4UnitModal', function(id){
       setTimeout(async () => {
         const nm = $('v4u-name'); if(!nm || $('v20-branch')) return;
         let sec = null;
@@ -9494,17 +9419,12 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
         const anchor = nm.nextElementSibling && nm.nextElementSibling.tagName === 'LABEL' ? nm.nextElementSibling : nm;
         nm.insertAdjacentHTML('afterend', unitFields(sec));
       }, 80);
-      return r;
-    };
+    });
   }
-  const _us = window.v4SaveUnit;
-  if(_us){
-    window.v4SaveUnit = function(){
-      const b = $('v20-branch'), r = $('v20-brand');
-      if(b && r){ const bn = b.value.trim(), br = r.value.trim(); window.__v20pending = {branch_name: bn || null, brand: br || null}; setTimeout(() => { window.__v20pending = null; }, 4000); }
-      return _us.apply(this, arguments);
-    };
-  }
+  if(window.v4SaveUnit) beforeCall('v4SaveUnit', function(){
+    const b = $('v20-branch'), r = $('v20-brand');
+    if(b && r){ const bn = b.value.trim(), br = r.value.trim(); window.__v20pending = {branch_name: bn || null, brand: br || null}; setTimeout(() => { window.__v20pending = null; }, 4000); }
+  });
 
   /* ---------- شجرة الهيكل: الفرع أب للوحدات ---------- */
   const css = document.createElement('style');
@@ -9682,11 +9602,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     const txt = card.querySelector('div[style*="font-size:13px;margin"]');
     openPreview(card.dataset.type, Number(card.dataset.item), txt ? txt.textContent : '');
   });
-  const _lc = window.loadAdminComments;
-  if(_lc){
-    const W = async function(){ const r = await _lc.apply(this, arguments); try{ decorate(); }catch(e){} return r; };
-    window.loadAdminComments = W; try{ loadAdminComments = W; }catch(e){}
-  }
+  afterCallAsync('loadAdminComments', async function(){ try{ decorate(); }catch(e){} });
   window.V21.openPreview = openPreview;
 })();
 
