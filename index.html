@@ -3453,11 +3453,7 @@ try{(function(){
   };
   loadWorkerQuizzes = window.loadWorkerQuizzes;
 
-  const _loadWorkerDataV25 = loadWorkerData;
-  loadWorkerData = async function(){
-    await resolveWorkerTargetDept();
-    await _loadWorkerDataV25();
-  };
+  beforeCallAsync('loadWorkerData', async function(){ await resolveWorkerTargetDept(); });
 
   /* ---------- إعادة السماح لموظف باختبار: تسجيل بدون حذف المحاولات القديمة ---------- */
   window.unlockQuizForWorker = async function(quizId, workerId){
@@ -7014,19 +7010,22 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     }).join('') + '<div class="v9-mact"><button class="btn-secondary" onclick="V9.closeModal()">' + E(n('close')) + '</button></div>';
   }
   V9.showRev = i => { const r = getRevs()[i]; if(r) modal(reviewHTML(r)); };
+  /* مراجعة الاختبار بعد التسليم: قبل الحفظ بنسجّل اختيارات الموظف وآخر محاولة، وبعد الحفظ بنبني شاشة المراجعة */
+  const quizCtx = {};
+  const quizMaxId = async (quizId) => { try{ const {data} = await sb.from('quiz_attempts').select('id').eq('worker_id', currentUser.id).eq('quiz_id', quizId); return Math.max(0, ...((data || []).map(x => Number(x.id) || 0))); }catch(e){ return 0; } };
   if(typeof submitQuiz === 'function'){
-    const _sq = submitQuiz;
-    submitQuiz = async function(quizId, questions){
+    beforeCallAsync('submitQuiz', async function(quizId, questions){
       const picks = {};
       (questions || []).forEach(q => { const s = document.querySelector('input[name="qz-' + q.id + '"]:checked'); if(s) picks[q.id] = Number(s.value); });
-      const maxId = async () => { try{ const {data} = await sb.from('quiz_attempts').select('id').eq('worker_id', currentUser.id).eq('quiz_id', quizId); return Math.max(0, ...((data || []).map(x => Number(x.id) || 0))); }catch(e){ return 0; } };
-      const before = currentUser ? await maxId() : 0;
-      const wid = currentUser && currentUser.id;
-      const r = await _sq.apply(this, arguments);
+      quizCtx[quizId] = { picks, before: currentUser ? await quizMaxId(quizId) : 0, wid: currentUser && currentUser.id };
+    });
+    afterCallAsync('submitQuiz', async function(quizId, questions){
+      const { picks, before, wid } = quizCtx[quizId] || {}; delete quizCtx[quizId];
+      const maxId = () => quizMaxId(quizId);
       try{
-        if(!wid || !currentUser || currentUser.id !== wid) return r;
+        if(!wid || !currentUser || currentUser.id !== wid) return;
         const after = await maxId();
-        if(after <= before) return r;                       // الحفظ فشل: مفيش مراجعة
+        if(after <= before) return;                       // الحفظ فشل: مفيش مراجعة
         const [{data: opts}, {data: qz}, {data: att}] = await Promise.all([
           sb.from('quiz_options').select('*').in('question_id', (questions || []).map(q => q.id)),
           sb.from('quizzes').select('*').eq('id', quizId).maybeSingle(),
@@ -7040,8 +7039,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
         if(S.review !== 'off') modal(reviewHTML(rec));
         me = null; renderRankLine();
       }catch(e){ console.error('v9 review', e); }
-      return r;
-    };
+    });
   }
 
   /* ---------- الوضع الليلي (اختياري، بيتحفظ على الجهاز) ---------- */
@@ -8165,7 +8163,6 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     afterCall('setLang', function() {
   setTimeout(() => { resync(); draw(); }, 50);
 }, true);
-    window.setLang = setLang;
   }
   afterCall('adminTab', function(tab) {
   if(tab === 'passwords') setTimeout(adminCard, 400);
@@ -8559,7 +8556,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
 /* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
 (function(){
-  const VERSION = 'v9.44';
+  const VERSION = 'v9.46';
   const $ = id => document.getElementById(id);
   let running = false;
   async function tx(text, lang){
@@ -8991,8 +8988,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   step = 'id';
   try{ ui(); }catch(e){}
 }, true);
-  const _sl = window.setLang;
-  if(typeof _sl === 'function') window.setLang = function(){ const r = _sl.apply(this, arguments); try{ if(step === 'id') ui(); }catch(e){} return r; };
+  afterCall('setLang', function(){ try{ if(step === 'id') ui(); }catch(e){} });   // إعادة رسم شاشة الدخول بلغتها
 
   // رجوع لخطوة الرقم لو الدخول فشل لسبب غير كلمة السر (مثلاً رقم اتغيّر)
   const err = $('login-error');
@@ -9797,8 +9793,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     try{ await paintBranches(); }catch(e){ console.error('v22 branches', e); }
   });
   finallyCallAsync('loadAdminDashboard', async function(){ window.__v22on = false; });
-  const _lo = window.logout;
-  if(_lo){ const W2 = function(){ window.__v22brand = ''; return _lo.apply(this, arguments); }; window.logout = W2; try{ logout = W2; }catch(e){} }
+  beforeCall('logout', function(){ window.__v22brand = ''; });
   window.V22 = { paintBranches };
 })();
 
