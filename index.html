@@ -3472,22 +3472,108 @@ try{(function(){
     });
 });
 
-  /* ---------- ترجمة تلقائية عند كتابة العربي (اختيارية وقابلة للتعديل يدويًا) ---------- */
+  /* ---------- ترجمة تلقائية عند كتابة العربي (اختيارية وقابلة للتعديل يدويًا) ----------
+     المسار: (1) دالة Edge اسمها fs-translate لو متركّبة (ترجمة بنموذج ذكاء اصطناعي، بتفهم العامية والمصطلحات)
+             (2) احتياطي: MyMemory — بعد تحويل العامية المصرية لفصحى مبسّطة، والإنجليزي كوسيط للبنغالي/النيبالي/الهندي.
+     أي نتيجة مشبوهة (رسالة حصة/خطأ، أو فيها حروف عربية) بتتهمل والحقل يفضل فاضي بدل ما يتملي بترجمة غلط.
+     الحقول اللي اتملت آليًا بتتعلّم (ترجمة آلية — راجعها) وبتتحدّث لو الأدمن عدّل العربي؛ وأي حقل كتبه الأدمن بإيده مبيتلمسش. */
+  const FSTr = (function(){
+    const AR = '[\\u0621-\\u064A]';
+    // عامية مصرية ← فصحى مبسّطة (الأطول أولًا). الهدف: ما تتفهمش الكلمة العامية كاسم شخص عند الترجمة الآلية.
+    const D = [
+      ['علشان','لكي'],['عشان','لكي'],['إزاي','كيف'],['ازاي','كيف'],['ليه','لماذا'],['فين','أين'],['امتى','متى'],['إمتى','متى'],
+      ['دلوقتي','الآن'],['دلوقت','الآن'],['لسه','لا يزال'],['لسة','لا يزال'],['كده','هكذا'],['كدا','هكذا'],
+      ['ده','هذا'],['دي','هذه'],['دا','هذا'],['دول','هؤلاء'],['اللي','الذي'],['إللي','الذي'],
+      ['مفيش','لا يوجد'],['فيه','يوجد'],['مش','ليس'],['عايز','أريد'],['عاوز','أريد'],['عايزة','أريد'],['عاوزة','أريد'],
+      ['أسيبه','أتركه'],['اسيبه','أتركه'],['أسيبها','أتركها'],['اسيبها','أتركها'],['أسيب','أترك'],['اسيب','أترك'],['نسيب','نترك'],['سيب','اترك'],
+      ['أحطه','أضعه'],['احطه','أضعه'],['أحطها','أضعها'],['احطها','أضعها'],['أحط','أضع'],['احط','أضع'],['نحط','نضع'],['حط','ضع'],['حطه','ضعه'],
+      ['أرجعه','أعيده'],['ارجعه','أعيده'],['هيبان','سيظهر'],['يبان','يظهر'],['بيبان','يظهر'],['هيبقى','سيصبح'],['هتبقى','ستصبح'],['يبقى','يصبح'],
+      ['بتاع','خاص ب'],['بتاعة','خاصة ب'],['كتير','كثيرا'],['شوية','قليلا'],['قوي','جدا'],['أوي','جدا'],['اوي','جدا'],
+      ['بوكس','صندوق'],['سايب','مفكوك'],['سايبة','مفكوكة'],['زي','مثل'],['برضه','أيضا'],['برده','أيضا'],['بردو','أيضا'],
+      ['أعمل','أفعل'],['اعمل','افعل'],['نعمل','نفعل'],['أبلّغ','أبلغ'],['أكلم','أخبر'],['اكلم','اخبر'],['أشوف','أرى'],['اشوف','أرى'],['شايف','أرى'],
+      ['أغسل إيدي','أغسل يدي'],['إيدي','يدي'],['ايدي','يدي'],['إيد','يد'],['ايد','يد'],['رجلي','قدمي'],
+      ['مستني','أنتظر'],['أستنى','أنتظر'],['استنى','انتظر'],['خلاص','انتهى'],['بس','فقط'],['كمان','أيضا'],['تاني','مرة أخرى'],
+    ].sort((a,b)=>b[0].length-a[0].length);
+    const DRX = D.map(([a,b])=>[new RegExp('(?<!'+AR+')(و|ف)?'+a+'(?!'+AR+')','g'),b]);   // (و|ف) = حرف العطف الملتصق (ومش، وده)
+    // المستقبل العامي هـ+فعل (هيطير ← سيطير) مع استثناء الكلمات الفصيحة اللي بتبدأ بنفس الحروف
+    const FUT_STOP = /^(هيكل|هيئة|هيبة|هيدروجين|هيموغلوبين|هيروين|هتاف|هتلر|هيل|هياكل|هيمنة)/;
+    const futRx = new RegExp('(?<!'+AR+')ه([يتن])('+AR+'{2,})(?!'+AR+')','g');
+    function msa(t){
+      t = String(t == null ? '' : t);
+      DRX.forEach(([rx,b])=>{ t = t.replace(rx,(m,c)=>(c||'')+b); });
+      t = t.replace(futRx, (m,p,rest)=> FUT_STOP.test('ه'+p+rest) ? m : 'س'+p+rest);
+      return t.replace(/\s+/g,' ').trim();
+    }
+    const BAD = /MYMEMORY|WARNING|INVALID|QUERY LENGTH|PLEASE SELECT|NO QUERY|TRANSLATED\.NET|QUOTA|LIMIT/i;
+    const ARAB = /[؀-ۿ]/;
+    function clean(s, lang){
+      if(typeof s !== 'string') return '';
+      s = s.replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').trim();
+      if(!s || BAD.test(s)) return '';
+      if(lang !== 'ar' && ARAB.test(s)) return '';        // لسه عربي = الترجمة ما حصلتش
+      return s;
+    }
+    async function mm(text, from, to){
+      try{
+        const r = await fetch('https://api.mymemory.translated.net/get?q='+encodeURIComponent(text)+'&langpair='+from+'|'+to);
+        const j = await r.json();
+        if(j && j.responseStatus && Number(j.responseStatus) !== 200) return '';
+        return clean(j && j.responseData && j.responseData.translatedText, to);
+      }catch(e){ return ''; }
+    }
+    let edgeDownUntil = 0;
+    async function edge(text){
+      if(Date.now() < edgeDownUntil || !(sb && sb.functions && sb.functions.invoke)) return null;
+      try{
+        const r = await sb.functions.invoke('fs-translate', { body: { text, langs: ['en','bn','ne','hi'] } });
+        const t = r && r.data && r.data.t;
+        if(r && r.error || !t) throw new Error('edge');
+        const out = {}; ['en','bn','ne','hi'].forEach(l => { out[l] = clean(t[l], l); });
+        return Object.values(out).some(Boolean) ? out : null;
+      }catch(e){ edgeDownUntil = Date.now() + 10*60*1000; return null; }   // الدالة مش متركّبة/واقعة: نرجع للاحتياطي 10 دقايق
+    }
+    const jobs = new Map();                  // نص عربي ← وعد بنتيجة الأربع لغات (بيمنع تكرار الطلب لما كل لغة تتنده لوحدها)
+    function all(text){
+      if(!jobs.has(text)){
+        jobs.set(text, (async()=>{
+          let out = await edge(text);
+          if(!out){
+            out = {};
+            out.en = await mm(msa(text), 'ar', 'en');
+            const pivot = out.en;            // الإنجليزي وسيط: ترجمة بنغالي/نيبالي/هندي منه أدق من العربي مباشرة
+            await Promise.all(['bn','ne','hi'].map(async l => { out[l] = await mm(pivot || msa(text), pivot ? 'en' : 'ar', l); }));
+          }
+          return out;
+        })());
+        if(jobs.size > 200) jobs.delete(jobs.keys().next().value);
+      }
+      return jobs.get(text);
+    }
+    return { msa, all, clean };
+  })();
+  window.FSTranslate = { msa: FSTr.msa, all: FSTr.all, clean: FSTr.clean };
+
   window.autoTranslateGroup = async function(sourceId, targetsMap){
     const src=$(sourceId); if(!src) return;
     const text=src.value.trim(); if(!text) return;
-    for(const lang of Object.keys(targetsMap)){
-      const tgt=$(targetsMap[lang]);
-      if(!tgt || tgt.value.trim()) continue; // لا نستبدل ترجمة كتبها الأدمن يدويًا
-      try{
-        const langCode = lang==='ar'?'ar':lang==='en'?'en':lang==='bn'?'bn':lang==='ne'?'ne':lang==='hi'?'hi':lang;
-        const res=await fetch('https://api.mymemory.translated.net/get?q='+encodeURIComponent(text)+'&langpair=ar|'+langCode);
-        const j=await res.json();
-        const translated=j?.responseData?.translatedText;
-        if(translated && tgt && !tgt.value.trim()) tgt.value=translated;
-      }catch(e){ /* الترجمة التلقائية اختيارية — لا نوقف عمل الأدمن لو فشلت */ }
-    }
+    const todo = Object.keys(targetsMap).filter(l => {
+      if(l === 'ar') return false;
+      const tgt = $(targetsMap[l]); if(!tgt) return false;
+      if(!tgt.value.trim()) return true;                                         // فاضي: نترجم
+      return tgt.dataset.trAuto === '1' && tgt.dataset.trSrc !== text;            // ترجمة آلية قديمة والعربي اتغيّر: نحدّثها (اللي كتبه الأدمن بإيده مبيتلمسش)
+    });
+    if(!todo.length) return;
+    let res; try{ res = await FSTr.all(text); }catch(e){ return; }                 // الترجمة اختيارية — لو فشلت ما نوقفش الأدمن
+    todo.forEach(l => {
+      const tgt = $(targetsMap[l]); if(!tgt) return;
+      if(tgt.value.trim() && tgt.dataset.trAuto !== '1') return;                   // الأدمن كتب فيه أثناء الانتظار
+      const v = res && res[l]; if(!v) return;
+      tgt.value = v; tgt.dataset.trAuto = '1'; tgt.dataset.trSrc = text;
+      tgt.classList.add('tr-auto'); tgt.title = 'ترجمة آلية — راجعها قبل الحفظ';
+      if(!tgt.dataset.trBound){ tgt.dataset.trBound = '1'; tgt.addEventListener('input', () => { tgt.dataset.trAuto = '0'; tgt.classList.remove('tr-auto'); tgt.title = ''; }); }
+    });
   };
+  (function(){ const st = document.createElement('style'); st.textContent = '.tr-auto{border-color:#f59e0b !important;background:#fffbeb !important}body.v9-dark .tr-auto{background:#3a2f12 !important}'; document.head.appendChild(st); })();
 
   /* ---------- Pagination لجدول الموظفين (بدل تحميل الكل دفعة واحدة) ---------- */
   window._workersPage = 0;
@@ -8503,7 +8589,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
 /* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
 (function(){
-  const VERSION = 'v9.48';
+  const VERSION = 'v9.49';
   const $ = id => document.getElementById(id);
   let running = false;
   async function tx(text, lang){
