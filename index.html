@@ -156,6 +156,15 @@ body{background:linear-gradient(180deg,#f4f7f9 0%,#eef3f6 100%);font-family:'Cai
   .admin-shell-nav.open{transform:translateX(0);box-shadow:-8px 0 24px rgba(0,0,0,.15);}
 }
 @media(min-width:901px){#admin-sidebar-backdrop{display:none!important;}}
+.nav-group{display:flex;flex-direction:column;gap:4px;margin-top:6px}
+.nav-group.hidden{display:none}
+.nav-group-h{font-size:10.5px;font-weight:800;color:var(--muted);letter-spacing:.3px;padding:8px 8px 2px;border-top:1px solid var(--border);margin-top:4px}
+.nav-group:first-of-type .nav-group-h{border-top:0;margin-top:0}
+.admin-shell-nav.collapsed .nav-group-h{font-size:0;padding:0;height:1px;margin:6px 8px 2px;background:var(--border);border:0}
+@media(max-width:900px){.admin-shell-nav.collapsed .nav-label{display:inline!important}.admin-shell-nav.collapsed .tab-btn{justify-content:flex-start!important;padding:10px 12px!important}.admin-shell-nav.collapsed .nav-group-h{font-size:10.5px;height:auto;padding:8px 8px 2px;margin-top:4px;background:none;border-top:1px solid var(--border)}.admin-shell-nav.collapsed .tab-btn:hover::after{display:none}}
+#tab-workers .v4-subnav{display:none!important}
+.v4-sub[data-k="workers"]{display:none!important}
+body.v9-dark .nav-group-h{border-color:#334155}
 #quiz-report-modal,#video-watchers-modal,#v21-pv-modal{z-index:100010!important}
 .preview-modal{position:fixed;inset:0;background:rgba(15,23,42,.64);z-index:90;display:flex;align-items:center;justify-content:center;padding:12px}
 .preview-panel{width:100%;max-width:760px;max-height:94vh;overflow:auto;background:#f4f7f9;border-radius:22px;box-shadow:0 24px 70px rgba(0,0,0,.24);padding:14px}
@@ -902,6 +911,7 @@ body.v9-login-en .login-hero *{text-align:left!important}
     <div class="card" style="padding:14px 16px;border-right:4px solid var(--primary);display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
       <div>
         <div id="admin-name-display" style="font-weight:800;font-size:16px;">لوحة تحكم الإدارة والمعايير</div>
+        <div id="admin-crumb" style="font-size:12.5px;font-weight:800;color:var(--primary);margin:2px 0;"></div>
         <div id="admin-scope-display" class="muted" style="font-size:12px;"></div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;">
@@ -5011,7 +5021,7 @@ try{(function(){
   const nz = v => (v === '' || v == null) ? null : Number(v);
 
   /* ---------------- الشريط الفرعي (الهيكل ← الموظفين) ---------------- */
-  const SUB = [['units','🏢 المناطق والوحدات'],['workers','👥 الموظفين'],['roles','👷 الوظائف'],['targets','🏬 الإدارات']];
+  const SUB = [['units','🏢 المناطق والوحدات'],['workers','👥 الموظفين'],['roles','👷 الوظائف'],['targets','🏬 الإدارات']];   // "الموظفين" بقت أيقونة مستقلة (بتتخفى بالـCSS)
   function ensureSubnav(){
     ['tab-org','tab-workers'].forEach(id => {
       const t = $q(id); if(!t || t.querySelector('.v4-subnav')) return;
@@ -5035,18 +5045,8 @@ try{(function(){
   }
   function applyNav(){
     const w = $q('tabbtn-workers'), o = $q('tabbtn-org'); if(!w || !o) return;
-    w.classList.add('hidden');                              // أيقونة الموظفين اتشالت من الشريط الجانبي
-    o.classList.remove('hidden');
-    const lab = o.querySelector('.nav-label');
-    if(isSuper()){
-      o.onclick = () => adminTab('org');
-      if(lab) lab.innerHTML = 'الهيكل والموظفين<span class="nav-en">Organization &amp; Staff</span>';
-      o.dataset.label = 'الهيكل والموظفين';
-    } else {                                                // الأدمن المقيّد: أيقونة واحدة للموظفين التابعين له
-      o.onclick = () => adminTab('workers');
-      if(lab) lab.innerHTML = 'الموظفين<span class="nav-en">Workers</span>';
-      o.dataset.label = 'الموظفين';
-    }
+    w.classList.remove('hidden');                           // الموظفين والهيكل أيقونتين منفصلتين (المجموعة: الناس)
+    o.classList.toggle('hidden', !isSuper());               // الهيكل للأدمن الرئيسي فقط
   }
   afterCall('applyAdminScope', function(){ try{ applyNav(); }catch(e){ console.error(e); } });
   afterCall('toggleOrgTab', function() {
@@ -5076,7 +5076,7 @@ try{(function(){
   afterCall('adminTab', function(tab) {
   try{
       ensureSubnav(); ensureWorkersExtras(); applyNav();
-      if(tab === 'workers'){ document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); $q('tabbtn-org')?.classList.add('active'); showWk('list'); }
+      if(tab === 'workers'){ showWk('list'); }
       markSub();
     }catch(e){ console.error('v4 nav', e); }
 });
@@ -5680,7 +5680,7 @@ try{(function(){
     if(!item.target_department_id) return true;
     return !!currentUser.target_department_id && Number(item.target_department_id) === Number(currentUser.target_department_id);
   }
-  window.V6 = {back(){ hub.keep = true; adminTab('content'); }, loadAud, audAllowed, audMatch, workerCtx, unitsOf, setsOf, get aud(){ return AUD; }, get ready(){ return audReady; }};
+  window.V6 = {back(){ hub.keep = true; hub.adv = false; adminTab((TYPES[hub.type] || TYPES.card).legacy); }, loadAud, audAllowed, audMatch, workerCtx, unitsOf, setsOf, get aud(){ return AUD; }, get ready(){ return audReady; }};
 
   /* =====================  جهة الموظف: فلترة الظهور  ===================== */
   try{
@@ -5829,44 +5829,18 @@ try{(function(){
   }
   function ensureNav(){
     ensureTab();
-    if(!$q('tabbtn-content')){
-      const ref = $q('tabbtn-quizzes'); if(!ref) return;
-      ref.insertAdjacentHTML('beforebegin',
-        '<button class="tab-btn" onclick="adminTab(\'content\')" id="tabbtn-content" data-label="المحتوى"><span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><path d="m14 17 3-3 4 4v2a1 1 0 0 1-1 1h-5a1 1 0 0 1-1-1z"/></svg></span><span class="nav-label">المحتوى<span class="nav-en">Content</span></span></button>');
-    }
-    ['quizzes', 'cards', 'videos'].forEach(k => $q('tabbtn-' + k)?.classList.add('hidden'));
-    $q('tabbtn-content')?.classList.remove('hidden');
-  }
-
-  async function hubHome(){
-    ensureTab(); hub.type = null;
-    const r = root(); if(!r) return;
-    r.innerHTML = '<div class="v6-hero"><div><h2>📚 المحتوى</h2><p>كروت السلامة والاختبارات والفيديوهات في مكان واحد — اختار النوع اللي عايز تديره.</p></div></div>' +
-      '<div class="v6-tiles">' + ORDER.map(k => {
-        const T = TYPES[k];
-        return '<button type="button" class="v6-tile v6-t-' + k + '" data-t="' + k + '"><span class="v6-tile-ic">' + T.icon + '</span><b>' + T.label + '</b><small>' + T.en + '</small>' +
-          '<div class="v6-tile-cnt" id="v6-cnt-' + k + '"><span class="v6-dots">…</span></div></button>';
-      }).join('') + '</div>';
-    r.querySelector('.v6-tiles').addEventListener('click', e => { const b = e.target.closest('.v6-tile'); if(b) openType(b.dataset.t); });
-    try{ await Promise.all([loadMeta(), loadAud(true)]); }catch(e){}
-    for(const k of ORDER){
-      try{
-        const d = await loadType(k); const pub = d.list.filter(i => i.is_visible).length;
-        const el = $q('v6-cnt-' + k); if(el) el.innerHTML = '<span>' + d.list.length + ' ' + TYPES[k].one + '</span><span class="pub">' + pub + ' منشور</span><span class="hid">' + (d.list.length - pub) + ' مخفي</span>';
-      }catch(e){ const el = $q('v6-cnt-' + k); if(el) el.textContent = '—'; }
-    }
+    $q('tabbtn-content')?.remove();   // صفحة "المحتوى" الوسيطة اتشالت: الفيديوهات/الاختبارات/الكروت روابط مباشرة
   }
 
   /* =====================  شاشة نوع: شبكة الكروت  ===================== */
   async function openType(type, keep){
     hub.type = type; if(!keep){ hub.tab = 'all'; hub.q = ''; }
     const T = TYPES[type], r = root(); if(!r) return;
-    r.innerHTML = '<div class="v6-bar"><button type="button" class="v6-back" id="v6-back">→ المحتوى</button><h3>' + T.icon + ' ' + T.label + ' <small>' + T.en + '</small></h3>' +
+    r.innerHTML = '<div class="v6-bar"><h3>' + T.icon + ' ' + T.label + ' <small>' + T.en + '</small></h3>' +
       '<button type="button" class="v6-add" id="v6-add">＋ ' + T.add + '</button></div>' +
       '<div class="v6-tools"><div class="v6-tabs" id="v6-tabs"></div><input id="v6-q" class="input-field v6-search" placeholder="🔍 ابحث بالعنوان…" value="' + esc(hub.q) + '"/></div>' +
       '<div id="v6-grid" class="v6-grid"><div class="v6-empty">جاري التحميل…</div></div>' +
       '<div class="v6-foot"><button type="button" class="v6-legacy" id="v6-legacy"><span class="lg-ic">⚙️</span><span class="lg-tx"><span class="lg-t">الإدارة المتقدمة</span><span class="lg-s">' + (type === 'quiz' ? 'الأسئلة والإجابات وتقارير النتائج' : type === 'video' ? 'أسئلة الفيديو وحذف نسخة لغة' : 'الأسئلة تحت الصورة') + '</span></span><span class="lg-ar">‹</span></button></div>';
-    $q('v6-back').onclick = hubHome;
     $q('v6-add').onclick = () => openForm(type, null);
     $q('v6-legacy').onclick = () => openLegacy(T.legacy);
     $q('v6-q').addEventListener('input', e => { hub.q = e.target.value; paintGrid(); });
@@ -6156,16 +6130,23 @@ try{(function(){
 
   /* =====================  الإدارة المتقدمة (الشاشات القديمة كما هي)  ===================== */
   const LEG = ['quizzes', 'cards', 'videos'];
-  function openLegacy(tab){ adminTab(tab); }
+  function openLegacy(tab){ hub.adv = true; adminTab(tab); }
   function injectBack(tab){
     const t = $q('tab-' + tab); if(!t || t.querySelector('.v6-legacy-bar')) return;
-    t.insertAdjacentHTML('afterbegin', '<div class="v6-legacy-bar"><button type="button" onclick="V6.back()">→ رجوع لمركز المحتوى</button><span>الإدارة المتقدمة</span></div>');
+    t.insertAdjacentHTML('afterbegin', '<div class="v6-legacy-bar"><button type="button" onclick="V6.back()">→ رجوع للقائمة</button><span>الإدارة المتقدمة</span></div>');
   }
   afterCall('adminTab', function(tab) {
   try{
       ensureNav();
-      if(tab === 'content'){ $q('tabbtn-content')?.classList.add('active'); if(hub.keep && hub.type){ hub.keep = false; openType(hub.type, true); } else hubHome(); }
-      else if(LEG.includes(tab)){ $q('tabbtn-' + tab)?.classList.remove('active'); $q('tabbtn-content')?.classList.add('active'); injectBack(tab); }
+      if(tab === 'content'){ adminTab('videos'); return; }
+      if(LEG.includes(tab)){
+        if(hub.adv){ hub.adv = false; injectBack(tab); }                    // الإدارة المتقدمة (الشاشة القديمة)
+        else {                                                               // الافتراضي: شبكة الكروت المباشرة
+          const type = ORDER.find(k => TYPES[k].legacy === tab), keep = !!(hub.keep && hub.type === type); hub.keep = false;
+          document.querySelectorAll('.admin-tab').forEach(e => e.classList.remove('active')); $q('tab-content')?.classList.add('active');
+          openType(type, keep);
+        }
+      }
     }catch(e){ console.error(e); }
 });
   afterCall('applyAdminScope', function(){ try{ ensureNav(); }catch(e){} });
@@ -6409,7 +6390,7 @@ exact: {
 'الكل':'All','منشور':'Published','مخفي':'Hidden','● منشور':'● Published','○ مخفي':'○ Hidden','✏️ تعديل':'✏️ Edit','تعديل':'Edit','حذف':'Delete','إلغاء':'Cancel','إغلاق ✕':'Close ✕','💾 حفظ':'💾 Save','إخفاء':'Hide','إظهار':'Show','نشر':'Publish','منطقة':'Region','وحدة':'Unit','إدارة':'Department','الإدارات':'Departments','المناطق':'Regions','الوحدات':'Units','كل المناطق':'All regions','كل الإدارات':'All departments','كل الوحدات':'All units','كل الموظفين':'All employees','🌐 كل الموظفين':'🌐 All employees','🎯 جمهور محدد':'🎯 Specific audience','📚 المحتوى':'📚 Content',
 'كروت السلامة ':'Safety Cards','الأسئلة والتقارير':'Questions & Reports','الأسئلة تحت الصورة':'Questions under the image','الجمهور المستهدف':'Target Audience','🎯 الجمهور المستهدف':'🎯 Target Audience','منشور (ظاهر للموظفين)':'Published (visible to employees)','🖼️':'🖼️',
 '🔍 ابحث بالعنوان…':'🔍 Search by title…','→ المحتوى':'→ Content','＋ إضافة كارت':'＋ Add Card','＋ إضافة اختبار':'＋ Add Quiz','＋ إضافة تدريب':'＋ Add Training','إضافة كارت':'Add Card','إضافة اختبار':'Add Quiz','إضافة تدريب':'Add Training',
-'→ رجوع لمركز المحتوى':'→ Back to Content Hub','الإدارة المتقدمة':'Advanced Management','جاري التحميل…':'Loading…','جاري التحميل...':'Loading...','لا يوجد أدمن':'No admins','مفيش نتائج':'No results','مفيش نتائج مطابقة':'No matching results','مفيش بيانات':'No data',
+'→ رجوع للقائمة':'→ Back to list','الإدارة المتقدمة':'Advanced Management','جاري التحميل…':'Loading…','جاري التحميل...':'Loading...','لا يوجد أدمن':'No admins','مفيش نتائج':'No results','مفيش نتائج مطابقة':'No matching results','مفيش بيانات':'No data',
 '🔐 تعيين كلمة سر موحدة للموظفين':'🔐 Set a Unified Password for Employees','كلمة السر الجديدة':'New password','تنطبق على مين؟':'Who does it apply to?','معاينة':'Preview','🔍 معاينة العدد':'🔍 Preview count','✅ تنفيذ':'✅ Apply','🌍 كل الموظفين':'🌍 All employees','↩️ استرجاع من نسخة احتياطية':'↩️ Restore from backup','استرجاع':'Restore',
 '🧹 مسح البيانات':'🧹 Purge Data','👥 قائمة الموظفين':'👥 Employees List','الوظائف':'Jobs','الأقسام':'Units','مسح':'Purge','الحالة':'Status','التاريخ':'Date','العنوان':'Title','الوصف':'Description','التعليقات والأسئلة':'Comments & Questions','ضعيف':'Weak','جيد':'Good','ممتاز':'Excellent','مقبول':'Acceptable','مدير فرع':'Branch Manager','مدير مصنع':'Factory Manager','مدير إنتاج':'Production Manager','مدير تشغيل':'Operations Manager','مشرف':'Supervisor','مسؤول جودة':'Quality Officer',
 'الاختبار':'Quiz','اختبار':'Quiz','تدريب':'Training','كارت':'Card','مخالفة':'Violation','رقم الموظف':'Employee ID','عدد الموظفين':'Employees','الخصم':'Deduction','متميز ≥80%':'Excellent ≥80%','يحتاج متابعة':'Needs follow-up','مفتوحة':'Open','إجمالي الموظفين':'Total Employees','التدريب %':'Training %','الاختبارات %':'Quizzes %','المخالفات %':'Violations %','الميداني %':'On-site %','الالتزام %':'Compliance %',
@@ -6766,7 +6747,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   // حالات وأنواع البلاغ من جدول النصوص الأساسي
   ['s_new','s_reviewing','s_closed','c_hygiene','c_equipment','c_storage','c_pests','c_other'].forEach(k => { if(N.ar && N.en && N.ar[k]) add({ [N.ar[k]]: N.en[k] }); });
   add({
-    'بلاغات الموظفين':'Employee Reports','الإعدادات':'Settings','وضع الموظف':'Employee mode','👤 حالتي كموظف':'👤 My status as an employee','حالتي كموظف':'My status as an employee',
+    'بلاغات الموظفين':'Employee Reports','الإعدادات':'Settings','الرئيسية':'Home','الناس':'People','كلمات السر':'Passwords','معادلة الالتزام':'Compliance formula','مسح البيانات':'Purge data','الهيكل التنظيمي':'Organization','وضع الموظف':'Employee mode','👤 حالتي كموظف':'👤 My status as an employee','حالتي كموظف':'My status as an employee',
     'تقدّمي في التدريب':'My training progress','متبقي عليّ':'Left for me','متأخر':'Overdue','افتح صفحة الموظف':'Open employee page',
     'افتح دايمًا على آخر صفحة استخدمتها':'Always open my last used page',
     'ملاحظة: وإنت داخل بصفة أدمن مينفعش تعدّل نتايجك أو مخالفاتك أو بلاغاتك — الأدمن التاني هو اللي يتعامل معاها.':'Note: while signed in as admin you cannot edit your own results, violations or reports — another admin handles them.',
@@ -8589,7 +8570,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
 /* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
 (function(){
-  const VERSION = 'v9.49';
+  const VERSION = 'v9.50';
   const $ = id => document.getElementById(id);
   let running = false;
   async function tx(text, lang){
@@ -9797,6 +9778,77 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   finallyCallAsync('loadAdminDashboard', async function(){ window.__v22on = false; });
   beforeCall('logout', function(){ window.__v22brand = ''; });
   window.V22 = { paintBranches };
+})();
+
+
+/* ===== V24 — القائمة الجانبية للأدمن: 4 مجموعات + مسار الصفحة في الهيدر ===== */
+(function(){
+  const $ = id => document.getElementById(id);
+  const ic = p => '<span class="nav-icon"><svg viewBox="0 0 24 24">' + p + '</svg></span>';
+  const GROUPS = [
+    {k:'home',     ar:'الرئيسية', items:['dashboard']},
+    {k:'people',   ar:'الناس',    items:['workers','org','admins','reports']},
+    {k:'training', ar:'التدريب',  items:['videos','quizzes','cards','onsite','vio-lib','comments']},
+    {k:'settings', ar:'الإعدادات', items:['branding','passwords','compliance','purge'], superOnly:true}
+  ];
+  const isSuper = () => !!(typeof adminUser !== 'undefined' && adminUser && adminUser.isSuper);
+  /* أزرار افتراضية (مش تبويبات): بتفتح صفحة موجودة وتفتح الجزء المطلوب */
+  const VIRT = {
+    compliance:{ar:'معادلة الالتزام', en:'Compliance Formula', icon:'<path d="M5 19 19 5"/><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="17" r="2.5"/>',
+      open(){ adminTab('dashboard'); const b = $('compliance-settings-box'); if(b && b.classList.contains('hidden') && typeof toggleComplianceSettings === 'function') toggleComplianceSettings(); setTimeout(() => b?.scrollIntoView({behavior:'smooth', block:'center'}), 60); }},
+    purge:{ar:'مسح البيانات', en:'Purge Data', icon:'<path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 10v6M14 10v6"/>',
+      open(){ adminTab('workers'); setTimeout(() => document.querySelector('#v4-wk-seg button[data-v="purge"]')?.click(), 0); }}
+  };
+  let pending = null, cur = 'dashboard';
+  const btn = k => $('tabbtn-' + k);
+
+  function relabel(){
+    const p = btn('passwords');
+    if(p && p.dataset.v24 !== '1'){ p.dataset.v24 = '1'; p.dataset.v9 = '1'; p.setAttribute('data-label', 'كلمات السر'); const l = p.querySelector('.nav-label'); if(l) l.innerHTML = 'كلمات السر<span class="nav-en">Passwords</span>'; }
+    const o = btn('org');
+    if(o && o.dataset.v24 !== '1'){ o.dataset.v24 = '1'; o.setAttribute('data-label', 'الهيكل التنظيمي'); const l = o.querySelector('.nav-label'); if(l) l.innerHTML = 'الهيكل التنظيمي<span class="nav-en">Organization</span>'; o.onclick = () => adminTab('org'); }
+  }
+  function makeVirtual(){
+    Object.keys(VIRT).forEach(k => {
+      if(btn(k)) return; const v = VIRT[k], b = document.createElement('button');
+      b.className = 'tab-btn hidden'; b.id = 'tabbtn-' + k; b.setAttribute('data-label', v.ar); b.type = 'button';
+      b.innerHTML = ic(v.icon) + '<span class="nav-label">' + v.ar + '<span class="nav-en">' + v.en + '</span></span>';
+      b.onclick = () => { pending = k; v.open(); }; $('admin-sidebar')?.appendChild(b);
+    });
+  }
+  let busy = false;
+  function organize(){
+    const sbn = $('admin-sidebar'); if(!sbn || busy) return; busy = true;
+    try{
+      relabel(); makeVirtual();
+      const sup = isSuper();
+      Object.keys(VIRT).forEach(k => btn(k)?.classList.toggle('hidden', !sup));
+      GROUPS.forEach(g => {
+        let box = sbn.querySelector('.nav-group[data-g="' + g.k + '"]');
+        if(!box){ box = document.createElement('div'); box.className = 'nav-group'; box.dataset.g = g.k; box.innerHTML = '<div class="nav-group-h">' + g.ar + '</div>'; sbn.appendChild(box); }
+        const want = g.items.map(btn).filter(Boolean);
+        const have = Array.from(box.children).slice(1);
+        if(want.length !== have.length || want.some((b, i) => b !== have[i])) want.forEach(b => box.appendChild(b));
+        box.classList.toggle('hidden', (g.superOnly && !sup) || !want.some(b => !b.classList.contains('hidden')));
+      });
+      const boxes = GROUPS.map(g => sbn.querySelector('.nav-group[data-g="' + g.k + '"]')).filter(Boolean);   // ترتيب المجموعات (بس لو اتغيّر)
+      const nowB = Array.from(sbn.children).filter(c => c.classList.contains('nav-group'));
+      if(boxes.some((b, i) => b !== nowB[i])) boxes.forEach(b => sbn.appendChild(b));
+    } finally { busy = false; }
+  }
+  function sync(){
+    const sbn = $('admin-sidebar'); if(!sbn) return;
+    sbn.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.id === 'tabbtn-' + cur));
+    const g = GROUPS.find(x => x.items.includes(cur)), b = btn(cur), c = $('admin-crumb');
+    if(c) c.textContent = g && b ? (g.k === 'home' ? b.dataset.label : g.ar + ' › ' + b.dataset.label) : '';
+  }
+  afterCall('adminTab', function(tab){
+    try{ cur = pending || (tab === 'content' ? 'videos' : tab); pending = null; organize(); sync(); }catch(e){ console.error('v24 nav', e); }
+  });
+  afterCall('applyAdminScope', function(){ try{ organize(); sync(); }catch(e){ console.error('v24 nav', e); } });
+  const sbn0 = $('admin-sidebar');
+  if(sbn0 && window.MutationObserver){ new MutationObserver(() => { if(!busy) { organize(); sync(); } }).observe(sbn0, {childList:true, subtree:true}); }
+  organize(); sync();
 })();
 
 </script>
