@@ -67,7 +67,7 @@
   .wicon-emoji{font-size:22px;}
   .wicon-label{font-size:11px;font-weight:800;color:var(--text);}
   .wicon-badge{position:absolute;top:-6px;left:-6px;background:#ef4444;color:#fff;font-size:10px;font-weight:800;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;border:2px solid #fff;}
-  .wsec-panel{animation:wsecIn .2s ease;}
+  .wsec-panel{animation:wsecIn .2s ease;scroll-margin-top:calc(var(--v9-hh,120px) + var(--v9-rh,64px) + 8px)}
   @keyframes wsecIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
   .lang-flags-row{display:flex;gap:4px;background:#f1f5f9;border:1px solid var(--border);padding:3px;border-radius:12px;}
   .lang-flag-btn{width:28px;height:28px;border-radius:9px;border:2px solid transparent;background:transparent;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;transition:.15s;}
@@ -251,7 +251,8 @@ button,.tab-btn,.os-chip{-webkit-tap-highlight-color:transparent;touch-action:ma
 .os-info{background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:8px 10px}
 
 /* زر تثبيت التطبيق */
-#pwa-install-btn{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom));left:16px;z-index:9999;align-items:center;gap:6px;background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;border:0;border-radius:999px;padding:11px 18px;font-family:inherit;font-weight:800;font-size:13px;cursor:pointer;box-shadow:0 10px 26px rgba(23,107,67,.4)}
+#pwa-install-btn{position:fixed;bottom:calc(14px + env(safe-area-inset-bottom));left:14px;z-index:9999;align-items:center;justify-content:center;width:44px;height:44px;background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;border:0;border-radius:50%;padding:0;font-size:20px;cursor:pointer;box-shadow:0 6px 18px rgba(23,107,67,.35);opacity:.92}
+#worker-section{padding-bottom:76px}
 
 @media (max-width:640px){
   .dx-hero{padding:14px}.dx-hero-stats>div{min-width:calc(50% - 6px);flex:1}
@@ -754,9 +755,10 @@ body.v9-login-en .login-hero *{text-align:left!important}
 .v11-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}.v11-tabs button{border:1px solid #cbd5e1;background:#fff;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer}.v11-tabs button.on{background:#176b43;color:#fff;border-color:#176b43}
 .v11-r{display:flex;justify-content:space-between;gap:8px;align-items:center;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:7px 10px;margin-bottom:5px;font-size:12px}.v11-r small{color:#64748b}.v11-r.ok b{color:#166534}.v11-r.no b{color:#b91c1c}
 /* — st — */
-.v12-push{margin:10px 12px;padding:12px 14px;border-radius:14px;background:linear-gradient(135deg,#ecfdf5,#f0f9ff);border:1px solid #bbf7d0;font-size:13px;color:#0f172a}
-.v12-push .v12-t{font-weight:800;margin-bottom:3px}.v12-push .v12-d{font-size:12px;color:#475569;margin-bottom:8px;line-height:1.5}.v12-btn{padding:9px 16px;font-size:12px;width:auto}
-.v12-push.ok{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:8px 14px;background:#f0fdf4;font-weight:700;font-size:12px}
+.v12-push{margin:8px 12px;padding:7px 8px 7px 10px;border-radius:12px;background:var(--ok-bg);border:1px solid #bbf7d0;font-size:12px;color:#0f172a;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.v12-push .v12-x{margin-inline-start:auto;border:0;background:transparent;color:var(--muted);font-size:16px;line-height:1;cursor:pointer;padding:6px 8px;border-radius:8px}
+.v12-push .v12-x:hover{background:rgba(15,23,42,.08)}
+.v12-push .v12-t{font-weight:800;margin:0}.v12-push .v12-d{flex:1 1 140px;font-size:11.5px;color:#475569;line-height:1.4}.v12-btn{padding:7px 14px;font-size:12px;width:auto}
 .v12-push.note{background:#fffbeb;border-color:#fde68a;font-size:12px;color:#92400e}
 .v12-link{background:none;border:0;color:#64748b;text-decoration:underline;font-size:11px;cursor:pointer}.v12-msg{width:100%;margin-top:6px;color:#b91c1c;font-size:12px}
 /* — st — */
@@ -784,10 +786,10 @@ body.v9-login-en .login-hero *{text-align:left!important}
   #worker-cards-grid .safety-card-slide>.card{border-radius:22px;padding:0!important;overflow:hidden;box-shadow:0 10px 30px rgba(15,23,42,.10);border:1px solid rgba(148,163,184,.25);position:relative}
   #worker-cards-grid .safety-card-slide .card-img{border-radius:0!important;border:0!important;max-height:62vh!important}
   #worker-cards-grid .safety-card-slide .v17-body{padding:14px 16px 16px}
-  .v17-ch{position:absolute;top:12px;inset-inline:12px;display:flex;justify-content:space-between;align-items:center;z-index:2;pointer-events:none}
+  .v17-ch{display:flex;justify-content:space-between;align-items:center;padding:10px 12px 0}
   .v17-no{direction:ltr;unicode-bidi:isolate}
-  .v17-no,.v17-seen{background:rgba(15,23,42,.72);color:#fff;font-size:12px;font-weight:800;border-radius:999px;padding:4px 11px;backdrop-filter:blur(4px)}
-  .v17-seen{background:rgba(22,163,74,.92);display:none}
+  .v17-no,.v17-seen{background:var(--mute-bg);color:var(--mute);font-size:12px;font-weight:800;border-radius:999px;padding:4px 11px}
+  .v17-seen{background:var(--ok-bg);color:var(--ok);display:none}
   .v17-card.is-seen .v17-seen{display:inline-block}
   .v17-ttl{font-size:17px;font-weight:900;line-height:1.5;margin:0 0 6px}
   .v17-got{width:100%;margin:10px 0 4px;padding:12px;border:0;border-radius:14px;font-size:15px;font-weight:800;color:#fff;background:linear-gradient(135deg,#16a34a,#22c55e);box-shadow:0 6px 16px rgba(22,163,74,.3)}
@@ -1095,10 +1097,11 @@ body.v9-dark .lt-bar{background:#0f172a}body.v9-dark .lt-tab.on{background:#1e29
 
     <!-- بطاقات السلامة -->
     <div class="card wsec-panel hidden" id="wsec-panel-cards" style="padding:16px;margin-bottom:14px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
         <div class="section-title" id="wt-cards-title">بطاقات سلامة الغذاء</div>
         <span id="carousel-counter" class="badge badge-blue">0 / 0</span>
       </div>
+      <div class="muted" id="wt-cards-hint" style="font-size:11px;margin-bottom:12px;">اطّلع على كل بطاقة واضغط «تم الاطلاع» بعد ما تقرأها.</div>
       <div id="worker-cards-grid" class="worker-carousel"></div>
       <div id="worker-cards-empty" class="hidden muted" style="text-align:center;padding:20px;font-size:13px;"></div>
     </div>
@@ -1125,7 +1128,7 @@ body.v9-dark .lt-bar{background:#0f172a}body.v9-dark .lt-tab.on{background:#1e29
     </div>
 
     <!-- أسئلتي وتعليقاتي (ملخص) -->
-    <div class="card u-pad16">
+    <div class="card u-pad16 hidden" id="worker-comments-card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
         <div class="section-title" id="wt-comments-title">أسئلتي وتعليقاتي</div>
         <button class="btn-secondary btn-sm" id="wt-comments-viewall" style="font-size:11px;" onclick="toggleWorkerCommentsView()">عرض الكل</button>
@@ -1913,6 +1916,11 @@ const WORKER_UI_I18N = {
     viewAll:'सभी देखें',viewLess:'कम देखें',noCommentsYet:'आपने अभी तक कोई टिप्पणी या प्रश्न नहीं भेजा है',commentsCountSuffix:'टिप्पणी/प्रश्न भेजे गए',logout:'लॉग आउट'}
 };
 function wt(key){ const d=WORKER_UI_I18N[currentLang]||WORKER_UI_I18N.ar; return d[key]!=null?d[key]:WORKER_UI_I18N.ar[key]; }
+Object.assign(WORKER_UI_I18N.ar,{replayBtn:'إعادة المشاهدة',sendBtn:'إرسال',installApp:'تثبيت التطبيق',cardsHint:'اطّلع على كل بطاقة واضغط «تم الاطلاع» بعد ما تقرأها.'});
+Object.assign(WORKER_UI_I18N.en,{replayBtn:'Watch again',sendBtn:'Send',installApp:'Install app',cardsHint:'Read each card, then tap “Got it” when you are done.'});
+Object.assign(WORKER_UI_I18N.bn,{replayBtn:'আবার দেখুন',sendBtn:'পাঠান',installApp:'অ্যাপ ইনস্টল করুন',cardsHint:'প্রতিটি কার্ড পড়ুন, তারপর “দেখেছি” চাপুন।'});
+Object.assign(WORKER_UI_I18N.ne,{replayBtn:'फेरि हेर्नुहोस्',sendBtn:'पठाउनुहोस्',installApp:'एप इन्स्टल गर्नुहोस्',cardsHint:'प्रत्येक कार्ड पढ्नुहोस्, अनि “हेरियो” थिच्नुहोस्।'});
+Object.assign(WORKER_UI_I18N.hi,{replayBtn:'फिर से देखें',sendBtn:'भेजें',installApp:'ऐप इंस्टॉल करें',cardsHint:'हर कार्ड पढ़ें, फिर “देख लिया” दबाएँ।'});
 async function destroyAllPlayers(){
   try{
     Object.keys(topicTimersV22||{}).forEach(id=>{ try{clearInterval(topicTimersV22[id]); delete topicTimersV22[id];}catch(e){} });
@@ -2408,6 +2416,7 @@ async function loadWorkerCommentsSummary(){
   const box=$('worker-comments-summary-box'); if(!box) return;
   const { data } = await sb.from('content_comments').select('*').eq('worker_id',currentUser.id).order('created_at',{ascending:false});
   const all=data||[];
+  $('worker-comments-card')?.classList.toggle('hidden', !all.length);
   const rows = workerCommentsExpanded ? all : all.slice(0,2);
   box.innerHTML = rows.length ? rows.map(c=>'<div style="background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:6px;"><div class="u-fs12">💬 '+esc(c.comment)+'</div><div class="muted u-fs10">'+fmtDate(c.created_at)+'</div></div>').join('') : '<div class="muted" style="font-size:12px;text-align:center;padding:8px;">'+esc(wt('noCommentsYet'))+'</div>';
   const btn=$('wt-comments-viewall');
@@ -2426,6 +2435,7 @@ function renderWorkerStaticLabels(){
   if($('wt-videos-title')) $('wt-videos-title').textContent = wt('videosTitle');
   if($('wt-videos-hint')) $('wt-videos-hint').textContent = wt('videosHint');
   if($('wt-cards-title')) $('wt-cards-title').textContent = wt('cardsTitle');
+  if($('wt-cards-hint')) $('wt-cards-hint').textContent = wt('cardsHint');
   if($('wt-quizzes-title')) $('wt-quizzes-title').textContent = wt('quizzesTitle');
   if($('wt-violations-title')) $('wt-violations-title').textContent = wt('violationsTitle');
   if($('wt-comments-title')) $('wt-comments-title').textContent = wt('commentsTitle');
@@ -3519,8 +3529,8 @@ try{(function(){
             '</div>'+ 
           '</div>'+ 
           '<div id="topic-note-'+topic.id+'" class="hidden"></div>'+ 
-          '<div style="display:flex;justify-content:flex-start;margin-top:6px;"><button class="btn-secondary btn-sm u-fs10" onclick="replayTopicVideo('+topic.id+')">إعادة المشاهدة <small class="nav-en" style="display:inline;font-size:8px">Replay</small></button>'+(completed?' <span class="badge badge-green" style="font-size:9px;margin-right:6px;">مكتمل ✅</span>':'')+'</div>'+ 
-          '<div class="u-mt8"><input id="vcmt-topic-'+topic.id+'" type="text" class="input-field u-fs12" placeholder="'+esc(commentPlaceholder())+'"/><button class="btn-secondary btn-sm" style="margin-top:5px;font-size:11px;" onclick="addTopicComment('+topic.id+')">إرسال <small class="nav-en" style="display:inline;font-size:8px">Send</small></button></div>'+ 
+          '<div style="display:flex;justify-content:flex-start;margin-top:6px;"><button class="btn-secondary btn-sm u-fs10" onclick="replayTopicVideo('+topic.id+')">'+esc(wt('replayBtn'))+'</button>'+(completed?' <span class="badge badge-green" style="font-size:9px;margin-right:6px;">'+esc(wt('completedLbl'))+' ✅</span>':'')+'</div>'+ 
+          '<div class="u-mt8"><input id="vcmt-topic-'+topic.id+'" type="text" class="input-field u-fs12" placeholder="'+esc(commentPlaceholder())+'"/><button class="btn-secondary btn-sm" style="margin-top:5px;font-size:11px;" onclick="addTopicComment('+topic.id+')">'+esc(wt('sendBtn'))+'</button></div>'+ 
         '</div></div></div>';
     }).join('');
   };
@@ -3917,7 +3927,7 @@ try{(function(){
         '<div style="font-size:15px;font-weight:800;margin:9px 0 4px">'+esc(tr(c,'title'))+'</div>'+
         '<p style="font-size:12px;color:#475569;margin-bottom:8px">'+esc(tr(c,'description'))+'</p>'+
         '<input id="ccmt-'+c.id+'" class="input-field u-fs12" placeholder="'+esc(commentPlaceholder())+'"/>'+
-        '<button class="btn-secondary btn-sm" style="margin-top:6px" onclick="addComment(\'card\','+c.id+')">إرسال <small class="nav-en">Send</small></button>'+
+        '<button class="btn-secondary btn-sm" style="margin-top:6px" onclick="addComment(\'card\','+c.id+')">'+esc(wt('sendBtn'))+'</button>'+
         '</div></div>';
     }).join('');
     // إعادة محاولة تحميل الصورة مرة واحدة (مهلة تحميل بطيئة/تحديث سريع للصفحة) قبل إظهار رسالة فشل حقيقية
@@ -4710,7 +4720,9 @@ try{(function(){
   let deferred = null;
   const btn = document.createElement('button');
   btn.id = 'pwa-install-btn';
-  btn.innerHTML = '📲 تثبيت التطبيق';
+  btn.innerHTML = '📲';
+  const setLbl = () => { try{ const s = wt('installApp'); btn.title = s; btn.setAttribute('aria-label', s); }catch(e){ btn.title = 'تثبيت التطبيق'; } };
+  setLbl(); btn.addEventListener('mouseenter', setLbl); btn.addEventListener('touchstart', setLbl, {passive:true});
   btn.style.display = 'none';
   document.addEventListener('DOMContentLoaded', () => document.body.appendChild(btn));
   if(document.body) document.body.appendChild(btn);
@@ -8265,14 +8277,8 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     }catch(e){ console.error('push enable', e); msg = t('fail'); }
     busy = false; draw();
   }
-  async function disable(){
-    if(busy) return; busy = true;
-    try{
-      const sub = await currentSub();
-      if(sub){ const ep = sub.endpoint; try{ await sb.from('fs_push_subs').delete().eq('endpoint', ep); }catch(e){} await sub.unsubscribe(); }
-    }catch(e){ console.error('push disable', e); }
-    busy = false; draw();
-  }
+  const dKey = () => 'v12_dismiss_' + workerId();
+  const dismissed = () => { try{ return localStorage.getItem(dKey()) === '1'; }catch(e){ return false; } };
 
   async function draw(){
     const wid = workerId();
@@ -8284,17 +8290,16 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
       if(anchor && anchor.parentElement && $q('v9-banner')) anchor.insertAdjacentElement('afterend', host);
       else { const ws = $q('worker-section'); if(!ws) return; ws.insertBefore(host, ws.firstChild); }
     }
-    if(!supported()){ host.className = 'v12-push note'; host.innerHTML = '<span>' + E(t('unsup')) + '</span>'; return; }
+    if(dismissed()){ host.remove(); return; }
+    const X = '<button type="button" class="v12-x" id="v12-x" aria-label="✕">✕</button>';
+    const wireX = () => { const x = $q('v12-x'); if(x) x.onclick = () => { try{ localStorage.setItem(dKey(), '1'); }catch(e){} host.remove(); }; };
+    if(!supported()){ host.className = 'v12-push note'; host.innerHTML = '<span class="v12-d">' + E(t('unsup')) + '</span>' + X; wireX(); return; }
     const perm = Notification.permission, sub = perm === 'granted' ? await currentSub() : null;
-    if(perm === 'denied'){ host.className = 'v12-push note'; host.innerHTML = '<span>' + E(t('denied')) + '</span>'; return; }
-    if(sub){
-      host.className = 'v12-push ok';
-      host.innerHTML = '<span>' + E(t('active')) + '</span><button type="button" class="v12-link" id="v12-off">' + E(t('off')) + '</button>' + (msg ? '<div class="v12-msg">' + E(msg) + '</div>' : '');
-      $q('v12-off').onclick = disable; return;
-    }
+    if(perm === 'denied'){ host.className = 'v12-push note'; host.innerHTML = '<span class="v12-d">' + E(t('denied')) + '</span>' + X; wireX(); return; }
+    if(sub){ host.remove(); return; }   // اتفعّلت: الشريط يختفي
     host.className = 'v12-push';
-    host.innerHTML = '<div class="v12-t">' + E(t('title')) + '</div><div class="v12-d">' + E(t('desc')) + '</div><button type="button" class="btn-primary v12-btn" id="v12-on"' + (busy ? ' disabled' : '') + '>' + E(t('on')) + '</button>' + (msg ? '<div class="v12-msg">' + E(msg) + '</div>' : '');
-    $q('v12-on').onclick = enable;
+    host.innerHTML = '<span class="v12-d">' + E(t('desc')) + '</span><button type="button" class="btn-primary v12-btn" id="v12-on"' + (busy ? ' disabled' : '') + '>' + E(t('on')) + '</button>' + X + (msg ? '<div class="v12-msg" style="flex-basis:100%">' + E(msg) + '</div>' : '');
+    $q('v12-on').onclick = enable; wireX();
   }
 
   /* مزامنة صامتة: لو الجهاز مشترك بالفعل نربطه بالموظف الحالي وبلغته الحالية */
@@ -8324,7 +8329,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   }
 
   
-  window.V12 = { enable, disable, draw, resync };
+  window.V12 = { enable, draw, resync };
 })();
 
 
@@ -8673,7 +8678,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
 /* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
 (function(){
-  const VERSION = 'v9.53';
+  const VERSION = 'v9.54';
   const $ = id => document.getElementById(id);
   let running = false;
   async function tx(text, lang){
@@ -10152,6 +10157,29 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   document.addEventListener('focusout',function(){ setTimeout(refresh,300); });
   try{scan();}catch(e){}
   window.LangTabs={scan:scan,refresh:refresh};
+})();
+
+/* ===== V27: صفحة الموظف — الصعود لأول القسم لما يتغيّر (مع حساب الشريط الثابت) ===== */
+(function(){
+  function stackH(){
+    var hd=document.querySelector('#worker-section > .v9-head'), row=document.querySelector('#worker-section .wicon-row');
+    var rh=row?Math.round(row.getBoundingClientRect().height):64;
+    document.documentElement.style.setProperty('--v9-rh',rh+'px');
+    return (hd?Math.round(hd.getBoundingClientRect().height):0)+rh+8;
+  }
+  function toStart(name){
+    var p=document.getElementById('wsec-panel-'+name); if(!p||p.classList.contains('hidden')) return;
+    var off=stackH(), y=p.getBoundingClientRect().top+window.scrollY-off;
+    var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches;
+    window.scrollTo({top:Math.max(0,y),behavior:reduce?'auto':'smooth'});
+  }
+  document.addEventListener('click',function(e){
+    var b=e.target.closest&&e.target.closest('[id^="wicon-btn-"]'); if(!b) return;
+    var name=b.id.replace('wicon-btn-','');
+    setTimeout(function(){ toStart(name); },60);
+  });
+  window.addEventListener('resize',stackH);
+  window.V27={toStart:toStart,stackH:stackH};
 })();
 </script>
 </body>
