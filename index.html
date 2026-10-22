@@ -5900,25 +5900,27 @@ try{(function(){
     audLoaded = true; return AUD;
   }
   const setsOf = rows => {
-    const S = {R:new Set(), D:new Set(), U:new Set()};
-    (rows || []).forEach(r => (r.kind === 'region' ? S.R : r.kind === 'department' ? S.D : S.U).add(Number(r.ref_id)));
+    const S = {R:new Set(), D:new Set(), U:new Set(), J:new Set()};
+    (rows || []).forEach(r => (r.kind === 'region' ? S.R : r.kind === 'department' ? S.D : r.kind === 'role' ? S.J : S.U).add(Number(r.ref_id)));
     return S;
   };
   /* هل الموظف (ctx) داخل جمهور الصفوف؟ وحدة محددة = تكفي، أو (منطقة ∧ إدارة) لما يتحددوا */
   function audMatch(rows, ctx){
     const S = setsOf(rows);
+    if(S.J.size && !S.J.has(Number(ctx.job_role_id))) return false;           // الوظيفة شرط إضافي على أي جمهور
     if(ctx.section_id != null && S.U.has(Number(ctx.section_id))) return true;
-    if(!S.R.size && !S.D.size) return false;
+    if(!S.R.size && !S.D.size) return !!S.J.size && !S.U.size;                // وظائف بس = كل الأماكن
     return (!S.R.size || S.R.has(Number(ctx.region_id))) && (!S.D.size || S.D.has(Number(ctx.dept)));
   }
   /* الوحدات اللي يوصلها الجمهور (للأدمن: تحقق النطاق + التقدير) */
   function unitsOf(S){
+    if(!S.U.size && !S.R.size && !S.D.size && S.J && S.J.size) return secs();   // وظائف بس = كل الوحدات
     return secs().filter(s => S.U.has(Number(s.id)) ||
       ((S.R.size || S.D.size) && (!S.R.size || S.R.has(Number(s.region_id))) && (!S.D.size || S.D.has(Number(s.department_id)))));
   }
   function workerCtx(w, roleDept){
     const u = secs().find(s => Number(s.id) === Number(w.section_id));
-    return {section_id: w.section_id, region_id: u ? u.region_id : null, dept: (u && u.department_id != null) ? u.department_id : (roleDept != null ? roleDept : null)};
+    return {section_id: w.section_id, job_role_id: w.job_role_id, region_id: u ? u.region_id : null, dept: (u && u.department_id != null) ? u.department_id : (roleDept != null ? roleDept : null)};
   }
   const curCtx = () => workerCtx(currentUser, currentUser && currentUser.target_department_id);
   /* لو المحتوى مقيّد (audience_restricted) يبقى الجمهور هو الحكم، وإلا (قديم) يعدّي هنا وقواعده القديمة بتحكم */
@@ -6006,12 +6008,14 @@ try{(function(){
   }catch(e){ console.error('V6 worker filters', e); }
 
   /* =====================  بيانات الهيكل  ===================== */
-  let regions = [], depts = [];
+  let regions = [], depts = [], jroles = [];
   async function loadMeta(){
-    const [r, d] = await Promise.all([
+    const [r, d, jr] = await Promise.all([
       sb.from('regions').select('*').order('sort_order').order('id'),
-      sb.from('target_departments').select('*').order('id')
+      sb.from('target_departments').select('*').order('id'),
+      sb.from('job_roles').select('*').order('id')
     ]);
+    jroles = (jr.data || []).filter(x => x.is_active !== false);
     regions = (r.data || []).filter(x => x.is_active !== false);
     depts = (d.data || []).filter(x => x.is_active !== false);
   }
@@ -6043,6 +6047,7 @@ try{(function(){
       if(S.R.size) parts.push('🌍 ' + [...S.R].map(i => nm(regions, i) || '؟').join('، '));
       if(S.D.size) parts.push('🏢 ' + [...S.D].map(i => nm(depts, i) || '؟').join('، '));
       if(S.U.size) parts.push('🏭 ' + [...S.U].map(i => { const u = secs().find(s => Number(s.id) === i); return u ? u.name_ar : '؟'; }).join('، '));
+      if(S.J.size) parts.push('👷 ' + [...S.J].map(i => nm(jroles, i) || '؟').join('، '));
       return parts.length ? parts.join(' · ') : '⚠️ بدون جمهور (مخفي عن الكل)';
     }
     const parts = [];
@@ -6193,7 +6198,7 @@ try{(function(){
     const myUnits = sup ? secs() : secs().filter(s => ids.includes(Number(s.id)));
     const allowR = sup ? null : new Set(myUnits.map(u => Number(u.region_id)).filter(Boolean));
     const allowD = sup ? null : new Set(myUnits.map(u => Number(u.department_id)).filter(Boolean));
-    const st = {mode: init.restricted || !sup ? 'custom' : 'all', R:new Set(init.R), D:new Set(init.D), U:new Set(init.U)};
+    const st = {mode: init.restricted || !sup ? 'custom' : 'all', R:new Set(init.R), D:new Set(init.D), U:new Set(init.U), J:new Set(init.J || [])};
     if(!audReady){   // جدول الجمهور مش موجود → نفس النظام القديم (وحدة + إدارة واحدة)
       host.innerHTML = '<div class="v6-warn">⚠️ ميزة تعدد الجمهور محتاجة تحديث قاعدة البيانات. لحد ما يتعمل بيشتغل التوجيه القديم (وحدة واحدة + إدارة واحدة).</div>' +
         '<div class="v6-row"><label class="field-label">الوحدة</label><select id="v6-old-sec" class="input-field"><option value="">كل الوحدات</option>' + myUnits.map(u => '<option value="' + u.id + '" ' + (init.legacySec === Number(u.id) ? 'selected' : '') + '>' + esc(u.name_ar) + '</option>').join('') + '</select></div>' +
@@ -6207,6 +6212,7 @@ try{(function(){
       '<div id="v6-aud-body">' +
         '<div class="v6-aud-h">🌍 المناطق <small>اختار واحدة أو أكتر — لو ما اخترتش = كل المناطق</small></div><div class="v6-chips" data-k="R">' + chipsHtml(regions, st.R, allowR) + '</div>' +
         '<div class="v6-aud-h">🏢 الإدارات <small>اختار واحدة أو أكتر — لو ما اخترتش = كل الإدارات</small></div><div class="v6-chips" data-k="D">' + chipsHtml(depts, st.D, allowD) + '</div>' +
+        '<div class="v6-aud-h">👷 الوظائف <small>اختياري — لو اخترت وظيفة بيوصل لأصحابها بس (داخل الأماكن/الإدارات المختارة). لو ما اخترتش = كل الوظائف</small></div><div class="v6-chips" data-k="J">' + chipsHtml(jroles, st.J, null) + '</div>' +
         '<details class="v6-more"' + (st.U.size ? ' open' : '') + '><summary>🏭 وحدات محددة بالاسم (اختياري)</summary><div class="v6-chips" data-k="U">' + chipsHtml(myUnits, st.U, null) + '</div></details>' +
         '<div class="v6-aud-sum" id="v6-sum"></div>' +
       '</div>';
@@ -6216,14 +6222,14 @@ try{(function(){
     function sum(){
       const el = host.querySelector('#v6-sum'); if(!el) return;
       if(st.mode === 'all'){ el.textContent = ''; return; }
-      const S = {R:st.R, D:st.D, U:st.U}, us = unitsOf(S);
-      if(!st.R.size && !st.D.size && !st.U.size){ el.innerHTML = '⚠️ لسه ما اخترتش أي منطقة/إدارة/وحدة.'; return; }
+      const S = {R:st.R, D:st.D, U:st.U, J:st.J}, us = unitsOf(S);
+      if(!st.R.size && !st.D.size && !st.U.size && !st.J.size){ el.innerHTML = '⚠️ لسه ما اخترتش أي منطقة/إدارة/وحدة/وظيفة.'; return; }
       el.innerHTML = '➜ هيوصل لـ <b>' + us.length + '</b> وحدة' + (us.length ? ': ' + esc(us.slice(0, 6).map(u => u.name_ar).join('، ')) + (us.length > 6 ? '…' : '') : ' — <span style="color:#b91c1c">مفيش وحدة مطابقة!</span>') + ' <span id="v6-wc"></span>';
       clearTimeout(tmr);
       tmr = setTimeout(async () => {
         try{
           if(!us.length) return;
-          const r = await sb.from('workers_evaluations').select('id', {count:'exact', head:true}).in('section_id', us.map(u => u.id));
+          let q = sb.from('workers_evaluations').select('id', {count:'exact', head:true}).in('section_id', us.map(u => u.id)); if(st.J.size) q = q.in('job_role_id', [...st.J]); const r = await q;
           const w = host.querySelector('#v6-wc'); if(w && r.count != null) w.textContent = '(≈ ' + r.count + ' موظف)';
         }catch(e){}
       }, 250);
@@ -6237,11 +6243,12 @@ try{(function(){
     host.addEventListener('change', e => { if(e.target.name === 'v6m') setMode(e.target.value); });
     setMode(st.mode);
     return {legacy:false,
-      get(){ return st.mode === 'all' ? {restricted:false, R:[], D:[], U:[]} : {restricted:true, R:[...st.R], D:[...st.D], U:[...st.U]}; },
+      get(){ return st.mode === 'all' ? {restricted:false, R:[], D:[], U:[], J:[]} : {restricted:true, R:[...st.R], D:[...st.D], U:[...st.U], J:[...st.J]}; },
       validate(){
         if(st.mode === 'all') return '';
-        if(!st.R.size && !st.D.size && !st.U.size) return 'اختار الجمهور: منطقة أو إدارة أو وحدة على الأقل (أو "كل الموظفين")';
-        const us = unitsOf({R:st.R, D:st.D, U:st.U});
+        if(!st.R.size && !st.D.size && !st.U.size && !st.J.size) return 'اختار الجمهور: منطقة أو إدارة أو وحدة أو وظيفة على الأقل (أو "كل الموظفين")';
+        if(!sup && !st.R.size && !st.D.size && !st.U.size) return 'اختار منطقة أو إدارة أو وحدة من نطاقك مع الوظيفة';
+        const us = unitsOf({R:st.R, D:st.D, U:st.U, J:st.J});
         if(!us.length) return 'الاختيار ده مفيهوش أي وحدة مطابقة — راجع المنطقة/الإدارة';
         if(!sup){ const out = us.filter(u => !ids.includes(Number(u.id))); if(out.length) return 'الجمهور المختار بيتعدى نطاقك (مثلاً: ' + out[0].name_ar + ') — ضيّق الاختيار'; }
         return '';
@@ -6249,8 +6256,8 @@ try{(function(){
   }
   /* الجمهور الابتدائي لعنصر موجود (للتعديل) */
   function initAud(type, it){
-    if(!it) return {restricted:false, R:[], D:[], U:[]};
-    if(it.audience_restricted){ const S = setsOf(AUD[akey(type, it.id)] || []); return {restricted:true, R:[...S.R], D:[...S.D], U:[...S.U]}; }
+    if(!it) return {restricted:false, R:[], D:[], U:[], J:[]};
+    if(it.audience_restricted){ const S = setsOf(AUD[akey(type, it.id)] || []); return {restricted:true, R:[...S.R], D:[...S.D], U:[...S.U], J:[...S.J]}; }
     const U = it.section_id ? [Number(it.section_id)] : [], D = it.target_department_id ? [Number(it.target_department_id)] : [];
     return {restricted:!!(U.length || D.length), R:[], D, U, legacySec:it.section_id ? Number(it.section_id) : null, legacyDept:it.target_department_id ? Number(it.target_department_id) : null,
       converted:!!(U.length || D.length)};
@@ -6259,7 +6266,7 @@ try{(function(){
     await sb.from('content_audience').delete().eq('item_type', type).eq('item_id', id);
     delete AUD[akey(type, id)];
     if(!a.restricted) return;
-    const rows = [].concat(a.R.map(x => ({kind:'region', ref_id:x})), a.D.map(x => ({kind:'department', ref_id:x})), a.U.map(x => ({kind:'section', ref_id:x})))
+    const rows = [].concat(a.R.map(x => ({kind:'region', ref_id:x})), a.D.map(x => ({kind:'department', ref_id:x})), a.U.map(x => ({kind:'section', ref_id:x})), (a.J || []).map(x => ({kind:'role', ref_id:x})))
       .map(r => ({item_type:type, item_id:id, kind:r.kind, ref_id:r.ref_id}));
     if(rows.length){ const r = await sb.from('content_audience').insert(rows); if(r.error) throw r.error; }
     AUD[akey(type, id)] = rows.map(r => ({kind:r.kind, ref_id:r.ref_id}));
@@ -8248,14 +8255,15 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
       const roles = {}; try{ (await allRows(() => sb.from('job_roles').select('id,target_department_id').order('id'))).forEach(r => roles[r.id] = r.target_department_id); }catch(e){}
       let aud = []; try{ const a = await sb.from('content_audience').select('kind,ref_id').eq('item_type', type).eq('item_id', id); aud = a.data || []; }catch(e){}
       const secs = (typeof sections !== 'undefined' ? sections : []);
-      const S = { R: new Set(), D: new Set(), U: new Set() };
-      aud.forEach(r => (r.kind === 'region' ? S.R : r.kind === 'department' ? S.D : S.U).add(Number(r.ref_id)));
+      const S = { R: new Set(), D: new Set(), U: new Set(), J: new Set() };
+      aud.forEach(r => (r.kind === 'region' ? S.R : r.kind === 'department' ? S.D : r.kind === 'role' ? S.J : S.U).add(Number(r.ref_id)));
       const eligible = w => {
         const u = secs.find(s => Number(s.id) === Number(w.section_id));
         const dept = (u && u.department_id != null) ? u.department_id : roles[w.job_role_id];
         if(item && item.audience_restricted){
+          if(S.J.size && !S.J.has(Number(w.job_role_id))) return false;
           if(S.U.has(Number(w.section_id))) return true;
-          if(!S.R.size && !S.D.size) return false;
+          if(!S.R.size && !S.D.size) return !!S.J.size && !S.U.size;
           return (!S.R.size || S.R.has(Number(u && u.region_id))) && (!S.D.size || S.D.has(Number(dept)));
         }
         if(item && item.section_id && Number(item.section_id) !== Number(w.section_id)) return false;
@@ -8760,7 +8768,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
 /* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
 (function(){
-  const VERSION = 'v9.61';
+  const VERSION = 'v9.62';
   const $ = id => document.getElementById(id);
   let running = false;
   async function tx(text, lang){
@@ -10300,6 +10308,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   async function windowDays(){ cacheAt=0; return (await cfg()).days; }
   async function ctx(ids){
     var c=await cfg();
+    try{ if(window.V6&&window.V6.loadAud) await window.V6.loadAud(); }catch(e){}
     var parts=ids&&ids.length?chunk(ids,150):[null];
     function by(table,cols){ return Promise.all(parts.map(function(p){ return pages(function(){ var q=sb.from(table).select(cols); if(p) q=q.in('worker_id',p); return q.order('id'); }); })).then(function(a){return [].concat.apply([],a);}); }
     var res=await Promise.all([pages(function(){return sb.from('training_topics').select('*').order('id');}),by('training_progress','worker_id,topic_id,completed'),by('quiz_attempts','worker_id,score,is_current'),by('onsite_training_participants','worker_id,admin_evaluation'),pages(function(){return sb.from('job_roles').select('id,target_department_id').order('id');})]);
@@ -10312,6 +10321,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   }
   /* التدريب بيتحسب على المطلوب من الموظف في فترة الاحتساب بس: الجاري + اللي انتهى خلال آخر N يوم */
   function counts(t,w,dept,cut,now){
+    if(t.audience_restricted&&window.V6&&window.V6.audMatch){ try{ if(!window.V6.audMatch((window.V6.aud||{})['video:'+t.id]||[],window.V6.workerCtx(w,dept))) return false; }catch(e){} }
     if(t.section_id&&Number(t.section_id)!==Number(w.section_id)) return false;
     if(t.target_department_id&&Number(t.target_department_id)!==Number(dept)) return false;
     var since=t.visible_since?+new Date(t.visible_since):(t.created_at?+new Date(t.created_at):0);
@@ -11030,6 +11040,20 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     qr:function(){ ensure(); var host=document.getElementById('fs-plan-qr'); var url=location.origin+location.pathname; host.innerHTML='<div id="fs-qr-img" style="display:inline-block;padding:10px;background:#fff"></div><div class="muted" style="font-size:12px">'+E(url)+'</div><button class="btn-secondary btn-sm" onclick="FSPlan.printQr()">🖨️ طباعة بوستر</button>'; function draw(){ new QRCode(document.getElementById('fs-qr-img'),{text:url,width:200,height:200}); } if(window.QRCode) return draw(); var s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'; s.onload=draw; s.onerror=function(){ host.insertAdjacentHTML('afterbegin','<div class="u-red">تعذّر تحميل مكتبة QR (محتاجة إنترنت).</div>'); }; document.head.appendChild(s); },
     printQr:function(){ var el=document.getElementById('fs-qr-img'); if(!el) return; var w=window.open('','_blank'); if(!w) return; w.document.write('<html dir="rtl"><body style="text-align:center;font-family:Tahoma;padding:40px"><h1>سجّل دخولك للتدريب</h1><p style="font-size:20px">امسح الكود بالموبايل</p>'+el.innerHTML+'<script>setTimeout(function(){print()},400)<\/script></body></html>'); w.document.close(); }
   };
+  /* تنبيه أوتوماتيك للأدمن أول ما يدخل: كام موظف متأخر (حسب نطاقه) */
+  var alerted=null;
+  async function alertLate(){
+    try{
+      var u=typeof adminUser!=='undefined'?adminUser:null; if(!u){ alerted=null; return; }
+      var key=String(u.id||u.workerId||'x'); if(alerted===key) return; alerted=key;
+      var m=await build(); if(!m.late.length) return;
+      var tab=document.getElementById('tab-dashboard'); if(!tab||document.getElementById('fs-late-banner')) return;
+      var ppl={}; m.late.forEach(function(x){ppl[x.id]=1;}); var over=m.late.filter(function(x){return x.overdue;}).length;
+      tab.insertAdjacentHTML('afterbegin','<div class="card" id="fs-late-banner" style="padding:12px 14px;margin-bottom:12px;border-inline-start:4px solid #dc2626;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><div>⏰ <b>'+Object.keys(ppl).length+' موظف</b> متأخر أو قرّب ميعاد تدريبه'+(over?' (<span style="color:#dc2626">'+over+' متأخر فعلًا</span>)':'')+'</div><div><button class="btn-secondary btn-sm" onclick="FSPlan.openLate()">عرض التفاصيل</button> <button class="btn-secondary btn-sm" onclick="this.closest(\'#fs-late-banner\').remove()">✕</button></div></div>');
+    }catch(e){}
+  }
+  FSPlan.openLate=function(){ try{ if(typeof adminTab==='function') adminTab('compliance'); }catch(e){} setTimeout(function(){ FSPlan.load(); var c=document.getElementById('fs-plan-card'); if(c&&c.scrollIntoView) c.scrollIntoView({behavior:'smooth'}); },400); };
+  setInterval(function(){ var as=document.getElementById('admin-section'); if(as&&!as.classList.contains('hidden')) alertLate(); else{ alerted=null; var ob=document.getElementById('fs-late-banner'); if(ob) ob.remove(); } },2500);
   document.addEventListener('click',function(e){ var b=e.target.closest&&e.target.closest('[onclick*="adminTab(\'compliance\')"],[data-tab="compliance"]'); if(b) setTimeout(ensure,100); });
   new MutationObserver(function(){ ensure(); }).observe(document.body,{childList:true,subtree:true});
   ensure();
