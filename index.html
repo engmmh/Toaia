@@ -765,6 +765,16 @@ body:has(#admin-section.fs-boot) footer{visibility:hidden}
 #admin-section.fs-boot #fs-adm-skel{display:block;position:fixed;inset:0;z-index:40;background:var(--bg,#f1f5f9);padding:64px 14px 0;overflow:hidden}
 .fs-sk{background:linear-gradient(90deg,#e2e8f0,#f1f5f9,#e2e8f0);background-size:200% 100%;animation:fssk 1.3s linear infinite;border-radius:14px;margin-bottom:12px}
 @keyframes fssk{0%{background-position:200% 0}100%{background-position:-200% 0}}
+#admin-sidebar .nav-group{display:none!important}
+#fs7-sub{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px}
+#fs7-sub.hidden{display:none}
+#fs7-sub button{border:1px solid var(--border);background:#fff;color:var(--muted);font:700 12.5px/1 inherit;font-family:inherit;padding:9px 14px;border-radius:999px;cursor:pointer;position:relative}
+#fs7-sub button.on{background:var(--primary);border-color:var(--primary);color:#fff}
+#fs7-sub .nav-badge{position:static;display:inline-block;margin-inline-start:6px;vertical-align:middle}
+.fs7 .nav-badge{position:absolute}
+.tab-btn.fs7.on7{background:var(--primary);color:#fff;border-color:var(--primary);box-shadow:0 7px 18px rgba(23,107,67,.18)}
+.tab-btn.fs7.on7 .nav-icon{background:rgba(255,255,255,.18);color:#fff}
+.fs7-danger .nav-icon{background:#fee2e2;color:#b91c1c}
 .v12-push{margin:8px 12px;padding:7px 8px 7px 10px;border-radius:12px;background:var(--ok-bg);border:1px solid #bbf7d0;font-size:12px;color:#0f172a;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .v12-push .v12-x{margin-inline-start:auto;border:0;background:transparent;color:var(--muted);font-size:16px;line-height:1;cursor:pointer;padding:6px 8px;border-radius:8px}
 .v12-push .v12-x:hover{background:rgba(15,23,42,.08)}
@@ -8784,7 +8794,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
 /* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
 (function(){
-  const VERSION = 'v9.66';
+  const VERSION = 'v9.68';
   const $ = id => document.getElementById(id);
   let running = false;
   async function tx(text, lang){
@@ -10038,7 +10048,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     const sbn = $('admin-sidebar'); if(!sbn) return;
     sbn.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.id === 'tabbtn-' + cur));
     const g = GROUPS.find(x => x.items.includes(cur)), b = btn(cur), c = $('admin-crumb');
-    if(c) c.textContent = g && b ? (g.k === 'home' ? b.dataset.label : g.ar + ' › ' + b.dataset.label) : '';
+    // (مسار الصفحة بيكتبه FSNav7)
   }
   afterCall('adminTab', function(tab){
     try{ cur = pending || (tab === 'content' ? 'videos' : tab); pending = null; organize(); sync(); if(tab === 'compliance' && typeof loadComplianceWeights === 'function') loadComplianceWeights(); }catch(e){ console.error('v24 nav', e); }
@@ -10047,6 +10057,75 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   const sbn0 = $('admin-sidebar');
   if(sbn0 && window.MutationObserver){ new MutationObserver(() => { if(!busy) { organize(); sync(); } }).observe(sbn0, {childList:true, subtree:true}); }
   organize(); sync();
+})();
+
+
+
+/* ===== FSNav7 — قايمة الأدمن: 7 أيقونات رئيسية + تبويبات فرعية (التبويبات القديمة وكودها زي ما هي جواها) ===== */
+(function(){
+  const $n = id => document.getElementById(id);
+  const G = [
+    {k:'home',     ic:'🏠', ar:'الرئيسية', en:'Home',     subs:[['dashboard','لوحة التحكم']]},
+    {k:'reports',  ic:'📊', ar:'التقارير', en:'Reports',  subs:[['compliance','الامتثال والأسبوعي']]},
+    {k:'content',  ic:'🎓', ar:'المحتوى',  en:'Content',  subs:[['videos','🎬 فيديوهات'],['cards','🖼️ كروت'],['quizzes','📝 اختبارات']]},
+    {k:'field',    ic:'🦺', ar:'الميدان',  en:'Field',    subs:[['onsite','التدريبات الميدانية'],['vio-lib','المخالفات']]},
+    {k:'inbox',    ic:'📥', ar:'الوارد',   en:'Inbox',    subs:[['comments','💬 التعليقات'],['reports','📣 بلاغات الموظفين']]},
+    {k:'people',   ic:'👥', ar:'الناس',    en:'People',   subs:[['workers','الموظفين'],['admins','الأدمن والأدوار'],['passwords','كلمات السر']]},
+    {k:'settings', ic:'⚙️', ar:'الإعدادات', en:'Settings', subs:[['org','الهيكل التنظيمي'],['branding','الهوية'],['compliance','المعادلة'],['purge','⚠️ منطقة الخطر']], danger:'purge'}
+  ];
+  let curG = 'home', curTab = 'dashboard', busy = false;
+  const oldBtn = k => $n('tabbtn-' + k);
+  const allowed = k => { const b = oldBtn(k); return !!b && !b.classList.contains('hidden') && b.style.display !== 'none'; };
+  const badgeOf = k => { const s = oldBtn(k) && oldBtn(k).querySelector('.nav-badge'); return (s && !s.classList.contains('hidden')) ? (parseInt(s.textContent, 10) || (s.textContent === '99+' ? 99 : 0)) : 0; };
+  const visSubs = g => g.subs.filter(s => allowed(s[0]));
+  const groupOf = (tab) => {
+    if(tab === 'compliance' && (curG === 'reports' || curG === 'settings')) return curG;
+    const g = G.find(x => x.subs.some(s => s[0] === tab)); return g ? g.k : curG;
+  };
+  function build(){
+    const sb = $n('admin-sidebar'); if(!sb || busy) return; busy = true;
+    try{
+      G.forEach(g => {
+        let b = $n('fs7-' + g.k);
+        if(!b){
+          b = document.createElement('button'); b.type = 'button'; b.id = 'fs7-' + g.k; b.className = 'tab-btn fs7'; b.setAttribute('data-label', g.ar);
+          b.innerHTML = '<span class="nav-icon" style="font-size:15px">' + g.ic + '</span><span class="nav-label">' + g.ar + '<span class="nav-en">' + g.en + '</span></span><span class="nav-badge hidden"></span>';
+          b.onclick = () => { const vs = visSubs(g); if(!vs.length) return; const keep = vs.find(s => s[0] === curTab && curG === g.k); curG = g.k; adminTab((keep || vs[0])[0]); };
+          sb.appendChild(b);
+        }
+        const vs = visSubs(g); b.classList.toggle('hidden', !vs.length);
+        const n = g.subs.reduce((a, s) => a + (allowed(s[0]) ? badgeOf(s[0]) : 0), 0), bd = b.querySelector('.nav-badge');
+        if(bd){ const nt = String(n > 99 ? '99+' : n); if(bd.textContent !== nt) bd.textContent = nt; bd.classList.toggle('hidden', !n); }
+        b.classList.toggle('on7', g.k === curG);
+      });
+      let strip = $n('fs7-sub');
+      if(!strip){ const c = document.querySelector('#admin-section .admin-content'); if(c){ strip = document.createElement('div'); strip.id = 'fs7-sub'; strip.className = 'hidden'; c.insertBefore(strip, c.firstChild); } }
+      if(strip){
+        const g = G.find(x => x.k === curG), vs = g ? visSubs(g) : [];
+        strip.classList.toggle('hidden', vs.length < 2);
+        const sig = curG + '|' + curTab + '|' + vs.map(s => s[0] + ':' + badgeOf(s[0])).join(',');
+        if(strip.dataset.sig !== sig){
+          strip.dataset.sig = sig;
+          strip.innerHTML = vs.map(s => '<button type="button" data-t="' + s[0] + '" class="' + (s[0] === curTab ? 'on' : '') + '">' + s[1] + (badgeOf(s[0]) ? '<span class="nav-badge">' + badgeOf(s[0]) + '</span>' : '') + '</button>').join('');
+          strip.querySelectorAll('button').forEach(b => b.onclick = () => adminTab(b.dataset.t));
+        }
+      }
+      const crumb = $n('admin-crumb'), gg = G.find(x => x.k === curG), ss = gg && gg.subs.find(s => s[0] === curTab);
+      if(crumb && gg){ const ct = gg.k === 'home' ? gg.ar : (gg.ar + (ss && gg.subs.length > 1 ? ' › ' + ss[1].replace(/^[^؀-ۿA-Za-z]+/, '') : '')); if(crumb.textContent !== ct) crumb.textContent = ct; }
+    } finally { busy = false; }
+  }
+  afterCall('adminTab', function(tab){
+    try{
+      if(tab === 'content'){ if(curG !== 'content'){ curG = 'content'; curTab = 'videos'; } }   // صفحة المحتوى الوسيطة (V6) بتعرض الفيديو/الكارت/الاختبار
+      else { curG = groupOf(tab); curTab = tab; }
+      build(); setTimeout(build, 0); setTimeout(() => { const c = $n('admin-crumb'), g = G.find(x => x.k === curG), s = g && g.subs.find(x => x[0] === curTab); if(c && g) c.textContent = g.k === 'home' ? g.ar : (g.ar + (s && g.subs.length > 1 ? ' › ' + s[1].replace(/^[^\u0600-\u06FFA-Za-z]+/, '') : '')); }, 60);
+    }catch(e){ console.error('fs7', e); }
+  });
+  afterCall('applyAdminScope', function(){ try{ build(); }catch(e){} });
+  const sb0 = $n('admin-sidebar');
+  if(sb0 && window.MutationObserver){ new MutationObserver(() => { if(!busy){ clearTimeout(build._t); build._t = setTimeout(build, 30); } }).observe(sb0, {attributes:true, subtree:true, attributeFilter:['class'], childList:true}); }
+  window.FSNav7 = { build, groups: G, state: () => ({curG, curTab}) };
+  build();
 })();
 
 
