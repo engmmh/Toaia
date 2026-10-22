@@ -1214,6 +1214,7 @@ body.v9-dark .lt-bar{background:#0f172a}body.v9-dark .lt-tab.on{background:#1e29
             <div><label class="field-label">⚠️ الخلو من المخالفات</label><input id="cw-violations" type="number" lang="en" dir="ltr" inputmode="numeric" min="0" max="100" class="input-field cw-in" value="15" oninput="cwTotal()"/></div>
             <div><label class="field-label">🎓 التدريبات الميدانية</label><input id="cw-onsite" type="number" lang="en" dir="ltr" inputmode="numeric" min="0" max="100" class="input-field cw-in" value="20" oninput="cwTotal()"/></div>
           </div>
+          <div style="margin-top:12px;max-width:340px;"><label class="field-label">📅 فترة احتساب التدريبات المنتهية (بالأيام)</label><input id="cw-window" type="number" lang="en" dir="ltr" inputmode="numeric" min="1" max="365" class="input-field" value="30"/><div class="muted u-fs11" style="margin-top:4px;">التدريب اللي انتهى من أكتر من الفترة دي مبيتحسبش على الموظف. الجاري بيتحسب دايماً.</div></div>
           <button class="btn-primary btn-sm u-mt10" onclick="saveComplianceWeights()">حفظ وإعادة الحساب</button>
           <div id="cw-msg" style="font-size:12px;margin-top:6px;"></div>
         </div>
@@ -1242,7 +1243,7 @@ body.v9-dark .lt-bar{background:#0f172a}body.v9-dark .lt-tab.on{background:#1e29
         </div>
         <div style="overflow-x:auto;">
           <table class="data">
-            <thead><tr><th>ID</th><th>الاسم</th><th>الوظيفة</th><th>القسم</th><th>التدريب</th><th>المخالفات</th><th>إجراءات</th></tr></thead>
+            <thead><tr><th>ID</th><th>الاسم</th><th>الوظيفة</th><th>القسم</th><th>التدريب</th><th>الاختبارات</th><th>المخالفات</th><th>إجراءات</th></tr></thead>
             <tbody id="workers-tbody"></tbody>
           </table>
         </div>
@@ -1303,7 +1304,6 @@ body.v9-dark .lt-bar{background:#0f172a}body.v9-dark .lt-tab.on{background:#1e29
           <div class="section-title u-mb12">➕ إضافة إدارة / جهة مستهدفة</div>
           <input id="target-ar" type="text" class="input-field" placeholder="مثال: إدارة الجودة" onblur="autoTranslateGroup('target-ar',{en:'target-en'})"/>
           <input id="target-en" type="text" class="input-field u-mt8" placeholder="Target Department (English)"/>
-          <label style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-top:8px;cursor:pointer;"><input id="target-is-admin" type="checkbox"/> 🛡️ إدارة إدارية (أي موظف تابع لها يتحول أدمن فرعي تلقائيًا مقيد بقسمه)</label>
           <button class="btn-primary" style="padding:10px 22px;font-size:13px;margin-top:10px;" onclick="saveTargetDepartmentV22()">حفظ الإدارة</button>
         </div>
         <div class="card u-pad16"><div class="section-title u-mb12">الإدارات الحالية</div><div id="targets-list" style="display:flex;flex-direction:column;gap:8px;"></div></div>
@@ -1531,11 +1531,6 @@ body.v9-dark .lt-bar{background:#0f172a}body.v9-dark .lt-tab.on{background:#1e29
         </div>
         <button class="btn-primary" style="padding:10px 22px;font-size:13px;" onclick="saveAdmin()">منح صلاحية الأدمن</button>
         <div id="add-admin-msg" class="u-fs12-mt8"></div>
-      </div>
-      <div class="card u-card">
-        <div class="section-title" style="margin-bottom:6px;">🛡️ أدمن تلقائي (بحكم الإدارة)</div>
-        <p class="muted" style="font-size:12px;margin-bottom:10px;">موظفين تابعين لإدارة معلّمة كـ"إدارية" وأصبحوا أدمن فرعي تلقائيًا. تقدر تستثني أي حد منهم فيرجع موظف عادي.</p>
-        <div id="auto-admins-list" style="display:flex;flex-direction:column;gap:8px;"></div>
       </div>
       <div class="card u-pad16">
         <div class="section-title u-mb12">الأدمن الحاليين</div>
@@ -1944,7 +1939,8 @@ async function destroyAllPlayers(){
 }
 function extractYTVideoId(url){ if(!url) return ''; const m=url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{6,})/); return m?m[1]:''; }
 
-function fmtDate(iso){ if(!iso) return ''; try{ return new Date(iso).toLocaleString('ar-EG',{dateStyle:'short',timeStyle:'short'}); }catch(e){ return ''; } }
+function todayLocal(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function fmtDate(iso){ if(!iso) return ''; try{ if(/^\d{4}-\d{2}-\d{2}$/.test(String(iso))){ const p=String(iso).split('-').map(Number); return new Date(p[0],p[1]-1,p[2]).toLocaleDateString('ar-EG',{dateStyle:'short'}); } return new Date(iso).toLocaleString('ar-EG',{dateStyle:'short',timeStyle:'short'}); }catch(e){ return ''; } }
 function hoursSince(iso){ if(!iso) return 999; return Math.max(0,(Date.now()-new Date(iso).getTime())/3600000); }
 
 // ==================== BRANDING ====================
@@ -2509,11 +2505,14 @@ function updateWorkerIconBadges(){
   setIconBadge('violations', Math.max(0, workerViolationsTotal - getSeenCount('violations')));
 }
 
+function workerCardsSeenCount(){
+  try{ return (workerCards||[]).filter(c=>localStorage.getItem('v17_seen_'+(currentUser?currentUser.id:'x')+'_'+c.id)==='1').length; }catch(e){ return 0; }
+}
 function updateWorkerProgressSummary(){
   const videoTotal = workerTopics.length;
   const videoCompleted = workerTopics.filter(t=>workerTopicProgress[String(t.id)]?.completed).length;
-  const total = videoTotal + (workerQuizStats.total||0);
-  const completed = videoCompleted + (workerQuizStats.completed||0);
+  const total = videoTotal + (workerQuizStats.total||0) + (workerCards||[]).length;
+  const completed = videoCompleted + (workerQuizStats.completed||0) + workerCardsSeenCount();
   const remaining = Math.max(0,total-completed);
   const pct = total ? Math.round((completed/total)*100) : 0;
   if($('wt-completed-count')) $('wt-completed-count').textContent = completed;
@@ -2649,21 +2648,13 @@ function populateV22Dropdowns(){
   const box=$('ad-sections-box'); if(box) box.innerHTML=sections.map(s=>'<label style="display:flex;align-items:center;gap:5px;font-size:11px;background:#fff;border:1px solid var(--border);border-radius:7px;padding:6px;"><input type="checkbox" class="ad-section-v22" value="'+s.id+'"/> '+esc(tr(s,'name'))+'</label>').join('')||'<span class="muted">لا توجد أقسام</span>';
 }
 function renderJobRolesV22(){const b=$('roles-list');if(!b)return;b.innerHTML=jobRolesV22.map(r=>'<div class="card" style="padding:10px 14px;display:flex;justify-content:space-between;align-items:center;"><span><b>'+esc(r.name_ar)+'</b>'+(r.name_en?'<span class="muted" style="font-size:10px;margin-right:8px;">'+esc(r.name_en)+'</span>':'')+'</span><span><button class="btn-secondary btn-sm" onclick="editJobRoleV22('+r.id+')">تعديل</button> <button class="btn-danger btn-sm" onclick="deleteJobRoleV22('+r.id+')">حذف</button></span></div>').join('')||'<div class="muted">لا توجد وظائف بعد</div>';}
-function renderTargetDepartmentsV22(){const b=$('targets-list');if(!b)return;b.innerHTML=targetDepartmentsV22.map(r=>'<div class="card" style="padding:10px 14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;"><span><b>'+esc(r.name_ar)+'</b>'+(r.is_admin_department?' <span class="badge badge-green u-fs9">🛡️ إدارة إدارية</span>':'')+'</span><span style="display:flex;gap:5px;flex-wrap:wrap;"><button class="btn-secondary btn-sm" onclick="toggleAdminDepartmentV22('+r.id+','+(!r.is_admin_department)+')">'+(r.is_admin_department?'إلغاء صفة إدارية':'اجعلها إدارة إدارية')+'</button><button class="btn-secondary btn-sm" onclick="editTargetDepartmentV22('+r.id+')">تعديل</button> <button class="btn-danger btn-sm" onclick="deleteTargetDepartmentV22('+r.id+')">حذف</button></span></div>').join('')||'<div class="muted">لا توجد إدارات بعد</div>';}
-async function toggleAdminDepartmentV22(id, val){
-  let {error}=await sb.from('target_departments').update({is_admin_department:val}).eq('id',id);
-  if(error && /is_admin_department/i.test(error.message||'')){ showToast('عمود is_admin_department لسه مش مضاف في قاعدة البيانات — شغّل الـSQL المطلوب الأول'); return; }
-  if(error) return showToast(error.message);
-  showToast(val?'أصبحت إدارة إدارية ✅':'تم إلغاء الصفة الإدارية ✅');
-  await loadV22Meta();
-}
+function renderTargetDepartmentsV22(){const b=$('targets-list');if(!b)return;b.innerHTML=targetDepartmentsV22.map(r=>'<div class="card" style="padding:10px 14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;"><span><b>'+esc(r.name_ar)+'</b>'+'</span><span style="display:flex;gap:5px;flex-wrap:wrap;"><button class="btn-secondary btn-sm" onclick="editTargetDepartmentV22('+r.id+')">تعديل</button> <button class="btn-danger btn-sm" onclick="deleteTargetDepartmentV22('+r.id+')">حذف</button></span></div>').join('')||'<div class="muted">لا توجد إدارات بعد</div>';}
 function renderAdminSectionsV22(){ if(typeof renderAdminSections==='function') renderAdminSections(); }
 async function saveJobRoleV22(){const ar=$('role-ar')?.value.trim();if(!ar)return showToast('اكتب اسم الوظيفة');const en=$('role-en')?.value.trim();const {error}=await sb.from('job_roles').insert({name_ar:ar,name_en:en,is_active:true});if(error)return showToast('تعذر حفظ الوظيفة: '+error.message);$('role-ar').value='';$('role-en').value='';await loadV22Meta();showToast('تم حفظ الوظيفة ✅');}
 async function editJobRoleV22(id){const r=jobRolesV22.find(x=>x.id===id);if(!r)return;const ar=prompt('اسم الوظيفة / الدور',r.name_ar);if(ar===null)return;const en=prompt('English',r.name_en||'');const {error}=await sb.from('job_roles').update({name_ar:ar.trim(),name_en:en.trim()}).eq('id',id);if(error)return showToast(error.message);await loadV22Meta();}
-async function saveTargetDepartmentV22(){const ar=$('target-ar')?.value.trim();if(!ar)return showToast('اكتب اسم الإدارة');const en=$('target-en')?.value.trim();const isAdminDept=$('target-is-admin')?.checked||false;let {error}=await sb.from('target_departments').insert({name_ar:ar,name_en:en,is_active:true,is_admin_department:isAdminDept});if(error && /is_admin_department/i.test(error.message||'')){({error}=await sb.from('target_departments').insert({name_ar:ar,name_en:en,is_active:true}));}if(error)return showToast('تعذر حفظ الإدارة: '+error.message);$('target-ar').value='';$('target-en').value='';if($('target-is-admin'))$('target-is-admin').checked=false;await loadV22Meta();showToast('تم حفظ الإدارة ✅');}
+async function saveTargetDepartmentV22(){const ar=$('target-ar')?.value.trim();if(!ar)return showToast('اكتب اسم الإدارة');const en=$('target-en')?.value.trim();const {error}=await sb.from('target_departments').insert({name_ar:ar,name_en:en,is_active:true});if(error)return showToast('تعذر حفظ الإدارة: '+error.message);$('target-ar').value='';$('target-en').value='';await loadV22Meta();showToast('تم حفظ الإدارة ✅');}
 async function editTargetDepartmentV22(id){const r=targetDepartmentsV22.find(x=>x.id===id);if(!r)return;const ar=prompt('اسم الإدارة',r.name_ar);if(ar===null)return;const en=prompt('English',r.name_en||'');const {error}=await sb.from('target_departments').update({name_ar:ar.trim(),name_en:en.trim()}).eq('id',id);if(error)return showToast(error.message);await loadV22Meta();}
 async function loadAdminSectionsMultiV22(adminId){const {data}=await sb.from('admin_sections').select('section_id').eq('admin_id',adminId);return (data||[]).map(x=>x.section_id);}
-async function loginAdminV22(adm){const ids=await loadAdminSectionsMultiV22(adm.id);adminUser={isSuper:false,name:adm.name,section_id:ids[0]||adm.section_id,section_ids:ids,id:adm.id};await enterAdmin();}
 // Override login to support multi-section admins while retaining V2.1 login codes.
 // Worker fields: role + section, no branch field in UI. Keep factory_branch in DB for legacy data.
 // Robust image rendering: use native image URL and an explicit error fallback, never silently break the worker screen.
@@ -2693,7 +2684,7 @@ async function logActivityV22(actor_type,actor_id,action,item_type=null,item_id=
 // Hide moderated comments from workers.
 
 // Admin tab additions
-adminTab=function(tab){if(typeof toggleAdminSidebar==='function')toggleAdminSidebar(false);document.querySelectorAll('.admin-tab').forEach(e=>e.classList.remove('active'));const t=$('tab-'+tab);if(t)t.classList.add('active');document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));const btn=$('tabbtn-'+tab);if(btn)btn.classList.add('active');if(tab==='workers')loadWorkers();if(tab==='org'){renderAdminSections();loadV22Meta();}if(tab==='quizzes')loadAdminQuizzes();if(tab==='cards')loadAdminCards();if(tab==='videos')loadAdminVideos();if(tab==='comments')loadAdminComments();if(tab==='vio-lib')loadViolationLib();if(tab==='admins'){renderAdminAdmins();if(typeof loadDefaultPasswordField==='function')loadDefaultPasswordField();if(typeof renderAutoAdminsList==='function')renderAutoAdminsList();}if(tab==='dashboard'&&typeof loadAdminDashboard==='function')loadAdminDashboard();};
+adminTab=function(tab){if(typeof toggleAdminSidebar==='function')toggleAdminSidebar(false);document.querySelectorAll('.admin-tab').forEach(e=>e.classList.remove('active'));const t=$('tab-'+tab);if(t)t.classList.add('active');document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));const btn=$('tabbtn-'+tab);if(btn)btn.classList.add('active');if(tab==='workers')loadWorkers();if(tab==='org'){renderAdminSections();loadV22Meta();}if(tab==='quizzes')loadAdminQuizzes();if(tab==='cards')loadAdminCards();if(tab==='videos')loadAdminVideos();if(tab==='comments')loadAdminComments();if(tab==='vio-lib')loadViolationLib();if(tab==='admins'){renderAdminAdmins();if(typeof loadDefaultPasswordField==='function')loadDefaultPasswordField();}if(tab==='dashboard'&&typeof loadAdminDashboard==='function')loadAdminDashboard();};
 // Startup wrapper: load V2.2 metadata after sections are available.
 // Ensure worker questions and cards are loaded from V2.2 after login.
 
@@ -2912,14 +2903,13 @@ window.chooseLoginRole=async function(role){
   if(role==='worker'){
     await enterAsWorkerFinal(worker);
   } else {
-    if(adm.is_super){
+    if(adm.is_super || adm.role==='super'){
       adminUser={isSuper:true,name:worker.worker_name,section_id:null,section_ids:sections.map(s=>s.id),id:adm.id,workerId:worker.id};
-    } else if(adm.auto){
-      adminUser={isSuper:false,name:worker.worker_name,section_id:worker.section_id,section_ids:[Number(worker.section_id)].filter(Boolean),id:null,workerId:worker.id,autoAdmin:true};
     } else {
       const ids=await loadAdminSectionsMultiV23(adm.id); if(!ids.length&&adm.section_id) ids.push(Number(adm.section_id));
       adminUser={isSuper:false,name:worker.worker_name,section_id:ids[0]||null,section_ids:ids,id:adm.id,workerId:worker.id};
     }
+    if(window.FSRole) await window.FSRole.apply(adminUser, adm);
     await enterAdmin();
   }
   pendingLoginWorker=null; pendingLoginAdmin=null;
@@ -2953,20 +2943,7 @@ async function doLoginFinal(){
   if(expected && pass!==expected){ err.textContent='كلمة السر غير صحيحة / Incorrect password'; err.classList.remove('hidden'); return; }
   let adminLink=null;
   try{ const {data}=await sb.from('admins').select('*').eq('worker_id',worker.id).maybeSingle(); adminLink=data; }catch(e){}
-  if(!adminLink){
-    // فحص "الإدارة الإدارية": لو وظيفة الموظف تابعة لإدارة معلّمة كـ"إدارية"، ومش مستثنى، يبقى أدمن فرعي تلقائي مقيد بقسمه
-    try{
-      if(!worker.admin_auto_excluded && worker.job_role_id){
-        const {data:role}=await sb.from('job_roles').select('target_department_id').eq('id',worker.job_role_id).maybeSingle();
-        if(role?.target_department_id){
-          const {data:dept}=await sb.from('target_departments').select('is_admin_department,name_ar').eq('id',role.target_department_id).maybeSingle();
-          if(dept?.is_admin_department){
-            adminLink = { is_super:false, section_id: worker.section_id, auto:true, deptName: dept.name_ar };
-          }
-        }
-      }
-    }catch(e){ /* الأعمدة الجديدة لسه مش مضافة، نتجاهل بأمان */ }
-  }
+  if(['suspended','left'].includes(worker.status) && !(adminLink && (adminLink.is_super || adminLink.role==='super'))){ err.textContent='الحساب موقوف — كلّم مسؤول الجودة / Account suspended'; err.classList.remove('hidden'); return; }
   if(adminLink){
     pendingLoginWorker=worker; pendingLoginAdmin=adminLink;
     $('login-form-card')?.classList.add('hidden');
@@ -3032,7 +3009,6 @@ document.addEventListener('input', e=>{
     }, 350);
   }
 });
-window._deprecatedSaveAdminNote = true; // النسخة الفعّالة من saveAdmin أسفل، جنب renderAdminAdminsV23
 
 getAdminScopeIds=function(){return adminUser?.isSuper?sections.map(s=>Number(s.id)):(adminUser?.section_ids||[]).map(Number).filter(Boolean);};
 applyAdminScope=function(){
@@ -3878,8 +3854,9 @@ try{(function(){
     tbody.innerHTML=rows.map(w=>{
       const sec=sections.find(s=>Number(s.id)===Number(w.section_id));
       const role=roleMap[w.job_role_id];
-      return '<tr class="worker-row" onclick="openWorkerModal('+w.id+')"><td style="font-weight:800;color:var(--primary);">'+w.id+'</td><td style="font-weight:700;">'+esc(w.worker_name)+'</td><td>'+esc(role?.name_ar||'—')+'</td><td>'+esc(sec?tr(sec,'name'):'—')+'</td><td style="font-weight:800;color:var(--primary);">'+(w.kpi_score??100)+'%</td><td>'+(w.violations_count||0)+'</td><td><button class="btn-secondary btn-sm" onclick="event.stopPropagation();openWorkerModal('+w.id+')">تفاصيل</button> <button class="btn-danger btn-sm" onclick="event.stopPropagation();deleteWorker('+w.id+')">حذف</button></td></tr>';
-    }).join('') || '<tr><td colspan="7" class="muted" style="text-align:center;padding:20px;">لا يوجد موظفين مطابقون</td></tr>';
+      return '<tr class="worker-row" onclick="openWorkerModal('+w.id+')"><td style="font-weight:800;color:var(--primary);">'+w.id+'</td><td style="font-weight:700;">'+esc(w.worker_name)+'</td><td>'+esc(role?.name_ar||'—')+'</td><td>'+esc(sec?tr(sec,'name'):'—')+'</td><td class="wk-tr muted">…</td><td class="wk-qz muted">…</td><td>'+(w.violations_count||0)+((w.kpi_score??100)<100?' <small class="muted">('+(w.kpi_score)+'%)</small>':'')+'</td><td><button class="btn-secondary btn-sm" onclick="event.stopPropagation();openWorkerModal('+w.id+')">تفاصيل</button> <button class="btn-danger btn-sm" onclick="event.stopPropagation();deleteWorker('+w.id+')">حذف</button></td></tr>';
+    }).join('') || '<tr><td colspan="8" class="muted" style="text-align:center;padding:20px;">لا يوجد موظفين مطابقون</td></tr>';
+    if(rows.length && window.fillWorkerPcts) window.fillWorkerPcts(rows);
     const totalPages=Math.max(1,Math.ceil((count||0)/window._workersPageSize));
     const label=$('workers-page-label'); if(label) label.textContent='صفحة '+(window._workersPage+1)+' من '+totalPages+' — إجمالي '+(count||0)+' موظف';
   };
@@ -3992,15 +3969,10 @@ try{(function(){
     if($('cw-quiz')) $('cw-quiz').value=w.quiz;
     if($('cw-violations')) $('cw-violations').value=w.violations;
     if($('cw-onsite')) $('cw-onsite').value=w.onsite;
+    if($('cw-window')) $('cw-window').value=await window.FSStats.windowDays();
   };
 
-  async function getComplianceWeights(){
-    try{
-      const {data}=await sb.from('app_settings').select('key,value').in('key',['compliance_weight_training','compliance_weight_quiz','compliance_weight_violations','compliance_weight_onsite']);
-      const m={}; (data||[]).forEach(r=>m[r.key]=Number(r.value));
-      return { training: m.compliance_weight_training ?? 40, quiz: m.compliance_weight_quiz ?? 25, violations: m.compliance_weight_violations ?? 15, onsite: m.compliance_weight_onsite ?? 20 };
-    }catch(e){ return { training:40, quiz:25, violations:15, onsite:20 }; }
-  }
+  async function getComplianceWeights(){ return window.FSStats.weights(); }
 
   window.saveComplianceWeights = async function(){
     const t=Number($('cw-training').value)||0, q=Number($('cw-quiz').value)||0, v=Number($('cw-violations').value)||0, o=Number($('cw-onsite')?.value)||0;
@@ -4011,7 +3983,8 @@ try{(function(){
         {key:'compliance_weight_training', value:String(t)},
         {key:'compliance_weight_quiz', value:String(q)},
         {key:'compliance_weight_violations', value:String(v)},
-        {key:'compliance_weight_onsite', value:String(o)}
+        {key:'compliance_weight_onsite', value:String(o)},
+        {key:'compliance_window_days', value:String(Math.max(1,Math.min(365,Number($('cw-window')?.value)||30)))}
       ]);
       msg.innerHTML='<span class="u-green">تم الحفظ ✅</span>';
       setTimeout(()=>msg.innerHTML='',2500);
@@ -4019,53 +3992,7 @@ try{(function(){
     }catch(e){ msg.innerHTML='<span class="u-red">تعذر الحفظ: '+esc(e.message||'')+'</span>'; }
   };
 
-  async function computeComplianceData(){
-    const weights=await getComplianceWeights();
-    const totalW=(weights.training+weights.quiz+weights.violations+weights.onsite)||1;
-    const ids=getAdminScopeIds();
-    let wq=sb.from('workers_evaluations').select('id,worker_name,section_id,job_role_id,kpi_score');
-    if(!adminUser?.isSuper && ids.length) wq=wq.in('section_id',ids);
-    const [{data:workers},{data:topics},{data:progress},{data:attempts},{data:onsiteParts}]=await Promise.all([
-      wq,
-      sb.from('training_topics').select('id,section_id,target_department_id,is_visible'),
-      sb.from('training_progress').select('worker_id,topic_id,completed'),
-      sb.from('quiz_attempts').select('worker_id,score,is_current'),
-      sb.from('onsite_training_participants').select('worker_id,admin_evaluation').then(r=>r).catch(()=>({data:[]}))
-    ]);
-    let list=workers||[];
-    const roleIds=[...new Set(list.map(w=>w.job_role_id).filter(Boolean))];
-    let roleDeptMap={};
-    if(roleIds.length){ try{ const {data:roles}=await sb.from('job_roles').select('id,target_department_id').in('id',roleIds); (roles||[]).forEach(r=>roleDeptMap[r.id]=r.target_department_id); }catch(e){} }
-    try{ const _exw=await window.V19.excludedWorkers(); if(_exw.size) list=list.filter(w=>!_exw.has(Number(w.id))); }catch(e){}   // v9.26: استبعاد الأدمن وفريق الجودة من الإحصائيات
-
-    const progressByWorker={};
-    (progress||[]).forEach(p=>{ if(!p.completed) return; (progressByWorker[p.worker_id] ||= new Set()).add(p.topic_id); });
-    const scoresByWorker={};
-    (attempts||[]).forEach(a=>{ if(a.is_current===false) return; (scoresByWorker[a.worker_id] ||= []).push(Number(a.score)||0); });
-    const ONSITE_SCORES={excellent:100,good:75,acceptable:50,weak:25};
-    const onsiteByWorker={};
-    (onsiteParts||[]).forEach(p=>{ const sc=ONSITE_SCORES[p.admin_evaluation]; if(sc==null) return; (onsiteByWorker[p.worker_id] ||= []).push(sc); });
-    const visibleTopics=(topics||[]).filter(t=>t.is_visible);
-
-    const perWorker=list.map(w=>{
-      const dept=roleDeptMap[w.job_role_id];
-      const relevant=visibleTopics.filter(t=>(!t.section_id||Number(t.section_id)===Number(w.section_id)) && (!t.target_department_id||Number(t.target_department_id)===Number(dept)));
-      const done=relevant.filter(t=>progressByWorker[w.id]?.has(t.id)).length;
-      const trainingPct=relevant.length ? (done/relevant.length*100) : 100;
-      const scores=scoresByWorker[w.id]||[];
-      const quizPct=scores.length ? (scores.reduce((a,b)=>a+b,0)/scores.length) : 100;
-      const violPct=Number(w.kpi_score ?? 100);
-      const onScores=onsiteByWorker[w.id]||[];
-      const onsitePct=onScores.length ? (onScores.reduce((a,b)=>a+b,0)/onScores.length) : 100;
-      const compliance=((trainingPct*weights.training)+(quizPct*weights.quiz)+(violPct*weights.violations)+(onsitePct*weights.onsite))/totalW;
-      return {worker:w, trainingPct, quizPct, violPct, onsitePct, compliance};
-    });
-
-    const bySection={};
-    perWorker.forEach(r=>{ const sid=r.worker.section_id||'none'; (bySection[sid] ||= []).push(r); });
-
-    return {weights, perWorker, bySection, totalWorkers:list.length};
-  }
+  async function computeComplianceData(){ return window.FSStats.compute(); }
 
   function avg(arr, key){ if(!arr.length) return 0; return arr.reduce((s,r)=>s+r[key],0)/arr.length; }
   function complianceColor(pct){ return pct>=80?'#16a34a':pct>=50?'#d97706':'#dc2626'; }
@@ -4074,7 +4001,7 @@ try{(function(){
     const kpiBox=$('dashboard-kpis'), secBox=$('dashboard-sections-list'), donut=$('dashboard-donut');
     if(!kpiBox) return;
     kpiBox.innerHTML='<div class="muted" style="grid-column:1/-1;text-align:center;padding:14px;">جاري التحميل...</div>';
-    const {perWorker, bySection, totalWorkers} = await computeComplianceData();
+    const {perWorker, bySection, totalWorkers, excluded} = await computeComplianceData();
     const overall = avg(perWorker,'compliance');
     const avgQuiz = avg(perWorker,'quizPct');
     const avgTraining = avg(perWorker,'trainingPct');
@@ -4088,7 +4015,7 @@ try{(function(){
     }catch(e){}
 
     kpiBox.innerHTML =
-      '<div class="preview-card" style="margin:0;padding:12px;text-align:center;cursor:pointer;" onclick="openAllWorkersModal()"><div class="muted u-fs10-b">إجمالي الموظفين</div><div style="font-size:24px;font-weight:900;color:var(--text);">'+totalWorkers+'</div><div class="muted u-fs9">اضغط لعرض القائمة ›</div></div>'+
+      '<div class="preview-card" style="margin:0;padding:12px;text-align:center;cursor:pointer;" onclick="openAllWorkersModal()"><div class="muted u-fs10-b">إجمالي الموظفين</div><div style="font-size:24px;font-weight:900;color:var(--text);">'+totalWorkers+'</div>'+(excluded?'<div class="muted u-fs9">(بدون الأدمن وفريق الجودة: '+excluded+')</div>':'')+'<div class="muted u-fs9">اضغط لعرض القائمة ›</div></div>'+
       '<div class="preview-card" style="margin:0;padding:12px;text-align:center;background:#ecfdf5;cursor:pointer;" onclick="openDepartmentsModal()"><div class="muted u-fs10-b">متوسط الإنجاز (نسبة الالتزام)</div><div style="font-size:24px;font-weight:900;color:'+complianceColor(overall)+';">'+Math.round(overall)+'%</div><div class="muted u-fs9">اضغط لعرض الإدارات ›</div></div>'+
       '<div class="preview-card" style="margin:0;padding:12px;text-align:center;"><div class="muted u-fs10-b">متوسط نتائج الاختبارات</div><div style="font-size:24px;font-weight:900;color:var(--primary);">'+Math.round(avgQuiz)+'%</div></div>'+
       '<div class="preview-card" style="margin:0;padding:12px;text-align:center;"><div class="muted u-fs10-b">إكمال التدريبات</div><div style="font-size:24px;font-weight:900;color:var(--primary);">'+Math.round(avgTraining)+'%</div></div>'+
@@ -4228,49 +4155,6 @@ try{(function(){
 });
 })();}catch(e){console.error('طبقة 8 فشلت:',e);}
 
-/* ==================== طبقة 9: أدمن تلقائي بحكم الإدارة (الجودة مثلاً) ==================== */
-try{(function(){
-  window.renderAutoAdminsList = async function(){
-    const box=$('auto-admins-list'); if(!box) return;
-    box.innerHTML='<div class="muted u-fs12">جاري التحميل...</div>';
-    try{
-      const {data:depts}=await sb.from('target_departments').select('id,name_ar').eq('is_admin_department',true);
-      if(!depts || !depts.length){ box.innerHTML='<div class="muted u-fs12">لا توجد إدارات إدارية معلّمة حاليًا (من تاب "الإدارات المستهدفة")</div>'; return; }
-      const deptIds=depts.map(d=>d.id);
-      const {data:roles}=await sb.from('job_roles').select('id,name_ar,target_department_id').in('target_department_id',deptIds);
-      if(!roles || !roles.length){ box.innerHTML='<div class="muted u-fs12">مفيش وظائف مربوطة بالإدارات الإدارية دي لسه</div>'; return; }
-      const roleIds=roles.map(r=>r.id);
-      const ids=getAdminScopeIds();
-      let wq=sb.from('workers_evaluations').select('id,worker_name,section_id,job_role_id,admin_auto_excluded').in('job_role_id',roleIds);
-      if(!adminUser?.isSuper && ids.length) wq=wq.in('section_id',ids);
-      const {data:workers}=await wq;
-      const roleMap={}; roles.forEach(r=>roleMap[r.id]=r);
-      const deptMap={}; depts.forEach(d=>deptMap[d.id]=d.name_ar);
-      const active=(workers||[]).filter(w=>!w.admin_auto_excluded);
-      const excluded=(workers||[]).filter(w=>w.admin_auto_excluded);
-      box.innerHTML =
-        (active.length ? active.map(w=>{
-          const role=roleMap[w.job_role_id]; const dept=role?deptMap[role.target_department_id]:'';
-          const sec=sections.find(s=>String(s.id)===String(w.section_id));
-          return '<div class="card" style="padding:10px 14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;"><span><b>#'+w.id+' '+esc(w.worker_name)+'</b> <span class="muted u-fs11">('+esc(dept||'')+' — '+esc(sec?tr(sec,'name'):'')+')</span></span><button class="btn-danger btn-sm" onclick="excludeFromAutoAdmin('+w.id+')">🚫 استثناء (يرجع موظف عادي)</button></div>';
-        }).join('') : '<div class="muted u-fs12">لا يوجد موظفين بحكم الإدارة الإدارية حاليًا</div>')
-        + (excluded.length ? '<div class="muted" style="font-size:11px;margin-top:10px;">مستثنون: '+excluded.map(w=>'#'+w.id+' '+esc(w.worker_name)).join('، ')+' <button class="btn-secondary btn-sm" style="margin-right:6px;" onclick="undoExcludeMenu()">↩️ رجّع أحد</button></div>' : '');
-    }catch(e){ box.innerHTML='<div class="muted u-fs12">تعذر التحميل: '+esc(e.message||'')+' (تأكد من إضافة عمودي is_admin_department و admin_auto_excluded)</div>'; }
-  };
-  window.excludeFromAutoAdmin = async function(workerId){
-    if(!confirm('متأكد؟ الموظف ده هيرجع موظف عادي فورًا ومش هيقدر يدخل كأدمن تاني إلا لو رجعت الاستثناء.')) return;
-    const {error}=await sb.from('workers_evaluations').update({admin_auto_excluded:true}).eq('id',workerId);
-    if(error) return showToast('خطأ: '+error.message);
-    showToast('تم الاستثناء ✅'); renderAutoAdminsList();
-  };
-  window.undoExcludeMenu = async function(){
-    const id=prompt('اكتب رقم هوية الموظف اللي عايز ترجّعه أدمن تلقائي تاني:');
-    if(!id) return;
-    const {error}=await sb.from('workers_evaluations').update({admin_auto_excluded:false}).eq('id',parseInt(id));
-    if(error) return showToast('خطأ: '+error.message);
-    showToast('تم الإرجاع ✅'); renderAutoAdminsList();
-  };
-})();}catch(e){console.error('طبقة 9 فشلت:',e);}
 
 /* ==================== طبقة 10: التدريبات الميدانية (سجل ورقي رقمي) ==================== */
 try{(function(){
@@ -4643,7 +4527,7 @@ try{(function(){
     $('os-purpose').value = prefill?.purpose || '';
     $('os-provider').value = prefill?.provider || '';
     $('os-duration').value = prefill?.duration_minutes || 30;
-    $('os-date').value = (opts.keepDate && prefill?.training_date) ? prefill.training_date : new Date().toISOString().slice(0,10);
+    $('os-date').value = (opts.keepDate && prefill?.training_date) ? prefill.training_date : todayLocal();
     if($('os-section')) $('os-section').innerHTML = sectionOpts(prefill?.section_id || null);
     $('os-same-title-results').innerHTML = '';
     $('os-section-workers').innerHTML = '';
@@ -4691,7 +4575,7 @@ try{(function(){
     if(!title) return msg.innerHTML = '<span class="u-red">اكتب عنوان التدريب</span>';
     const ids = Object.keys(osP);
     if(!ids.length) return msg.innerHTML = '<span class="u-red">ضيف موظف واحد على الأقل</span>';
-    const payload = {title, training_date:$('os-date').value || new Date().toISOString().slice(0,10), duration_minutes:Number($('os-duration').value)||null,
+    const payload = {title, training_date:$('os-date').value || todayLocal(), duration_minutes:Number($('os-duration').value)||null,
       purpose:$('os-purpose').value.trim(), provider:$('os-provider').value.trim(), section_id:num($('os-section').value), created_by:adminUser?.name||''};
     Object.assign(payload, await V16.titleFields());
 
@@ -4844,16 +4728,25 @@ try{(function(){
     list.map(o => '<option value="' + o.id + '" ' + (Number(o.id) === Number(sel) ? 'selected' : '') + '>' + esc(o.name_ar) + '</option>').join('');
 
   /* ---------- قاعدة النطاق → الوحدات المطابقة ---------- */
+  const placeKindOf = s => { const p = places.find(x => Number(x.id) === Number(s.place_id)); return p ? (p.kind || 'other') : null; };
   function unitsForRule(r){
     return secs().filter(s =>
       (!r.region_id || Number(s.region_id) === Number(r.region_id)) &&
       (!r.department_id || Number(s.department_id) === Number(r.department_id)) &&
-      (!r.section_id || Number(s.id) === Number(r.section_id)));
+      (!r.section_id || Number(s.id) === Number(r.section_id)) &&
+      (!r.place_id || Number(s.place_id) === Number(r.place_id)) &&
+      (!r.place_kind || placeKindOf(s) === r.place_kind));
   }
+  const cleanRule = r => { const o = {}; ['region_id', 'department_id', 'section_id', 'place_id', 'place_kind'].forEach(k => { if(r[k] != null && r[k] !== '') o[k] = r[k]; }); return o; };
+  const KIND_PL = {factory:'كل المصانع', branch:'كل الفروع', other:'أماكن أخرى'};
   function ruleText(r){
     if(r.section_id){
       const s = secs().find(x => Number(x.id) === Number(r.section_id));
       return '🏭 ' + (s ? s.name_ar : 'وحدة غير موجودة');
+    }
+    if(r.place_id || r.place_kind){
+      const p = places.find(x => Number(x.id) === Number(r.place_id));
+      return '🌍 ' + (nameOf(regions, r.region_id) || 'كل المناطق') + ' › ' + (r.place_id ? '📍 ' + (p ? p.name_ar : 'مكان غير موجود') : KIND_PL[r.place_kind] || 'كل الأماكن');
     }
     return '🌍 ' + (nameOf(regions, r.region_id) || 'كل المناطق') + ' › ' + (nameOf(orgDepts, r.department_id) || 'كل الإدارات');
   }
@@ -5089,7 +4982,7 @@ try{(function(){
 
   /* =====================  منشئ النطاق (يُستخدم في الأدمن وفي إضافة الموظف)  ===================== */
   function mountScope(el, rules){
-    el._rules = (rules || []).map(r => ({region_id:r.region_id || null, department_id:r.department_id || null, section_id:r.section_id || null}));
+    el._rules = (rules || []).map(r => ({region_id:r.region_id || null, department_id:r.department_id || null, section_id:r.section_id || null, place_id:r.place_id || null, place_kind:r.place_kind || null}));
     const draw = () => {
       const chips = el._rules.map((r, i) => {
         const m = unitsForRule(r);
@@ -5098,18 +4991,28 @@ try{(function(){
           '</div></div><button type="button" class="btn-danger btn-sm" data-i="' + i + '">✕</button></div>';
       }).join('') || '<div class="muted u-fs12">لسه مفيش نطاق. ضيف واحد على الأقل.</div>';
       el.innerHTML = '<div class="v4-rules">' + chips + '</div>' +
-        '<div class="v4-addrule"><select class="input-field sc-reg">' + opts(regions, null, 'كل المناطق') + '</select><select class="input-field sc-dep">' + opts(orgDepts, null, 'كل الإدارات') + '</select><select class="input-field sc-sec"></select><button type="button" class="btn-primary btn-sm sc-add">+ إضافة نطاق</button></div>' +
-        '<div class="muted" style="font-size:11px;margin-top:5px;">مثال: «الرياض + كل الإدارات» = كل وحدات الرياض • «كل المناطق + الإنتاج» = كل مصانع الإنتاج • «القصيم + التشغيل» = فروع القصيم • أو وحدة بعينها.</div>';
-      const reg = el.querySelector('.sc-reg'), dep = el.querySelector('.sc-dep'), sec = el.querySelector('.sc-sec');
+        (placesOn
+          ? '<div class="v4-addrule"><select class="input-field sc-reg">' + opts(regions, null, 'كل المناطق') + '</select><select class="input-field sc-kind"><option value="">كل الأنواع</option><option value="factory">🏭 مصانع</option><option value="branch">🏪 فروع</option></select><select class="input-field sc-place"></select><select class="input-field sc-sec"></select><button type="button" class="btn-primary btn-sm sc-add">+ إضافة نطاق</button></div>' +
+            '<div class="muted" style="font-size:11px;margin-top:5px;">مثال: «الرياض + فروع + كل الأماكن» = كل فروع الرياض • «القصيم + مصانع» = مصنع القصيم • أو مكان بعينه (مصنع الرياض / B37) أو وحدة بعينها.</div>'
+          : '<div class="v4-addrule"><select class="input-field sc-reg">' + opts(regions, null, 'كل المناطق') + '</select><select class="input-field sc-dep">' + opts(orgDepts, null, 'كل الإدارات') + '</select><select class="input-field sc-sec"></select><button type="button" class="btn-primary btn-sm sc-add">+ إضافة نطاق</button></div>' +
+            '<div class="muted" style="font-size:11px;margin-top:5px;">مثال: «الرياض + كل الإدارات» = كل وحدات الرياض • «كل المناطق + الإنتاج» = كل مصانع الإنتاج • «القصيم + التشغيل» = فروع القصيم • أو وحدة بعينها.</div>');
+      const reg = el.querySelector('.sc-reg'), dep = el.querySelector('.sc-dep'), sec = el.querySelector('.sc-sec'), kind = el.querySelector('.sc-kind'), plc = el.querySelector('.sc-place');
       const fillSec = () => {
-        const list = unitsForRule({region_id:num(reg.value), department_id:num(dep.value)});
+        const list = unitsForRule({region_id:num(reg.value), department_id:dep ? num(dep.value) : null, place_id:plc ? num(plc.value) : null, place_kind:kind ? (kind.value || null) : null});
         sec.innerHTML = '<option value="">كل الوحدات</option>' + list.map(s => '<option value="' + s.id + '">' + esc(s.name_ar) + '</option>').join('');
       };
-      reg.onchange = fillSec; dep.onchange = fillSec; fillSec();
+      const fillPlace = () => {
+        const list = places.filter(p => (!num(reg.value) || Number(p.region_id) === num(reg.value)) && (!kind.value || (p.kind || 'other') === kind.value)).sort(byName);
+        plc.innerHTML = '<option value="">كل الأماكن</option>' + list.map(p => '<option value="' + p.id + '">' + esc(p.name_ar) + '</option>').join('');
+        fillSec();
+      };
+      reg.onchange = placesOn ? fillPlace : fillSec;
+      if(dep) dep.onchange = fillSec;
+      if(kind){ kind.onchange = fillPlace; plc.onchange = fillSec; fillPlace(); } else fillSec();
       el.querySelector('.sc-add').onclick = () => {
-        const r = {region_id:num(reg.value), department_id:num(dep.value), section_id:num(sec.value)};
-        if(!r.region_id && !r.department_id && !r.section_id) return showToast('اختار منطقة أو إدارة أو وحدة (أو فعّل سوبر أدمن للصلاحيات الكاملة)');
-        if(el._rules.some(x => x.region_id === r.region_id && x.department_id === r.department_id && x.section_id === r.section_id)) return showToast('النطاق ده مضاف بالفعل');
+        const r = {region_id:num(reg.value), department_id:dep ? num(dep.value) : null, section_id:num(sec.value), place_id:plc ? num(plc.value) : null, place_kind:kind ? (kind.value || null) : null};
+        if(!r.region_id && !r.department_id && !r.section_id && !r.place_id && !r.place_kind) return showToast('اختار منطقة أو نوع مكان أو مكان أو وحدة');
+        if(el._rules.some(x => ['region_id', 'department_id', 'section_id', 'place_id', 'place_kind'].every(k => (x[k] || null) === (r[k] || null)))) return showToast('النطاق ده مضاف بالفعل');
         el._rules.push(r); draw();
       };
       el.querySelectorAll('.v4-rule .btn-danger').forEach(b => b.onclick = () => { el._rules.splice(Number(b.dataset.i), 1); draw(); });
@@ -5119,17 +5022,49 @@ try{(function(){
   const getRules = el => (el && el._rules) ? el._rules.slice() : [];
 
   /* ---------- إنشاء أدمن لموظف (مشترك) ---------- */
-  async function createAdminFor(worker, {is_super, title, rules}){
+  const ROLES = {super:'👑 سوبر أدمن', quality:'🛡️ أخصائي جودة', dept_manager:'📊 مدير إدارة', place_manager:'🏭 مدير مكان'};
+  window.FSRoleLabels = ROLES;
+  window.__createAdminFor = (...a) => createAdminFor(...a);
+  async function createAdminFor(worker, {is_super, title, rules, role, department_id, can_violations}){
+    role = role || (is_super ? 'super' : 'quality'); is_super = role === 'super';
     const {data:ex} = await sb.from('admins').select('id').eq('worker_id', worker.id).maybeSingle();
     if(ex) return {error:'الموظف ده أصلاً عنده صلاحية أدمن.'};
-    let ins = await sb.from('admins').insert({name:worker.worker_name, code:String(worker.id), worker_id:worker.id, is_super:!!is_super, title:title || null}).select().single();
-    if(ins.error && /title/i.test(ins.error.message || '')) ins = await sb.from('admins').insert({name:worker.worker_name, code:String(worker.id), worker_id:worker.id, is_super:!!is_super}).select().single();
+    const base = {name:worker.worker_name, code:String(worker.id), worker_id:worker.id, is_super, title:title || null};
+    let ins = await sb.from('admins').insert({...base, role, department_id:department_id || null, can_violations:!!can_violations}).select().single();
+    if(ins.error && /role|department_id|can_violations/i.test(ins.error.message || '')){
+      if(role === 'dept_manager' || role === 'place_manager') return {error:'الدور ده محتاج تشغيل phase15.sql مرة واحدة في Supabase الأول.'};
+      ins = await sb.from('admins').insert(base).select().single();
+    }
+    if(ins.error && /title/i.test(ins.error.message || '')){ delete base.title; ins = await sb.from('admins').insert(base).select().single(); }
     if(ins.error) return {error:ins.error.message};
     if(!is_super && rules.length){
-      const r2 = await sb.from('admin_scopes').insert(rules.map(r => ({admin_id:ins.data.id, ...r})));
-      if(r2.error){ await sb.from('admins').delete().eq('id', ins.data.id); return {error:'تعذر حفظ النطاق: ' + r2.error.message + ' (اتأكد إنك شغّلت phase1.sql)'}; }
+      const r2 = await sb.from('admin_scopes').insert(rules.map(r => ({admin_id:ins.data.id, ...cleanRule(r)})));
+      if(r2.error){ await sb.from('admins').delete().eq('id', ins.data.id); return {error:'تعذر حفظ النطاق: ' + r2.error.message + ' (اتأكد إنك شغّلت phase1.sql و phase15.sql)'}; }
     }
     return {admin:ins.data};
+  }
+  /* عناصر اختيار الدور (مشتركة بين المنح والتعديل) */
+  function roleControls(p, cur){
+    cur = cur || {};
+    return '<label class="field-label u-mt10">الدور</label><select id="' + p + '-role" class="input-field">' +
+      ['quality', 'place_manager', 'dept_manager', 'super'].map(k => '<option value="' + k + '"' + ((cur.role || 'quality') === k ? ' selected' : '') + '>' + ROLES[k] + '</option>').join('') + '</select>' +
+      '<div class="muted u-fs11" id="' + p + '-rolehint" style="margin-top:4px;"></div>' +
+      '<div id="' + p + '-deptrow" class="hidden"><label class="field-label u-mt10">الإدارة (مدير الإدارة بيتابع موظفينها في كل الأماكن)</label><select id="' + p + '-dept" class="input-field">' + opts(orgDepts, cur.department_id, '— اختر الإدارة —') + '</select></div>' +
+      '<label class="v4-check hidden" id="' + p + '-viorow"><input id="' + p + '-vio" type="checkbox"' + (cur.can_violations ? ' checked' : '') + '/> يقدر يسجّل مخالفات على موظفين مكانه</label>';
+  }
+  const ROLE_HINT = {quality:'ينشر فيديوهات وكروت واختبارات لنطاقه، ويسجّل مخالفات وتدريب ميداني، ويرد على التعليقات. يعدّل ويحذف اللي هو عمله بس، وما يحذفش موظف (يوقّفه).',
+    place_manager:'بيتابع موظفين مكانه (قراءة) ويأكّد حضور التدريب الميداني ويصفّر كلمة سر موظفيه. ما بينشرش ولا بيعدّل.',
+    dept_manager:'بيتابع تقارير موظفين إدارته في كل المصانع والفروع (قراءة فقط).', super:'كل الصلاحيات: الهيكل والأدمن والإعدادات والمسح.'};
+  function wireRoleControls(p, scopeBox){
+    const sel = $q(p + '-role'); if(!sel) return;
+    const upd = () => {
+      const r = sel.value;
+      $q(p + '-deptrow').classList.toggle('hidden', r !== 'dept_manager');
+      $q(p + '-viorow').classList.toggle('hidden', r !== 'place_manager');
+      $q(p + '-rolehint').textContent = ROLE_HINT[r] || '';
+      if(scopeBox) scopeBox.classList.toggle('hidden', r === 'super');
+    };
+    sel.onchange = upd; upd();
   }
 
   /* =====================  شاشة الأدمن  ===================== */
@@ -5145,16 +5080,19 @@ try{(function(){
         '<p class="muted" style="font-size:12px;margin-bottom:12px;">الموظف بيدخل بنفس رقمه وكلمة سره، ولو ليه صلاحية أدمن بيختار يدخل كموظف أو كأدمن. النطاق بيتحدد بالمنطقة والإدارة والوحدة.</p>' +
         '<label class="field-label">الموظف (رقم أو اسم)</label><input id="v4-ag-q" class="input-field" placeholder="🔍 اكتب رقم الموظف أو اسمه"/>' +
         '<div id="v4-ag-res" style="margin:6px 0;"></div><div id="v4-ag-picked" class="v4-picked hidden"></div>' +
-        '<label class="v4-check"><input id="v4-ag-super" type="checkbox"/> 🛡️ سوبر أدمن (صلاحيات كاملة على كل الهيكل)</label>' +
+        '<div id="v4-ag-rolebox"></div>' +
         '<div id="v4-ag-opts"><label class="field-label u-mt10">المسمى (اختياري)</label><input id="v4-ag-title" list="v4-titles" class="input-field" placeholder="مثال: مدير فرع"/>' +
         '<datalist id="v4-titles">' + TITLES.map(t => '<option value="' + t + '">').join('') + '</datalist>' +
         '<label class="field-label u-mt10">النطاق (يقدر يتابع موظفين ويضيف محتوى في الوحدات دي بس)</label><div id="v4-ag-scope"></div></div>' +
         '<div style="margin-top:14px;"><button class="btn-primary" style="padding:10px 22px;font-size:13px;" onclick="v4Grant()">منح الصلاحية</button></div><div id="v4-ag-msg" class="u-fs12-mt8"></div>';
       old ? old.parentElement.insertBefore(card, old) : tab.prepend(card);
       let t; $q('v4-ag-q').oninput = () => { clearTimeout(t); t = setTimeout(searchAdminWorker, 250); };
-      $q('v4-ag-super').onchange = e => $q('v4-ag-opts').classList.toggle('hidden', e.target.checked);
     }
-    loadOrgMeta().then(() => { mountScope($q('v4-ag-scope'), getRules($q('v4-ag-scope'))); renderAdminAdminsV4(); });
+    loadOrgMeta().then(() => {
+      $q('v4-ag-rolebox').innerHTML = roleControls('v4-ag', {});
+      wireRoleControls('v4-ag', $q('v4-ag-opts'));
+      mountScope($q('v4-ag-scope'), getRules($q('v4-ag-scope'))); renderAdminAdminsV4();
+    });
   }
   async function searchAdminWorker(){
     const s = ($q('v4-ag-q').value || '').trim(), box = $q('v4-ag-res');
@@ -5173,13 +5111,15 @@ try{(function(){
     });
   }
   window.v4Grant = async function(){
-    const msg = $q('v4-ag-msg'), sup = $q('v4-ag-super').checked, rules = getRules($q('v4-ag-scope'));
+    const msg = $q('v4-ag-msg'), role = $q('v4-ag-role').value, sup = role === 'super', rules = getRules($q('v4-ag-scope'));
     if(!picked){ msg.innerHTML = '<span class="u-red">اختار الموظف الأول</span>'; return; }
-    if(!sup && !rules.length){ msg.innerHTML = '<span class="u-red">ضيف نطاق واحد على الأقل أو فعّل سوبر أدمن</span>'; return; }
-    const {error} = await createAdminFor({id:picked.id, worker_name:picked.worker_name}, {is_super:sup, title:($q('v4-ag-title').value || '').trim(), rules});
+    const dept = num($q('v4-ag-dept').value);
+    if(role === 'dept_manager' && !dept){ msg.innerHTML = '<span class="u-red">اختار الإدارة اللي هيتابعها</span>'; return; }
+    if((role === 'quality' || role === 'place_manager') && !rules.length){ msg.innerHTML = '<span class="u-red">ضيف نطاق واحد على الأقل (منطقة / نوع مكان / مكان / وحدة)</span>'; return; }
+    const {error} = await createAdminFor({id:picked.id, worker_name:picked.worker_name}, {role, title:($q('v4-ag-title').value || '').trim(), rules:sup ? [] : rules, department_id:dept, can_violations:$q('v4-ag-vio').checked});
     if(error){ msg.innerHTML = '<span class="u-red">' + esc(error) + '</span>'; return; }
     msg.innerHTML = '<span class="u-green">تم منح الصلاحية للموظف #' + picked.id + ' ✅</span>';
-    picked = null; $q('v4-ag-q').value = ''; $q('v4-ag-picked').classList.add('hidden'); $q('v4-ag-title').value = ''; $q('v4-ag-super').checked = false; $q('v4-ag-opts').classList.remove('hidden');
+    picked = null; $q('v4-ag-q').value = ''; $q('v4-ag-picked').classList.add('hidden'); $q('v4-ag-title').value = ''; $q('v4-ag-role').value = 'quality'; $q('v4-ag-role').onchange(); $q('v4-ag-opts').classList.remove('hidden');
     mountScope($q('v4-ag-scope'), []); renderAdminAdminsV4();
   };
 
@@ -5192,10 +5132,11 @@ try{(function(){
       const rules = (sc.data || []).filter(r => r.admin_id === ad.id).map(ruleText)
         .concat((ls.data || []).filter(r => r.admin_id === ad.id).map(r => ruleText({section_id:r.section_id})));
       const canDelete = canDeleteAny || !ad.is_super;
-      return '<div class="card v4-admin"><div><b>' + esc(ad.name) + '</b> ' + (ad.is_super ? '<span class="badge badge-green" style="font-size:9.5px;">Super Admin</span>' : '') + (ad.title ? ' <span class="badge badge-blue" style="font-size:9.5px;">' + esc(ad.title) + '</span>' : '') +
+      const rl = ad.role || (ad.is_super ? 'super' : 'quality');
+      return '<div class="card v4-admin"><div><b>' + esc(ad.name) + '</b> ' + '<span class="badge ' + (rl === 'super' ? 'badge-green' : 'badge-yellow') + '" style="font-size:9.5px;">' + esc(ROLES[rl] || rl) + '</span>' + (rl === 'dept_manager' && ad.department_id ? ' <span class="badge badge-blue" style="font-size:9.5px;">' + esc(nameOf(orgDepts, ad.department_id)) + '</span>' : '') + (ad.title ? ' <span class="badge badge-blue" style="font-size:9.5px;">' + esc(ad.title) + '</span>' : '') +
         '<div class="muted" style="font-size:11px;margin:3px 0 6px;">رقم الموظف: ' + esc(ad.worker_id || ad.code) + '</div>' +
-        '<div class="v4-tags">' + (ad.is_super ? '<span class="v4-tag">كل الهيكل</span>' : (rules.map(t => '<span class="v4-tag">' + esc(t) + '</span>').join('') || '<span class="muted" style="font-size:11.5px;">بدون نطاق</span>')) + '</div></div>' +
-        '<div class="v4-admin-btns">' + (ad.is_super ? '' : '<button class="btn-secondary btn-sm" onclick="v4EditAdmin(' + ad.id + ')">✏️ تعديل النطاق</button>') +
+        '<div class="v4-tags">' + (ad.is_super ? '<span class="v4-tag">كل الهيكل</span>' : (rl === 'dept_manager' && !rules.length ? '<span class="v4-tag">كل الأماكن</span>' : '') + (rules.map(t => '<span class="v4-tag">' + esc(t) + '</span>').join('') || '<span class="muted" style="font-size:11.5px;">بدون نطاق</span>')) + '</div></div>' +
+        '<div class="v4-admin-btns">' + ((ad.is_super && !canDeleteAny) ? '' : '<button class="btn-secondary btn-sm" onclick="v4EditAdmin(' + ad.id + ')">✏️ تعديل</button>') +
         (canDelete ? '<button class="btn-danger btn-sm" onclick="deleteAdmin(' + ad.id + ')">إلغاء الصلاحية</button>' : '') + '</div></div>';
     }).join('') || '<div class="muted">لا يوجد أدمن</div>';
   }
@@ -5207,18 +5148,28 @@ try{(function(){
     const [a, sc, ls] = await Promise.all([sb.from('admins').select('*').eq('id', id).single(), sb.from('admin_scopes').select('*').eq('admin_id', id), sb.from('admin_sections').select('*').eq('admin_id', id)]);
     if(!a.data) return showToast('تعذر جلب الأدمن');
     const oldScopeIds = (sc.data || []).map(r => r.id), oldLegacyIds = (ls.data || []).map(r => r.id);
-    const rules = (sc.data || []).map(r => ({region_id:r.region_id, department_id:r.department_id, section_id:r.section_id})).concat((ls.data || []).map(r => ({section_id:r.section_id})));
-    const ov = modal('<div class="v4-mt">✏️ تعديل نطاق: ' + esc(a.data.name) + '</div><label class="field-label">المسمى</label><input id="v4e-title" list="v4-titles" class="input-field" value="' + esc(a.data.title || '') + '"/><label class="field-label u-mt10">النطاق</label><div id="v4e-scope"></div>' +
+    const rules = (sc.data || []).map(r => ({region_id:r.region_id, department_id:r.department_id, section_id:r.section_id, place_id:r.place_id || null, place_kind:r.place_kind || null})).concat((ls.data || []).map(r => ({section_id:r.section_id})));
+    const ov = modal('<div class="v4-mt">✏️ تعديل نطاق: ' + esc(a.data.name) + '</div><label class="field-label">المسمى</label><input id="v4e-title" list="v4-titles" class="input-field" value="' + esc(a.data.title || '') + '"/>' + roleControls('v4e', {role:a.data.role || (a.data.is_super ? 'super' : 'quality'), department_id:a.data.department_id, can_violations:a.data.can_violations}) + '<label class="field-label u-mt10">النطاق</label><div id="v4e-scope"></div>' +
       '<div class="v4-mf"><button class="btn-primary" id="v4e-save">💾 حفظ</button><button class="btn-secondary" onclick="this.closest(\'.v4-ov\').remove()">إلغاء</button></div><div id="v4e-msg" class="u-fs12-mt8"></div>');
     mountScope($q('v4e-scope'), rules);
+    wireRoleControls('v4e', $q('v4e-scope').parentElement === document ? null : $q('v4e-scope'));
     $q('v4e-save').onclick = async () => {
-      const nr = getRules($q('v4e-scope')), msg = $q('v4e-msg');
-      if(!nr.length){ msg.innerHTML = '<span class="u-red">لازم نطاق واحد على الأقل</span>'; return; }
-      const ins = await sb.from('admin_scopes').insert(nr.map(r => ({admin_id:id, ...r})));   // نضيف الجديد الأول، وبعدين نشيل القديم
+      const role = $q('v4e-role').value, nr = role === 'super' ? [] : getRules($q('v4e-scope')), msg = $q('v4e-msg'), dept = num($q('v4e-dept').value);
+      if(role === 'dept_manager' && !dept){ msg.innerHTML = '<span class="u-red">اختار الإدارة</span>'; return; }
+      if((role === 'quality' || role === 'place_manager') && !nr.length){ msg.innerHTML = '<span class="u-red">لازم نطاق واحد على الأقل</span>'; return; }
+      const upd = {title:($q('v4e-title').value || '').trim() || null, is_super:role === 'super', role, department_id:role === 'dept_manager' ? dept : null, can_violations:role === 'place_manager' && $q('v4e-vio').checked};
+      let u1 = await sb.from('admins').update(upd).eq('id', id);
+      if(u1.error && /role|department_id|can_violations/i.test(u1.error.message || '')){
+        if(role === 'dept_manager' || role === 'place_manager'){ msg.innerHTML = '<span class="u-red">الدور ده محتاج تشغيل phase15.sql الأول</span>'; return; }
+        delete upd.role; delete upd.department_id; delete upd.can_violations; u1 = await sb.from('admins').update(upd).eq('id', id);
+      }
+      if(u1.error){ msg.innerHTML = '<span class="u-red">' + esc(u1.error.message) + '</span>'; return; }
+      if(nr.length){
+      const ins = await sb.from('admin_scopes').insert(nr.map(r => ({admin_id:id, ...cleanRule(r)})));   // نضيف الجديد الأول، وبعدين نشيل القديم
       if(ins.error){ msg.innerHTML = '<span class="u-red">' + esc(ins.error.message) + '</span>'; return; }
+      }
       if(oldScopeIds.length) await sb.from('admin_scopes').delete().in('id', oldScopeIds);
       if(oldLegacyIds.length) await sb.from('admin_sections').delete().in('id', oldLegacyIds);
-      await sb.from('admins').update({title:($q('v4e-title').value || '').trim() || null}).eq('id', id);
       ov.remove(); renderAdminAdminsV4(); showToast('تم تحديث النطاق ✅');
     };
   };
@@ -7099,7 +7050,8 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     const points = pts(videosDone, scores, onsite);
     const lvl = levelOf(points);
     const vt = workerTopics.length, qt = workerQuizStats.total || 0, qd = workerQuizStats.completed || 0;
-    const total = vt + qt, done = videosDone + qd;
+    const ct = (workerCards || []).length, cd = workerCardsSeenCount();
+    const total = vt + qt + ct, done = videosDone + qd + cd;
     const pct = total ? Math.round(done / total * 100) : 0;
     const openVio = (vio.data || []).filter(v => v.status !== 'closed').length;
     const now = Date.now(), lim = S.overdue * 86400000;
@@ -7116,24 +7068,11 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   async function computeRank(){
     if(S.board === 'off' || !currentUser || !currentUser.section_id) return null;
     const sid = currentUser.section_id;
-    let ws = await pages(() => sb.from('workers_evaluations').select('id,worker_name').eq('section_id', sid).order('id'));
-    try{ const _exw = await window.V19.excludedWorkers(); if(_exw.size) ws = ws.filter(x => !_exw.has(Number(x.id))); }catch(e){}   // v9.26: الأدمن وفريق الجودة خارج الترتيب
+    let ws = await pages(() => sb.from('workers_evaluations').select('id,worker_name,section_id,job_role_id,kpi_score').eq('section_id', sid).order('id'));
+    try{ const _exw = await window.V19.excludedWorkers(); if(_exw.size) ws = ws.filter(x => !_exw.has(Number(x.id))); }catch(e){}   // الأدمن وفريق الجودة خارج الترتيب
     if(ws.length < 3 || ws.length > 600) return { few: ws.length < 3 };
-    const ids = ws.map(x => x.id), vids = {}, ons = {}, att = [];
-    for(let i = 0; i < ids.length; i += CH){
-      const c = ids.slice(i, i + CH);
-      const [p, a, o] = await Promise.all([
-        pages(() => sb.from('training_progress').select('worker_id,completed').in('worker_id', c).eq('completed', true)),
-        pages(() => sb.from('quiz_attempts').select('*').in('worker_id', c)),
-        pages(() => sb.from('onsite_training_participants').select('worker_id').in('worker_id', c))
-      ]);
-      p.forEach(r => vids[r.worker_id] = (vids[r.worker_id] || 0) + 1);
-      o.forEach(r => ons[r.worker_id] = (ons[r.worker_id] || 0) + 1);
-      att.push(...a);
-    }
-    const lat = latestScores(att), sc = {};
-    Object.values(lat).forEach(a => (sc[a.worker_id] = sc[a.worker_id] || []).push(Number(a.score) || 0));
-    const rows = ws.map(x => ({ id: x.id, name: x.worker_name, p: pts(vids[x.id] || 0, sc[x.id] || [], ons[x.id] || 0) })).sort((a, b) => b.p - a.p || a.id - b.id);
+    const st = await window.FSStats.forWorkers(ws);   // نفس معادلة الالتزام اللي في لوحة الأدمن
+    const rows = ws.map(x => ({ id: x.id, name: x.worker_name, p: Math.round((st[x.id] || {}).compliance || 0) })).sort((a, b) => b.p - a.p || a.id - b.id);
     let rank = 0, last = null, r = 0;
     rows.forEach((x, i) => { if(x.p !== last){ r = i + 1; last = x.p; } x.rank = r; });
     return { rows, total: rows.length, mine: rows.find(x => String(x.id) === String(currentUser.id)) };
@@ -7217,8 +7156,8 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     const top = r.rows.slice(0, 5), mine = r.mine;
     const nmOf = (x, i) => S.names === 'anon' && String(x.id) !== String(currentUser.id) ? '#' + (i + 1) : nm(x.name);
     let h = '<div class="v9-h">🏁 ' + E(n('rank')) + '</div>' + (mine ? '<div class="v9-rankme">' + E(n('rankYou', { a: mine.rank, b: r.total })) + '</div>' : '') + '<ol class="v9-lb">';
-    top.forEach((x, i) => h += '<li' + (String(x.id) === String(currentUser.id) ? ' class="me"' : '') + '><span class="rk">' + x.rank + '</span><span class="nm">' + E(nmOf(x, i)) + (String(x.id) === String(currentUser.id) ? ' (' + E(n('you')) + ')' : '') + '</span><span class="pt">' + x.p + '</span></li>');
-    if(mine && mine.rank > 5) h += '<li class="me sep"><span class="rk">' + mine.rank + '</span><span class="nm">' + E(nm(mine.name)) + ' (' + E(n('you')) + ')</span><span class="pt">' + mine.p + '</span></li>';
+    top.forEach((x, i) => h += '<li' + (String(x.id) === String(currentUser.id) ? ' class="me"' : '') + '><span class="rk">' + x.rank + '</span><span class="nm">' + E(nmOf(x, i)) + (String(x.id) === String(currentUser.id) ? ' (' + E(n('you')) + ')' : '') + '</span><span class="pt">' + x.p + '%</span></li>');
+    if(mine && mine.rank > 5) h += '<li class="me sep"><span class="rk">' + mine.rank + '</span><span class="nm">' + E(nm(mine.name)) + ' (' + E(n('you')) + ')</span><span class="pt">' + mine.p + '%</span></li>';
     box.innerHTML = h + '</ol>';
   }
 
@@ -7230,7 +7169,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     if(!el){ bar.parentElement.insertAdjacentHTML('afterend', '<div id="v9-rankline" class="v9-rankline hidden"></div>'); el = $q('v9-rankline'); }
     const r = lastRank;
     if(!r || r.few || !r.mine){ el.classList.add('hidden'); return; }
-    el.innerHTML = '<span>🏁 ' + E(n('rank')) + '</span><b>' + E(n('rankYou', { a: r.mine.rank, b: r.total })) + '</b><span class="v9-rl-pts">' + r.mine.p + ' ' + E(n('pts')) + '</span>';
+    el.innerHTML = '<span>🏁 ' + E(n('rank')) + '</span><b>' + E(n('rankYou', { a: r.mine.rank, b: r.total })) + '</b><span class="v9-rl-pts">' + r.mine.p + '%</span>';
     el.classList.remove('hidden');
   }
   async function renderRankLine(){ try{ lastRank = await computeRank(); }catch(e){ lastRank = null; } drawRank(); }
@@ -8060,7 +7999,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
             return function(res, rej){
               return Promise.resolve(t).then(r => {
                 try{
-                  if(r && !isAdminNow() && typeof currentUser !== 'undefined' && currentUser && Array.isArray(r.data)){
+                  if(r && !isAdminNow() && !window.__keepExpired && typeof currentUser !== 'undefined' && currentUser && Array.isArray(r.data)){
                     r = Object.assign({}, r, { data: r.data.filter(x => !expired(x)) });
                   }
                 }catch(e){}
@@ -8788,7 +8727,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
 /* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
 (function(){
-  const VERSION = 'v9.55';
+  const VERSION = 'v9.58';
   const $ = id => document.getElementById(id);
   let running = false;
   async function tx(text, lang){
@@ -9057,6 +8996,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     const s = btn.closest('.safety-card-slide'); if(s) s.classList.add('is-seen');
     btn.textContent = '✅ ' + t('seen');
     progress();
+    try{ if(typeof updateWorkerProgressSummary==='function') updateWorkerProgressSummary(); }catch(e){}
     try{ if(currentUser) logActivityV22('worker', currentUser.id, 'اطلاع على بطاقة', 'card', id); }catch(e){}
   };
   function upgrade(){
@@ -9467,16 +9407,17 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
         sb.from('admins').select('worker_id'),
         pagedAll('job_roles', 'id,target_department_id').catch(() => [])
       ]);
-      let ws; try{ ws = await pagedAll('workers_evaluations', 'id,job_role_id,admin_auto_excluded'); }catch(e){ ws = await pagedAll('workers_evaluations', 'id,job_role_id'); }
-      const statsDept = new Set(), adminDept = new Set();
-      ((dep && dep.data) || []).forEach(d => { if(d.exclude_from_stats) statsDept.add(Number(d.id)); if(d.is_admin_department) adminDept.add(Number(d.id)); });
+      const ws = await pagedAll('workers_evaluations', 'id,job_role_id');
+      const statsDept = new Set();
+      ((dep && dep.data) || []).forEach(d => { if(d.exclude_from_stats) statsDept.add(Number(d.id)); });
       const admIds = new Set(((adm && adm.data) || []).map(a => a.worker_id).filter(x => x != null).map(Number));
       const roleDept = {}; roles.forEach(r => roleDept[r.id] = Number(r.target_department_id));
       ws.forEach(w => {
         const d = roleDept[w.job_role_id];
-        if(admIds.has(Number(w.id)) || statsDept.has(d) || (adminDept.has(d) && !w.admin_auto_excluded)) s.add(Number(w.id));
+        if(admIds.has(Number(w.id)) || statsDept.has(d)) s.add(Number(w.id));
       });
     }catch(e){ console.error('v19 excludedWorkers', e); }
+    try{ const st = await sb.from('workers_evaluations').select('id').in('status', ['suspended', 'left', 'leave']); if(!st.error) (st.data || []).forEach(x => s.add(Number(x.id))); }catch(e){}
     exW = s; exWAt = Date.now(); return s;
   }
   window.V19 = { excluded, excludedWorkers, has: () => hasCol };
@@ -9951,6 +9892,17 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
       box._v22 = 1;
       box.addEventListener('click', e => { const b = e.target.closest('.v22-cert'); if(!b) return; e.preventDefault(); e.stopPropagation(); window.openCertificateModal('v22', b.dataset.cn, Number(b.dataset.cp)); }, true);
     }
+    /* ترتيب الأماكن (مقارنة سريعة): كل مكان/فرع بنسبته، من الأعلى للأقل */
+    try{
+      const flat = []; nodeArr.forEach(n => n.brs.forEach(b => { if(b.n) flat.push({name: b.name, p: b.p, n: b.n}); }));
+      flat.sort((x, y) => y.p - x.p);
+      let rk = $('fs-place-rank');
+      if(flat.length > 1){
+        if(!rk){ rk = document.createElement('div'); rk.id = 'fs-place-rank'; rk.className = 'card'; box.parentNode.insertBefore(rk, box); }
+        rk.innerHTML = '<div style="font-weight:800;font-size:13px;margin-bottom:6px">🏁 مقارنة الأماكن</div>' + flat.slice(0, 15).map((f, i) =>
+          '<div style="display:flex;align-items:center;gap:8px;font-size:12px;padding:3px 0"><span style="width:18px;color:var(--mute,#64748b)">' + (i + 1) + '</span><span style="flex:0 0 34%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + E(f.name) + '</span><span style="flex:1;background:var(--border,#e2e8f0);border-radius:99px;height:8px;overflow:hidden"><i style="display:block;height:100%;width:' + Math.min(100, f.p) + '%;background:' + colr(f.p) + '"></i></span><b style="width:42px;text-align:end;color:' + colr(f.p) + '">' + Math.round(f.p) + '%</b></div>').join('');
+      } else if(rk) rk.remove();
+    }catch(e){ console.error('place rank', e); }
     const old = $('v22-branch-card'); if(old) old.remove();
   }
 
@@ -10071,8 +10023,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     // الأدمن
     const acard = $('ad-worker-id')?.closest('.card');
     if(acard){ adopt('admin', acard, '➕ منح صلاحية أدمن لموظف'); 
-      const cur = $('admins-list')?.closest('.card'), auto = $('auto-admins-list')?.closest('.card');
-      if(cur && auto && cur.compareDocumentPosition(auto) & Node.DOCUMENT_POSITION_PRECEDING) auto.parentNode.insertBefore(cur, auto);
+      const cur = $('admins-list')?.closest('.card');
       const ct = cur && cur.querySelector('.section-title');
       if(ct && !cur.querySelector('.fm-bar')){ const head = document.createElement('div'); head.className = 'fm-bar'; head.innerHTML = '<div class="section-title" style="margin:0">الأدمن الحاليين</div><button type="button" class="btn-primary btn-sm" onclick="FM.open(\'admin\')">＋ منح صلاحية أدمن</button>'; ct.replaceWith(head); } }
     // مكتبة المخالفات
@@ -10296,6 +10247,589 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   });
   window.addEventListener('resize',stackH);
   window.V27={toStart:toStart,stackH:stackH};
+})();
+
+/* ===== FSStats: حساب واحد لنسب الموظف (لوحة الأدمن + جدول الموظفين + ترتيب الموظف) ===== */
+(function(){
+  var SC={excellent:100,good:75,acceptable:50,weak:25};
+  function chunk(a,n){var o=[];for(var i=0;i<a.length;i+=n)o.push(a.slice(i,i+n));return o;}
+  async function pages(build){
+    var out=[],from=0;
+    for(;;){ var r=await build().range(from,from+999); if(r.error) return out; out=out.concat(r.data||[]); if(!r.data||r.data.length<1000) break; from+=1000; }
+    return out;
+  }
+  var cache=null,cacheAt=0;
+  async function cfg(){
+    if(cache&&Date.now()-cacheAt<5000) return cache;
+    var m={};
+    try{ var r=await sb.from('app_settings').select('key,value').in('key',['compliance_weight_training','compliance_weight_quiz','compliance_weight_violations','compliance_weight_onsite','compliance_window_days']); (r.data||[]).forEach(function(x){m[x.key]=Number(x.value);}); }catch(e){}
+    var days=m.compliance_window_days>0?m.compliance_window_days:30;
+    cache={w:{training:m.compliance_weight_training!=null?m.compliance_weight_training:40,quiz:m.compliance_weight_quiz!=null?m.compliance_weight_quiz:25,violations:m.compliance_weight_violations!=null?m.compliance_weight_violations:15,onsite:m.compliance_weight_onsite!=null?m.compliance_weight_onsite:20},days:days};
+    cacheAt=Date.now(); return cache;
+  }
+  async function weights(){ cacheAt=0; return (await cfg()).w; }
+  async function windowDays(){ cacheAt=0; return (await cfg()).days; }
+  async function ctx(ids){
+    var c=await cfg();
+    var parts=ids&&ids.length?chunk(ids,150):[null];
+    function by(table,cols){ return Promise.all(parts.map(function(p){ return pages(function(){ var q=sb.from(table).select(cols); if(p) q=q.in('worker_id',p); return q.order('id'); }); })).then(function(a){return [].concat.apply([],a);}); }
+    var res=await Promise.all([pages(function(){return sb.from('training_topics').select('*').order('id');}),by('training_progress','worker_id,topic_id,completed'),by('quiz_attempts','worker_id,score,is_current'),by('onsite_training_participants','worker_id,admin_evaluation'),pages(function(){return sb.from('job_roles').select('id,target_department_id').order('id');})]);
+    var x={days:c.days,topics:res[0],done:{},scores:{},onsite:{},roleDept:{}};
+    res[1].forEach(function(p){ if(!p.completed) return; (x.done[p.worker_id]=x.done[p.worker_id]||new Set()).add(p.topic_id); });
+    res[2].forEach(function(a){ if(a.is_current===false) return; (x.scores[a.worker_id]=x.scores[a.worker_id]||[]).push(Number(a.score)||0); });
+    res[3].forEach(function(p){ var s=SC[p.admin_evaluation]; if(s==null) return; (x.onsite[p.worker_id]=x.onsite[p.worker_id]||[]).push(s); });
+    res[4].forEach(function(r){ x.roleDept[r.id]=r.target_department_id; });
+    return x;
+  }
+  /* التدريب بيتحسب على المطلوب من الموظف في فترة الاحتساب بس: الجاري + اللي انتهى خلال آخر N يوم */
+  function counts(t,w,dept,cut,now){
+    if(t.section_id&&Number(t.section_id)!==Number(w.section_id)) return false;
+    if(t.target_department_id&&Number(t.target_department_id)!==Number(dept)) return false;
+    var since=t.visible_since?+new Date(t.visible_since):(t.created_at?+new Date(t.created_at):0);
+    if(since>now) return false;
+    var until=t.visible_until?+new Date(t.visible_until):null;
+    if(!t.is_visible&&(!until||until>now)) return false;
+    if(until&&until<cut) return false;
+    return true;
+  }
+  function calc(w,c,wt){
+    var now=Date.now(),cut=now-c.days*864e5,dept=c.roleDept[w.job_role_id];
+    var rel=c.topics.filter(function(t){return counts(t,w,dept,cut,now);});
+    var dn=c.done[w.id]||new Set(), done=rel.filter(function(t){return dn.has(t.id);}).length;
+    var tr=rel.length?done/rel.length*100:100;
+    var sc=c.scores[w.id]||[], q=sc.length?sc.reduce(function(a,b){return a+b;},0)/sc.length:100;
+    var v=Number(w.kpi_score!=null?w.kpi_score:100);
+    var on=c.onsite[w.id]||[], o=on.length?on.reduce(function(a,b){return a+b;},0)/on.length:100;
+    var tot=(wt.training+wt.quiz+wt.violations+wt.onsite)||1;
+    return {worker:w,trainingPct:tr,quizPct:q,violPct:v,onsitePct:o,relevant:rel.length,done:done,compliance:(tr*wt.training+q*wt.quiz+v*wt.violations+o*wt.onsite)/tot};
+  }
+  async function forWorkers(list){
+    var wt=await weights(), c=await ctx(list.map(function(w){return w.id;})), out={};
+    list.forEach(function(w){ out[w.id]=calc(w,c,wt); }); return out;
+  }
+  async function compute(){
+    var wt=await weights();
+    var ids=getAdminScopeIds();
+    var list=await pages(function(){ var q=sb.from('workers_evaluations').select('id,worker_name,section_id,job_role_id,kpi_score'); if(!adminUser.isSuper&&ids.length) q=q.in('section_id',ids); return q.order('id'); });
+    var before=list.length;
+    try{ var ex=await window.V19.excludedWorkers(); if(ex.size) list=list.filter(function(w){return !ex.has(Number(w.id));}); }catch(e){}
+    var c=await ctx(list.map(function(w){return w.id;}));
+    var per=list.map(function(w){return calc(w,c,wt);});
+    var bySection={}; per.forEach(function(r){ var sid=r.worker.section_id||'none'; (bySection[sid]=bySection[sid]||[]).push(r); });
+    return {weights:wt,perWorker:per,bySection:bySection,totalWorkers:list.length,excluded:before-list.length};
+  }
+  window.FSStats={weights:weights,windowDays:windowDays,ctx:ctx,calc:calc,forWorkers:forWorkers,compute:compute};
+  /* خلايا التدريب والاختبارات في جدول الموظفين */
+  var col=function(p){return p>=80?'#16a34a':p>=50?'#d97706':'#dc2626';};
+  window.fillWorkerPcts=async function(rows){
+    try{
+      var st=await forWorkers(rows);
+      var tb=document.getElementById('workers-tbody'); if(!tb) return;
+      rows.forEach(function(w){
+        var tr=tb.querySelector('tr[onclick*="openWorkerModal('+w.id+')"]'); if(!tr) return;
+        var s=st[w.id], a=tr.querySelector('.wk-tr'), b=tr.querySelector('.wk-qz'); if(!s) return;
+        if(a){ a.classList.remove('muted'); a.innerHTML='<b style="color:'+col(s.trainingPct)+'">'+Math.round(s.trainingPct)+'%</b> <small class="muted">('+s.done+'/'+s.relevant+')</small>'; }
+        if(b){ b.classList.remove('muted'); b.innerHTML=(c2(s))+''; }
+      });
+    }catch(e){ console.error('worker pcts',e); }
+  };
+  function c2(s){ var has=s.quizPct!=null; return '<b style="color:'+col(s.quizPct)+'">'+Math.round(s.quizPct)+'%</b>'; }
+})();
+
+/* ===== FSRole: الأدوار الخمسة والصلاحيات (سوبر / أخصائي جودة / مدير إدارة / مدير مكان) ===== */
+(function(){
+  var TABS = {
+    super: null,
+    quality: ['dashboard','workers','quizzes','cards','videos','comments','onsite','reports'],
+    place_manager: ['dashboard','workers','onsite','comments','reports'],
+    dept_manager: ['dashboard','workers','comments','reports']
+  };
+  var PERM = {
+    // ما يقدر عليه كل دور
+    publish:   {super:1, quality:1},
+    editWorker:{super:1, quality:1},
+    deleteWorker:{super:1},
+    suspend:   {super:1, quality:1},
+    violations:{super:1, quality:1},
+    resetPw:   {super:1, quality:1, place_manager:1},
+    reply:     {super:1, quality:1}
+  };
+  var R = { role:'quality', deptRoleIds:null };
+  function cur(){ try{ return adminUser; }catch(e){ return null; } }
+  function roleOf(u){ u = u || cur(); if(!u) return null; return u.isSuper ? 'super' : (u.role || 'quality'); }
+  function can(p){
+    var u = cur(), r = roleOf(u); if(!r) return false;
+    if(p === 'violations' && r === 'place_manager') return !!u.canViolations;
+    return !!(PERM[p] && PERM[p][r]);
+  }
+  async function apply(u, adm){
+    adm = adm || {};
+    u.role = u.isSuper ? 'super' : (adm.role || 'quality');
+    if(u.role === 'super') u.isSuper = true;
+    u.deptId = adm.department_id || null;
+    u.canViolations = !!adm.can_violations;
+    R.deptRoleIds = null;
+    if(u.role === 'dept_manager'){
+      if(!(u.section_ids || []).length) u.section_ids = (typeof sections !== 'undefined' ? sections : []).map(function(s){ return s.id; });
+      try{
+        var r = await sb.from('job_roles').select('id').eq('target_department_id', u.deptId || -1);
+        R.deptRoleIds = (r.data || []).map(function(x){ return Number(x.id); });
+      }catch(e){ R.deptRoleIds = []; }
+    }
+  }
+  /* مدير الإدارة يشوف موظفين إدارته بس (حسب وظيفة الموظف) */
+  (function(){
+    var f = sb.from.bind(sb);
+    sb.from = function(table){
+      var q = f(table), u = cur();
+      if(table === 'workers_evaluations' && u && !u.isSuper && u.role === 'dept_manager' && R.deptRoleIds && q.select){
+        var os = q.select.bind(q);
+        q.select = function(){ var b = os.apply(null, arguments); return b.in('job_role_id', R.deptRoleIds.length ? R.deptRoleIds : [-1]); };
+      }
+      return q;
+    };
+  })();
+  function paint(){
+    var u = cur(); if(!u) return;
+    var r = roleOf(u), allow = TABS[r];
+    document.body.classList.remove('role-super','role-quality','role-place_manager','role-dept_manager','role-ro','role-no-vio','role-no-reset');
+    document.body.classList.add('role-' + r);
+    if(!can('editWorker')) document.body.classList.add('role-ro');
+    if(!can('violations')) document.body.classList.add('role-no-vio');
+    if(!can('resetPw')) document.body.classList.add('role-no-reset');
+    if(allow){
+      document.querySelectorAll('.tab-btn[id^="tabbtn-"]').forEach(function(b){
+        var t = b.id.slice(7); if(allow.indexOf(t) < 0) b.classList.add('hidden');
+      });
+    }
+    var vt = document.querySelector('#wmpanel-violations'); 
+    if(vt){
+      var lab = Array.prototype.find.call(vt.querySelectorAll('div'), function(d){ return /تسجيل مخالفة جديدة/.test(d.textContent) && d.children.length === 0; });
+      if(lab){ var box = [lab.previousElementSibling, lab, lab.nextElementSibling]; box.forEach(function(e){ if(e) e.classList.add('vio-add-part'); }); }
+    }
+    var d = document.getElementById('admin-scope-display');
+    if(d && r !== 'super'){
+      var L = (window.FSRoleLabels || {})[r] || r;
+      d.textContent = L + ' • ' + d.textContent.replace(/^.*?•\s*/, '');
+    }
+    var fs_ = document.getElementById('worker-filter-section');
+    if(fs_ && r !== 'super' && fs_.options.length > 1 && fs_.options[0].value !== ''){
+      var o = document.createElement('option'); o.value = ''; o.textContent = 'كل نطاقي'; fs_.insertBefore(o, fs_.firstChild); fs_.value = '';
+    }
+    ensureResetBtn();
+  }
+  function ensureResetBtn(){
+    var p = document.getElementById('wmpanel-data'); if(!p || document.getElementById('ed-resetpw')) return;
+    var host = p.querySelector('.btn-primary'); host = host && host.parentElement; if(!host) return;
+    var b = document.createElement('button'); b.type = 'button'; b.id = 'ed-resetpw'; b.className = 'btn-secondary'; b.style.cssText = 'padding:8px 14px;font-size:12px;margin-inline-start:6px;';
+    b.textContent = '🔑 تصفير كلمة السر'; b.onclick = resetPw; host.appendChild(b);
+  }
+  async function resetPw(){
+    if(!can('resetPw') || !window.currentModalWorkerId && typeof currentModalWorkerId === 'undefined') return;
+    var id = typeof currentModalWorkerId !== 'undefined' ? currentModalWorkerId : null; if(!id) return;
+    if(!confirm('تصفير كلمة السر؟ الموظف هيحط كلمة جديدة عند أول دخول.')) return;
+    var r = await sb.from('workers_evaluations').update({password:null}).eq('id', id);
+    showToast(r.error ? 'تعذر التصفير' : 'تم تصفير كلمة السر ✅');
+  }
+  /* الحذف: السوبر بس يحذف نهائياً؛ غيره يوقّف الموظف */
+  var _dw = window.deleteWorker;
+  window.deleteWorker = async function(id){
+    if(can('deleteWorker')) return _dw.apply(this, arguments);
+    if(!can('suspend')){ showToast('مالكش صلاحية'); return; }
+    if(!confirm('إيقاف الموظف؟ (مش هيتحذف، السوبر أدمن بس يقدر يحذف)')) return;
+    var r = await sb.from('workers_evaluations').update({status:'suspended'}).eq('id', id);
+    if(r.error){ showToast(/status/i.test(r.error.message || '') ? 'شغّل phase15.sql الأول' : 'تعذر الإيقاف'); return; }
+    showToast('تم إيقاف الموظف'); loadWorkers();
+  };
+  var _lw = loadWorkers;
+  loadWorkers = async function(){
+    var r = await _lw.apply(this, arguments);
+    if(!can('deleteWorker')) document.querySelectorAll('#workers-tbody .btn-danger').forEach(function(b){ if(can('suspend')) b.textContent = 'إيقاف'; else b.remove(); });
+    return r;
+  };
+  var _at = window.adminTab || adminTab;
+  var W = function(tab){
+    var allow = TABS[roleOf()];
+    if(allow && allow.indexOf(tab) < 0) tab = 'dashboard';
+    return _at.call(this, tab);
+  };
+  window.adminTab = W; try{ adminTab = W; }catch(e){}
+  afterCall('applyAdminScope', function(){ try{ paint(); }catch(e){ console.error(e); } });
+  window.FSRole = {apply:apply, can:can, paint:paint, roleOf:roleOf, TABS:TABS, state:R};
+  var st = document.createElement('style');
+  st.textContent = 'body.role-ro #fm-worker-btn,body.role-ro #wmpanel-data .btn-primary,body.role-ro #ed-name,body.role-ro #ed-role,body.role-ro #ed-section{display:none!important}' +
+    'body.role-no-vio .vio-add-part{display:none!important}body.role-no-reset #ed-resetpw{display:none!important}';
+  document.head.appendChild(st);
+})();
+
+/* ===== حالة الموظف + ملكية المحتوى ===== */
+(function(){
+  var ST = {active:'نشط', leave:'إجازة', suspended:'موقوف', left:'ترك العمل'};
+  var OWN = ['training_topics','safety_cards','quizzes','onsite_trainings','violation_library'];
+  var own = {};   // جدول -> هل فيه عمود created_by
+  function u_(){ try{ return adminUser; }catch(e){ return null; } }
+  async function probe(){
+    for(var i = 0; i < OWN.length; i++){
+      try{ var r = await sb.from(OWN[i]).select('created_by').limit(1); own[OWN[i]] = !r.error; }catch(e){ own[OWN[i]] = false; }
+    }
+  }
+  var _ap = window.FSRole && window.FSRole.apply;
+  if(_ap) window.FSRole.apply = async function(u, adm){ var r = await _ap.apply(this, arguments); probe(); return r; };
+  /* created_by تلقائي عند الإضافة */
+  (function(){
+    var f = sb.from.bind(sb);
+    sb.from = function(table){
+      var q = f(table), u = u_();
+      if(OWN.indexOf(table) >= 0 && own[table] && u && u.workerId && q.insert){
+        var oi = q.insert.bind(q);
+        q.insert = function(p){
+          var rest = Array.prototype.slice.call(arguments, 1);
+          var add = function(o){ return (o && typeof o === 'object' && o.created_by == null) ? Object.assign({}, o, {created_by:Number(u.workerId)}) : o; };
+          return oi.apply(null, [Array.isArray(p) ? p.map(add) : add(p)].concat(rest));
+        };
+      }
+      return q;
+    };
+  })();
+  /* الحذف: غير السوبر يحذف اللي هو عمله (أو القديم بدون مالك) بس */
+  async function guard(table, id){
+    var u = u_(); if(!u || u.isSuper || !own[table]) return;
+    var r = await sb.from(table).select('created_by').eq('id', id).maybeSingle();
+    var c = r.data && r.data.created_by;
+    if(c != null && Number(c) !== Number(u.workerId)){ showToast('ده من عمل أدمن تاني — السوبر أدمن بس يحذفه'); throw new Error('not owner'); }
+  }
+  [['deleteTrainingTopic','training_topics'],['deleteCard','safety_cards'],['deleteQuiz','quizzes'],['deleteOnsiteSession','onsite_trainings'],['deleteViolationLib','violation_library']].forEach(function(p){
+    beforeCallAsync(p[0], async function(id){ await guard(p[1], id); });
+  });
+  /* حالة الموظف في مودال التعديل */
+  function ensureStatus(){
+    var p = document.getElementById('wmpanel-data'); if(!p || document.getElementById('ed-status')) return;
+    var sec = document.getElementById('ed-section'); var cell = sec && sec.parentElement; if(!cell) return;
+    var d = document.createElement('div'); d.innerHTML = '<label class="field-label">الحالة</label><select id="ed-status" class="input-field">' + Object.keys(ST).map(function(k){ return '<option value="' + k + '">' + ST[k] + '</option>'; }).join('') + '</select>';
+    cell.parentElement.appendChild(d);
+  }
+  afterCallAsync('openWorkerModal', async function(){
+    ensureStatus();
+    var s = document.getElementById('ed-status'); if(!s) return;
+    try{ var r = await sb.from('workers_evaluations').select('status').eq('id', currentModalWorkerId).maybeSingle(); s.value = (r.data && r.data.status) || 'active'; s.disabled = !!r.error; }catch(e){}
+  });
+  beforeCallAsync('saveEditWorker', async function(){
+    var s = document.getElementById('ed-status'); if(!s || s.disabled) return;
+    var r = await sb.from('workers_evaluations').update({status:s.value}).eq('id', currentModalWorkerId);
+    if(r.error) showToast('شغّل phase15.sql عشان حالة الموظف تتحفظ');
+    else { try{ window.V19.excludedWorkers(true); }catch(e){} }
+  });
+  /* شارة الحالة في جدول الموظفين */
+  var _lw = loadWorkers;
+  loadWorkers = async function(){
+    var r = await _lw.apply(this, arguments);
+    try{
+      var rows = [].slice.call(document.querySelectorAll('#workers-tbody tr.worker-row'));
+      var ids = rows.map(function(tr){ return Number(tr.children[0].textContent); }).filter(Boolean);
+      if(ids.length){
+        var q = await sb.from('workers_evaluations').select('id,status').in('id', ids);
+        if(!q.error) (q.data || []).forEach(function(w){
+          if(!w.status || w.status === 'active') return;
+          var tr = rows.filter(function(x){ return Number(x.children[0].textContent) === Number(w.id); })[0];
+          if(tr && !tr.querySelector('.st-badge')) tr.children[1].insertAdjacentHTML('beforeend', ' <span class="badge badge-yellow st-badge" style="font-size:9.5px;">' + (ST[w.status] || w.status) + '</span>');
+        });
+      }
+    }catch(e){}
+    return r;
+  };
+  window.FSWorkerStatus = ST;
+})();
+
+/* ===== صفحة الموظف: «فاتتك» + الأيام المتتالية ===== */
+(function(){
+  var L = {
+    miss: {ar:'⏰ فاتتك', en:'⏰ You missed', bn:'⏰ মিস করেছেন', ne:'⏰ छुटेको', hi:'⏰ छूट गया'},
+    missSub: {ar:'تدريبات انتهت مدتها ومكمّلتهاش', en:'Trainings that expired before you finished them', bn:'যে প্রশিক্ষণ শেষ করার আগেই মেয়াদ শেষ', ne:'सकिनु अघि पूरा नगरिएका तालिम', hi:'पूरा करने से पहले खत्म हुई ट्रेनिंग'},
+    streak: {ar:'يوم متتالي', en:'day streak', bn:'দিনের ধারা', ne:'दिन लगातार', hi:'दिन लगातार'}
+  };
+  function lg(){ try{ return currentLang || 'ar'; }catch(e){ return 'ar'; } }
+  function tt(k){ return (L[k][lg()] || L[k].ar); }
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  function host(){ var g = document.getElementById('worker-videos-grid'); return g && g.parentElement; }
+  function dayKey(d){ var x = new Date(d); return x.getFullYear() + '-' + (x.getMonth() + 1) + '-' + x.getDate(); }
+  async function streak(){
+    var days = {};
+    try{
+      var a = await sb.from('training_progress').select('updated_at').eq('worker_id', currentUser.id);
+      (a.data || []).forEach(function(r){ if(r.updated_at) days[dayKey(r.updated_at)] = 1; });
+    }catch(e){}
+    try{
+      var b = await sb.from('quiz_attempts').select('created_at').eq('worker_id', currentUser.id);
+      (b.data || []).forEach(function(r){ if(r.created_at) days[dayKey(r.created_at)] = 1; });
+    }catch(e){}
+    var n = 0, d = new Date();
+    if(!days[dayKey(d)]) d = new Date(Date.now() - 864e5);   // لسه ما اتدرّبش النهارده: السلسلة لسه سليمة لحد آخر النهار
+    while(days[dayKey(d)]){ n++; d = new Date(d.getTime() - 864e5); }
+    return n;
+  }
+  async function missed(){
+    var now = Date.now(), from = new Date(now - 30 * 864e5).toISOString(), to = new Date(now).toISOString(), rows = [];
+    window.__keepExpired = true;
+    try{ var r = await sb.from('training_topics').select('*').lt('visible_until', to).gt('visible_until', from).order('visible_until', {ascending:false}); rows = r.data || []; }
+    catch(e){} finally{ window.__keepExpired = false; }
+    var prog = (typeof workerTopicProgress !== 'undefined' && workerTopicProgress) || {};
+    var V6 = window.V6;
+    if(V6 && V6.loadAud) try{ await V6.loadAud(); }catch(e){}
+    var ctx = V6 && V6.workerCtx ? V6.workerCtx(currentUser, currentUser.target_department_id) : null;
+    return rows.filter(function(t){
+      if(prog[String(t.id)] && prog[String(t.id)].completed) return false;
+      if(t.audience_restricted && V6 && V6.audAllowed) return V6.audAllowed('video', t, ctx);
+      if(t.section_id && Number(t.section_id) !== Number(currentUser.section_id)) return false;
+      if(t.target_department_id && Number(t.target_department_id) !== Number(currentUser.target_department_id)) return false;
+      return true;
+    });
+  }
+  async function draw(){
+    var h = host(); if(!h || typeof currentUser === 'undefined' || !currentUser) return;
+    var box = document.getElementById('wt-extras');
+    if(!box){ box = document.createElement('div'); box.id = 'wt-extras'; h.insertBefore(box, document.getElementById('worker-videos-grid')); }
+    var res = await Promise.all([streak().catch(function(){ return 0; }), missed().catch(function(){ return []; })]), n = res[0], m = res[1], html = '';
+    if(n >= 2) html += '<div class="wt-streak" style="display:inline-flex;gap:6px;align-items:center;background:var(--warn-bg,#fef3c7);color:var(--warn,#92400e);border-radius:999px;padding:4px 12px;font-weight:800;font-size:12px;margin-bottom:8px;">🔥 ' + n + ' ' + tt('streak') + '</div>';
+    if(m.length){
+      html += '<div class="wt-missed" style="border:1px solid var(--bad,#fca5a5);background:var(--bad-bg,#fef2f2);border-radius:12px;padding:10px 12px;margin-bottom:10px;">' +
+        '<div style="font-weight:800;font-size:13px;">' + tt('miss') + ' (' + m.length + ')</div><div class="muted" style="font-size:11px;margin-bottom:6px;">' + tt('missSub') + '</div>' +
+        m.slice(0, 5).map(function(t){ var u = new Date(t.visible_until); return '<div style="font-size:12px;padding:3px 0;">• ' + esc(tr(t, 'title')) + ' <span class="muted">(' + u.toLocaleDateString(lg() === 'ar' ? 'ar-EG-u-nu-latn' : lg()) + ')</span></div>'; }).join('') + '</div>';
+    }
+    box.innerHTML = html;
+    window.__wtExtras = {streak:n, missed:m.map(function(t){ return t.id; })};
+  }
+  afterCallAsync('loadWorkerVideos', function(){ draw().catch(function(e){ console.error('extras', e); }); });
+  window.FSWorkerExtras = {draw:draw, streak:streak, missed:missed};
+})();
+
+/* ===== استيراد موظفين (Excel/CSV) + الشهادة الصحية + سجل التغييرات ===== */
+(function(){
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  function u_(){ try{ return adminUser; }catch(e){ return null; } }
+  function can(p){ return window.FSRole ? window.FSRole.can(p) : !!(u_() && u_().isSuper); }
+  var norm = function(s){ return String(s == null ? '' : s).replace(/[\u064B-\u0652\u0640]/g, '').replace(/[أإآ]/g, 'ا').replace(/ى/g, 'ي').replace(/ة/g, 'ه').replace(/\s+/g, ' ').trim().toLowerCase(); };
+  var toEn = function(s){ return String(s == null ? '' : s).replace(/[٠-٩]/g, function(d){ return '٠١٢٣٤٥٦٧٨٩'.indexOf(d); }).replace(/[۰-۹]/g, function(d){ return '۰۱۲۳۴۵۶۷۸۹'.indexOf(d); }); };
+
+  /* ---------- سجل التغييرات ---------- */
+  var logOk = null;
+  window.FSLog = async function(action, target, details){
+    try{
+      if(logOk === false) return;
+      var a = u_(); if(!a) return;
+      var r = await sb.from('audit_log').insert({actor_id:a.workerId || a.id || null, actor_name:a.name || null, action:action, target:target == null ? null : String(target), details:details || null});
+      logOk = !r.error;
+    }catch(e){ logOk = false; }
+  };
+  async function drawLog(){
+    var tab = $('tab-admins'); if(!tab || !u_() || !u_().isSuper) return;
+    var box = $('fs-log-card');
+    if(!box){ box = document.createElement('div'); box.className = 'card'; box.id = 'fs-log-card'; box.innerHTML = '<h3 style="margin:0 0 6px">📜 سجل التغييرات</h3><div class="muted u-fs12" style="margin-bottom:8px">آخر العمليات الحساسة (منح/تعديل أدمن، إيقاف/حذف موظف، تصفير كلمة سر، استيراد).</div><div id="fs-log-body"></div>'; tab.appendChild(box); }
+    var r = await sb.from('audit_log').select('*').order('id', {ascending:false}).limit(40), b = $('fs-log-body');
+    if(r.error){ b.innerHTML = '<div class="muted u-fs12">شغّل phase15.sql مرة واحدة عشان السجل يشتغل.</div>'; return; }
+    b.innerHTML = (r.data || []).map(function(x){ return '<div style="font-size:12px;padding:4px 0;border-bottom:1px solid var(--border)"><b>' + esc(x.actor_name || '—') + '</b> • ' + esc(x.action) + (x.target ? ' • ' + esc(x.target) : '') + ' <span class="muted">' + esc(String(x.at || '').slice(0, 16).replace('T', ' ')) + '</span></div>'; }).join('') || '<div class="muted u-fs12">لسه مفيش عمليات.</div>';
+  }
+  afterCall('adminTab', function(tab){ if(tab === 'admins') setTimeout(function(){ drawLog().catch(function(){}); }, 700); });
+  /* نسجّل العمليات الحساسة: نلفّ الدوال الموجودة */
+  (function(){
+    var c = window.__createAdminFor, cf = window.FSRoleLabels;
+    afterCallAsync('deleteAdmin', function(id){ FSLog('إلغاء صلاحية أدمن', id); });
+    afterCallAsync('v4Grant', function(){ var m = $('v4-ag-msg'); if(m && /تم منح/.test(m.textContent)) FSLog('منح صلاحية', m.textContent.replace(/\D+/g, ' ').trim()); });
+    afterCallAsync('deleteWorker', function(id){ FSLog('إيقاف/حذف موظف', id); });
+    afterCallAsync('saveEditWorker', function(){ FSLog('تعديل موظف', (typeof currentModalWorkerId !== 'undefined') ? currentModalWorkerId : null); });
+  })();
+
+  /* ---------- الشهادة الصحية ---------- */
+  function ensureHealth(){
+    var sec = $('ed-section'); if(!sec || $('ed-health')) return;
+    var cell = sec.parentElement; if(!cell) return;
+    var d = document.createElement('div'); d.innerHTML = '<label class="field-label">🩺 انتهاء الشهادة الصحية</label><input id="ed-health" type="date" class="input-field"/>';
+    cell.parentElement.appendChild(d);
+  }
+  afterCallAsync('openWorkerModal', async function(){
+    ensureHealth(); var i = $('ed-health'); if(!i) return;
+    try{ var r = await sb.from('workers_evaluations').select('health_cert_expiry').eq('id', currentModalWorkerId).maybeSingle(); i.value = (r.data && r.data.health_cert_expiry) || ''; i.disabled = !!r.error; }catch(e){}
+  });
+  beforeCallAsync('saveEditWorker', async function(){
+    var i = $('ed-health'); if(!i || i.disabled) return;
+    var r = await sb.from('workers_evaluations').update({health_cert_expiry:i.value || null}).eq('id', currentModalWorkerId);
+    if(r.error) showToast('شغّل phase15.sql عشان الشهادة الصحية تتحفظ');
+  });
+  async function drawHealth(){
+    var k = $('dashboard-kpis'); if(!k || !u_()) return;
+    var box = $('fs-health-card');
+    if(!box){ box = document.createElement('div'); box.id = 'fs-health-card'; box.className = 'card'; k.parentElement.insertBefore(box, k.nextSibling); }
+    var lim = new Date(Date.now() + 30 * 864e5).toISOString().slice(0, 10);
+    var q = sb.from('workers_evaluations').select('id,worker_name,section_id,health_cert_expiry').lte('health_cert_expiry', lim).order('health_cert_expiry');
+    if(!u_().isSuper){ var ids = (typeof getAdminScopeIds === 'function' ? getAdminScopeIds() : []); if(ids.length) q = q.in('section_id', ids); }
+    var r = await q;
+    if(r.error || !(r.data || []).length){ box.classList.add('hidden'); return; }
+    box.classList.remove('hidden');
+    var today = new Date().toISOString().slice(0, 10);
+    box.innerHTML = '<h3 style="margin:0 0 6px">🩺 الشهادات الصحية (' + r.data.length + ')</h3>' + r.data.slice(0, 12).map(function(w){
+      var exp = w.health_cert_expiry < today;
+      return '<div style="font-size:12px;padding:3px 0;display:flex;justify-content:space-between;gap:8px"><span>#' + w.id + ' ' + esc(w.worker_name) + '</span><span class="badge ' + (exp ? 'badge-red' : 'badge-yellow') + '" style="font-size:10px">' + (exp ? 'منتهية ' : 'تنتهي ') + esc(w.health_cert_expiry) + '</span></div>';
+    }).join('') + (r.data.length > 12 ? '<div class="muted u-fs12">+ ' + (r.data.length - 12) + ' كمان</div>' : '');
+  }
+  afterCallAsync('loadAdminDashboard', function(){ drawHealth().catch(function(){}); });
+
+  /* ---------- استيراد الموظفين ---------- */
+  function ensureImportBtn(){
+    if(!can('editWorker')) return;
+    var b = $('fm-worker-btn'); if(!b || $('fs-import-btn')) return;
+    var n = document.createElement('button'); n.type = 'button'; n.id = 'fs-import-btn'; n.className = 'btn-secondary btn-sm'; n.style.marginInlineStart = '6px'; n.textContent = '📥 استيراد من Excel';
+    n.onclick = openImport; b.parentElement.insertBefore(n, b.nextSibling);
+  }
+  afterCall('adminTab', function(tab){ if(tab === 'workers') setTimeout(ensureImportBtn, 600); });
+  afterCallAsync('loadWorkers', function(){ ensureImportBtn(); });
+  function parseCSV(text){
+    var rows = [], row = [], cur = '', q = false, i;
+    text = text.replace(/^\uFEFF/, '');
+    var delim = (text.split('\n')[0].match(/;/g) || []).length > (text.split('\n')[0].match(/,/g) || []).length ? ';' : (text.split('\n')[0].indexOf('\t') >= 0 ? '\t' : ',');
+    for(i = 0; i < text.length; i++){
+      var c = text[i];
+      if(q){ if(c === '"'){ if(text[i + 1] === '"'){ cur += '"'; i++; } else q = false; } else cur += c; }
+      else if(c === '"') q = true;
+      else if(c === delim){ row.push(cur); cur = ''; }
+      else if(c === '\n' || c === '\r'){ if(c === '\r' && text[i + 1] === '\n') i++; row.push(cur); cur = ''; if(row.some(function(x){ return String(x).trim(); })) rows.push(row); row = []; }
+      else cur += c;
+    }
+    row.push(cur); if(row.some(function(x){ return String(x).trim(); })) rows.push(row);
+    return rows;
+  }
+  function loadXLSX(){
+    return new Promise(function(res, rej){
+      if(window.XLSX) return res(window.XLSX);
+      var s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+      s.onload = function(){ res(window.XLSX); }; s.onerror = function(){ rej(new Error('xlsx')); }; document.head.appendChild(s);
+    });
+  }
+  async function readFile(f){
+    if(/\.(xlsx|xls)$/i.test(f.name)){
+      var X = await loadXLSX(), wb = X.read(await f.arrayBuffer(), {type:'array'});
+      return X.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1, raw:false, defval:''});
+    }
+    var txt = f.text ? await f.text() : await new Promise(function(res, rej){ var fr = new FileReader(); fr.onload = function(){ res(fr.result); }; fr.onerror = rej; fr.readAsText(f); });
+    return parseCSV(txt);
+  }
+  /* بيحوّل الصفوف لنتيجة مفحوصة: صالح / خطأ + السبب */
+  window.FSImport = {
+    check: async function(rows){
+      var head = (rows[0] || []).map(function(x){ return norm(x); });
+      var hasHead = head.some(function(x){ return /رقم|id|اسم|name|وظيف|role|وحد|unit|قسم/.test(x); });
+      var data = hasHead ? rows.slice(1) : rows;
+      var col = function(re, d){ var i = head.findIndex(function(x){ return re.test(x); }); return hasHead && i >= 0 ? i : d; };
+      var ci = col(/رقم|^id|وظيفي/, 0), cn = col(/اسم|name/, 1), cr = col(/وظيف(ه|ة)? *$|role|دور|^وظيفه/, 2), cu = col(/وحد|unit|قسم|section/, 3);
+      if(hasHead){ var ri = head.findIndex(function(x){ return /^(الوظيفه|وظيفه|role|الدور|المسمي)/.test(x); }); if(ri >= 0) cr = ri; }
+      var jr = (await sb.from('job_roles').select('id,name_ar,name_en').eq('is_active', true)).data || [];
+      var sc = (typeof sections !== 'undefined' ? sections : []);
+      var allowed = u_() && u_().isSuper ? null : (typeof getAdminScopeIds === 'function' ? getAdminScopeIds().map(Number) : []);
+      var ex = (await sb.from('workers_evaluations').select('id').limit(100000)).data || [], have = new Set(ex.map(function(x){ return Number(x.id); })), seen = new Set(), out = [];
+      data.forEach(function(r, n){
+        var id = Number(toEn(r[ci]).replace(/\D/g, '')), name = String(r[cn] || '').trim(), rn = norm(r[cr]), un = norm(r[cu]), err = '';
+        var role = jr.filter(function(x){ return norm(x.name_ar) === rn || norm(x.name_en) === rn; })[0];
+        var unit = sc.filter(function(x){ return norm(x.name_ar) === un; })[0];
+        if(!id) err = 'الرقم الوظيفي ناقص'; else if(have.has(id)) err = 'الرقم موجود قبل كده'; else if(seen.has(id)) err = 'الرقم مكرر في الملف';
+        else if(!name) err = 'الاسم ناقص'; else if(!role) err = 'الوظيفة مش معروفة: ' + (r[cr] || '—'); else if(!unit) err = 'الوحدة مش معروفة: ' + (r[cu] || '—');
+        else if(allowed && allowed.indexOf(Number(unit.id)) < 0) err = 'الوحدة خارج نطاقك';
+        if(id) seen.add(id);
+        out.push({line:n + (hasHead ? 2 : 1), id:id, name:name, job_role_id:role && role.id, section_id:unit && unit.id, role:role && role.name_ar, unit:unit && unit.name_ar, err:err});
+      });
+      return out;
+    },
+    commit: async function(list){
+      var good = list.filter(function(x){ return !x.err; }), done = 0, fail = 0;
+      for(var i = 0; i < good.length; i += 100){
+        var chunk = good.slice(i, i + 100).map(function(x){ return {id:x.id, worker_name:x.name, job_role_id:x.job_role_id, section_id:x.section_id, kpi_score:100, violations_count:0}; });
+        var r = await sb.from('workers_evaluations').insert(chunk);
+        if(r.error) fail += chunk.length; else done += chunk.length;
+      }
+      if(done) FSLog('استيراد موظفين', done + ' موظف');
+      return {done:done, fail:fail, skipped:list.length - good.length};
+    }
+  };
+  function openImport(){
+    var ov = document.createElement('div'); ov.id = 'fs-import-ov'; ov.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:90;display:flex;align-items:center;justify-content:center;padding:14px';
+    ov.innerHTML = '<div class="card" style="width:100%;max-width:680px;max-height:90vh;overflow:auto;padding:16px">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b>📥 استيراد موظفين</b><button class="btn-danger btn-sm" id="fs-imp-x">✕</button></div>' +
+      '<div class="muted u-fs12" style="margin-bottom:8px">الأعمدة بالترتيب: <b>الرقم الوظيفي | الاسم | الوظيفة | الوحدة</b> (أسماء الوظيفة والوحدة زي المسجلة في النظام بالظبط). ملف Excel أو CSV.</div>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"><input type="file" id="fs-imp-file" accept=".xlsx,.xls,.csv,.txt"/><button class="btn-secondary btn-sm" id="fs-imp-tpl">⬇️ نموذج CSV</button></div>' +
+      '<div id="fs-imp-prev"></div><div id="fs-imp-act" style="margin-top:10px"></div></div>';
+    document.body.appendChild(ov);
+    var list = [];
+    $('fs-imp-x').onclick = function(){ ov.remove(); };
+    $('fs-imp-tpl').onclick = function(){
+      var b = new Blob(['\uFEFFالرقم الوظيفي,الاسم,الوظيفة,الوحدة\n1001,مثال اسم,عامل إنتاج,مصنع الرياض - الإنتاج\n'], {type:'text/csv;charset=utf-8'});
+      var a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'workers-template.csv'; document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 800);
+    };
+    $('fs-imp-file').onchange = async function(e){
+      var f = e.target.files[0]; if(!f) return;
+      $('fs-imp-prev').innerHTML = '<div class="muted">جاري القراءة…</div>';
+      try{
+        list = await window.FSImport.check(await readFile(f));
+        var ok = list.filter(function(x){ return !x.err; }).length;
+        $('fs-imp-prev').innerHTML = '<div style="margin-bottom:6px"><b>' + ok + '</b> صالح • <b style="color:var(--bad,#b91c1c)">' + (list.length - ok) + '</b> فيه مشكلة</div>' +
+          '<div style="max-height:260px;overflow:auto;font-size:12px">' + list.slice(0, 300).map(function(x){ return '<div style="padding:3px 0;border-bottom:1px solid var(--border);' + (x.err ? 'color:var(--bad,#b91c1c)' : '') + '">' + (x.err ? '❌ سطر ' + x.line + ': ' + esc(x.err) : '✅ #' + x.id + ' ' + esc(x.name) + ' — ' + esc(x.role) + ' — ' + esc(x.unit)) + '</div>'; }).join('') + '</div>';
+        $('fs-imp-act').innerHTML = ok ? '<button class="btn-primary" id="fs-imp-go">استيراد ' + ok + ' موظف</button>' : '';
+        if(ok) $('fs-imp-go').onclick = async function(){
+          this.disabled = true; var r = await window.FSImport.commit(list);
+          $('fs-imp-act').innerHTML = '<b>تم ✅</b> اتضاف ' + r.done + (r.fail ? ' • فشل ' + r.fail : '') + (r.skipped ? ' • اتخطّى ' + r.skipped : '');
+          try{ loadWorkers(); }catch(e){}
+        };
+      }catch(err){ $('fs-imp-prev').innerHTML = '<span style="color:var(--bad,#b91c1c)">تعذر قراءة الملف' + (/xlsx/.test(String(err && err.message)) ? ' (ملف Excel محتاج إنترنت — جرّب حفظه CSV)' : '') + '</span>'; }
+    };
+  }
+  window.FSOpenImport = openImport;
+})();
+
+/* ===== رد الإدارة على تعليقات الموظفين (يظهر للموظف) ===== */
+(function(){
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  var RL = {ar:'رد الإدارة', en:'Management reply', bn:'ব্যবস্থাপনার উত্তর', ne:'व्यवस्थापनको जवाफ', hi:'प्रबंधन का उत्तर'};
+  function lg(){ try{ return currentLang || 'ar'; }catch(e){ return 'ar'; } }
+  var busy = false;
+  async function inject(){
+    var box = $('admin-comments-list'); if(!box || busy || !window.FSRole || !window.FSRole.can('reply')) return;
+    var cards = [].slice.call(box.querySelectorAll('.card')).filter(function(c){ return !c.querySelector('.fs-reply'); });
+    if(!cards.length) return;
+    busy = true;
+    try{
+      var info = cards.map(function(c){ var m = c.innerHTML.match(/id="cmt-tr-(\d+)"/); return m ? {card:c, id:Number(m[1])} : null; }).filter(Boolean);
+      if(!info.length) return;
+      var r = await sb.from('content_comments').select('id,admin_reply').in('id', info.map(function(x){ return x.id; }));
+      var has = !r.error, map = {}; ((r.data) || []).forEach(function(x){ map[x.id] = x.admin_reply || ''; });
+      info.forEach(function(x){
+        var d = document.createElement('div'); d.className = 'fs-reply'; d.style.cssText = 'margin-top:8px';
+        d.innerHTML = '<textarea class="input-field" rows="2" id="fs-rp-' + x.id + '" placeholder="اكتب ردك (بيظهر للموظف)">' + esc(map[x.id] || '') + '</textarea><button type="button" class="btn-primary btn-sm" style="margin-top:4px" data-id="' + x.id + '">💬 إرسال الرد</button>' + (has ? '' : ' <span class="muted u-fs11">شغّل phase16.sql عشان الرد يتحفظ</span>');
+        d.querySelector('button').onclick = async function(){
+          var t = $('fs-rp-' + x.id).value.trim(); if(!t) return showToast('اكتب الرد الأول');
+          var u = await sb.from('content_comments').update({admin_reply:t, replied_at:new Date().toISOString(), handled_at:new Date().toISOString(), handled_by:adminUser && adminUser.id || null}).eq('id', x.id);
+          if(u.error) return showToast(/admin_reply|replied_at/.test(u.error.message || '') ? 'شغّل phase16.sql الأول' : 'تعذر حفظ الرد');
+          showToast('تم إرسال الرد ✅'); try{ FSLog('رد على تعليق', x.id); }catch(e){}
+        };
+        x.card.appendChild(d);
+      });
+    } finally { busy = false; }
+  }
+  window.FSReplyInject = inject; var timer = null;
+  function arm(){
+    var box = $('admin-comments-list'); if(!box || box.__fsr) return; box.__fsr = 1;
+    new MutationObserver(function(){ clearTimeout(timer); timer = setTimeout(function(){ inject().catch(function(){}); }, 150); }).observe(box, {childList:true});
+  }
+  afterCall('adminTab', function(tab){ if(tab === 'comments') setTimeout(function(){ arm(); inject().catch(function(){}); }, 800); });
+  /* جهة الموظف */
+  afterCallAsync('loadWorkerCommentsSummary', async function(){
+    try{
+      var box = $('worker-comments-summary-box'); if(!box || typeof currentUser === 'undefined' || !currentUser) return;
+      var kids = [].slice.call(box.children).filter(function(c){ return !c.classList.contains('muted'); }); if(!kids.length) return;
+      var r = await sb.from('content_comments').select('id,admin_reply').eq('worker_id', currentUser.id).order('created_at', {ascending:false});
+      if(r.error) return;
+      (r.data || []).slice(0, kids.length).forEach(function(c, i){
+        if(c.admin_reply && !kids[i].querySelector('.fs-wr')) kids[i].insertAdjacentHTML('beforeend', '<div class="fs-wr" style="margin-top:6px;padding:6px 8px;border-radius:8px;background:var(--ok-bg,#ecfdf5);font-size:12px"><b>💬 ' + (RL[lg()] || RL.ar) + ':</b> ' + esc(c.admin_reply) + '</div>');
+      });
+    }catch(e){}
+  });
 })();
 </script>
 </body>
