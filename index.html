@@ -498,6 +498,8 @@ body.v9-dark .fm-panel,body.v9-dark .v6-menu{background:#1e293b;border-color:#33
 .v6-hint{font-size:11.5px;color:var(--muted);background:#f8fafc;border-radius:10px;padding:8px 11px;margin-bottom:11px}
 .v6-note{font-size:11.5px;color:#1e40af;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:8px 11px;margin-bottom:11px}
 .v6-warn{font-size:12px;color:#92400e;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:9px 12px;margin-bottom:11px}
+.v6-steps{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}.v6-stp{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:800;color:#64748b;background:#f1f5f9;border-radius:999px;padding:4px 10px;cursor:pointer}.v6-stp i{font-style:normal;width:18px;height:18px;border-radius:50%;background:#cbd5e1;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:10px}.v6-stp.on{background:#e0e7ff;color:#3730a3}.v6-stp.on i{background:#4f46e5}.v6-stp.done i{background:#16a34a}.v6-pane.hidden{display:none}.v6-rev{border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:10px}.v6-rev div{display:flex;justify-content:space-between;gap:10px;padding:9px 12px;border-bottom:1px solid #f1f5f9;font-size:12.5px}.v6-rev div:last-child{border-bottom:0}.v6-rev span{color:#64748b}.v6-prev{margin-top:12px;width:100%}.v6-langs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.v6-langs button{font-family:inherit;border:1px solid var(--border);background:#fff;border-radius:999px;padding:4px 12px;font-size:12px;font-weight:800;cursor:pointer}.v6-langs button.on{background:#4f46e5;border-color:#4f46e5;color:#fff}.v6-phone{max-width:340px;margin:0 auto 10px;border:6px solid #0f172a;border-radius:26px;background:#f8fafc;padding:14px;min-height:260px}.pv-t{font-weight:900;font-size:15px;margin-bottom:10px}.pv-vid{position:relative;padding-top:56.25%;border-radius:12px;overflow:hidden;background:#000}.pv-vid iframe{position:absolute;inset:0;width:100%;height:100%;border:0}.pv-ph{background:#e2e8f0;border-radius:12px;padding:40px 10px;text-align:center;color:#64748b}.pv-img{width:100%;border-radius:12px;margin-bottom:10px}.pv-prog{height:6px;background:#e2e8f0;border-radius:9px;margin-top:10px}.pv-s{font-size:12px;color:#475569;margin-top:8px}.v6-mf .hidden{display:none}
+.v6-bar-r{display:flex;gap:8px;align-items:center}.v6-qbank{font-family:inherit;border:1px solid #c7d2fe;background:#eef2ff;color:#3730a3;border-radius:12px;padding:9px 14px;font-weight:800;font-size:13px;cursor:pointer}.qb-list{display:flex;flex-direction:column;gap:10px}.qb-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:12px 14px}.qb-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}.qb-tp{font-size:11px;font-weight:800;border-radius:999px;padding:2px 10px;background:#f1f5f9}.qb-tp.qbt-quiz{background:#ede9fe;color:#5b21b6}.qb-tp.qbt-video{background:#dbeafe;color:#1d4ed8}.qb-tp.qbt-card{background:#dcfce7;color:#15803d}.qb-ow{font-size:11.5px;color:#475569;font-weight:700;flex:1}.qb-lg{display:flex;gap:3px}.qb-l{font-size:9px;font-weight:800;padding:1px 5px;border-radius:5px;background:#f1f5f9;color:#94a3b8}.qb-l.on{background:#dcfce7;color:#15803d}.qb-q{font-weight:800;font-size:13.5px;margin-bottom:8px}.qb-os{display:flex;flex-wrap:wrap;gap:6px}.qb-o{font-size:12px;border:1px solid var(--border);border-radius:9px;padding:3px 10px;background:#f8fafc}.qb-o.ok{background:#dcfce7;border-color:#86efac;color:#15803d;font-weight:800}.qb-warn{font-size:11px;color:#b91c1c;font-weight:800}.qb-ac{display:flex;gap:8px;margin-top:10px}.qb-orow{border:1px solid var(--border);border-radius:10px;padding:8px;margin-bottom:8px;display:flex;flex-direction:column;gap:6px}.qb-rad{font-size:11.5px;font-weight:700;display:flex;gap:6px;align-items:center}
 .v6-sec-t{font-weight:900;font-size:13.5px;margin:16px 0 9px;padding-top:14px;border-top:1px solid var(--border)}
 .v6-modes{display:flex;gap:8px;margin-bottom:12px}
 .v6-mode{flex:1;cursor:pointer}.v6-mode input{display:none}
@@ -6174,11 +6176,12 @@ try{(function(){
     hub.type = type; if(!keep){ hub.tab = 'all'; hub.q = ''; }
     const T = TYPES[type], r = root(); if(!r) return;
     r.innerHTML = '<div class="v6-bar"><h3>' + T.icon + ' ' + T.label + ' <small class="nav-en">' + T.en + '</small></h3>' +
-      '<button type="button" class="v6-add" id="v6-add">＋ ' + T.add + '</button></div>' +
+      '<span class="v6-bar-r"><button type="button" class="v6-qbank" id="v6-qbank">🧩 بنك الأسئلة</button><button type="button" class="v6-add" id="v6-add">＋ ' + T.add + '</button></span></div>' +
       '<div class="v6-tools"><div class="v6-tabs" id="v6-tabs"></div><input id="v6-q" class="input-field v6-search" placeholder="🔍 ابحث بالعنوان…" value="' + esc(hub.q) + '"/></div>' +
       '<div id="v6-grid" class="v6-grid"><div class="v6-empty">جاري التحميل…</div></div>' +
       '<div class="v6-foot"><button type="button" class="v6-legacy" id="v6-legacy"><span class="lg-ic">⚙️</span><span class="lg-tx"><span class="lg-t">الإدارة المتقدمة</span><span class="lg-s">' + (type === 'quiz' ? 'الأسئلة والإجابات وتقارير النتائج' : type === 'video' ? 'أسئلة الفيديو وحذف نسخة لغة' : 'الأسئلة تحت الصورة') + '</span></span><span class="lg-ar">‹</span></button></div>';
     $q('v6-add').onclick = () => openForm(type, null);
+    $q('v6-qbank').onclick = () => openBank();
     $q('v6-legacy').onclick = () => openLegacy(T.legacy);
     $q('v6-q').addEventListener('input', e => { hub.q = e.target.value; paintGrid(); });
     $q('v6-tabs').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; hub.tab = b.dataset.v; paintGrid(); });
@@ -6377,6 +6380,69 @@ try{(function(){
   }
   const val = id => ($q('v6f-' + id)?.value || '').trim();
 
+  /* ---------- ملخص المراجعة + المعاينة كموظف ---------- */
+  function audSummary(type, picker){
+    const a = picker.get();
+    if(a.legacy) return a.section_id ? 'وحدة محددة' : 'كل الموظفين';
+    if(!a.restricted) return 'كل الموظفين';
+    const nm = (list, ids) => ids.map(i => (list.find(x => Number(x.id) === Number(i)) || {}).name_ar).filter(Boolean).join('، ');
+    const parts = [];
+    if(a.R.length) parts.push('مناطق: ' + nm(regions, a.R)); if(a.D.length) parts.push('إدارات: ' + nm(depts, a.D));
+    if(a.U.length) parts.push('وحدات: ' + nm(secs(), a.U)); if(a.J.length) parts.push('وظائف: ' + nm(jroles, a.J));
+    return parts.join(' • ') || 'غير محدد';
+  }
+  function reviewHtml(type, picker){
+    const rows = [['العنوان', val('title_ar')]];
+    if(type === 'video') rows.push(['اللغات', LG.filter(l => val('url_' + l)).map(l => l.toUpperCase()).join(' ، ') || '—']);
+    if(type === 'card'){ rows.push(['الصورة', $q('v6f-image') && $q('v6f-image').files[0] ? $q('v6f-image').files[0].name : 'بدون']); if(val('description_ar')) rows.push(['الوصف', val('description_ar')]); }
+    rows.push(['الجمهور', audSummary(type, picker)]);
+    return '<div class="v6-rev">' + rows.map(r => '<div><span>' + r[0] + '</span><b>' + esc(r[1]) + '</b></div>').join('') + '</div><div class="v6-hint">راجع البيانات، واضغط «معاينة كموظف» تشوفه زي ما هيظهرله، وبعدين فعّل «منشور» وحفظ.</div>';
+  }
+  function previewAsWorker(type, it, picker, vids){
+    let lang = 'ar';
+    const pick = (b) => val(b + '_' + lang) || val(b + '_ar') || (it && (it[b + '_' + lang] || it[b + '_ar'])) || '';
+    const ytId = u => (typeof extractYTVideoId === 'function' ? extractYTVideoId(u) : '');
+    const urlFor = l => val('url_' + l) || ((vids.find(v => (v.video_lang || 'ar') === l) || {}).video_url) || '';
+    const ov = modal('<div class="v6-mh"><b>👁️ معاينة كموظف</b><button type="button" class="v6-x" data-pv="x">✕</button></div><div class="v6-mb"><div class="v6-langs">' +
+      [['ar', 'عربي'], ['en', 'English'], ['bn', 'বাংলা'], ['ne', 'नेपाली'], ['hi', 'हिन्दी']].map(([l, n]) => '<button type="button" data-pv="' + l + '" class="' + (l === 'ar' ? 'on' : '') + '">' + n + '</button>').join('') +
+      '</div><div class="v6-phone" id="v6-pvbox"></div><div class="v6-hint" id="v6-pvnote"></div></div>');
+    ov.style.zIndex = 100010; ov.classList.add('v6-pvov');
+    const paint = () => {
+      const box = ov.querySelector('#v6-pvbox'), rtl = (lang === 'ar'), t = esc(pick('title') || '—'); box.dir = rtl ? 'rtl' : 'ltr';
+      let h = '';
+      if(type === 'video'){
+        const u = urlFor(lang) || urlFor('ar') || LG.map(urlFor).find(Boolean) || '', id = ytId(u), same = !!urlFor(lang);
+        h = '<div class="pv-t">' + t + '</div>' + (id ? '<div class="pv-vid"><iframe src="https://www.youtube.com/embed/' + id + '" allowfullscreen loading="lazy"></iframe></div>' : '<div class="pv-ph">🎬 لا يوجد فيديو</div>') +
+          '<div class="pv-prog"><i style="width:0"></i></div><div class="pv-s">' + (same ? '' : '⚠️ مفيش نسخة بلغة ' + lang.toUpperCase() + ' — هيشوف نسخة لغة تانية') + '</div>';
+        ov.querySelector('#v6-pvnote').textContent = 'أي نسخة توصل 60% بتكمّل التدريب للموظف.';
+      } else if(type === 'card'){
+        const f = $q('v6f-image') && $q('v6f-image').files[0], src = f ? URL.createObjectURL(f) : (it && it.image) || '';
+        h = (src ? '<img class="pv-img" src="' + esc(src) + '" alt=""/>' : '<div class="pv-ph">📸 بدون صورة</div>') + '<div class="pv-t">' + t + '</div><div class="pv-s">' + esc(pick('description')) + '</div>';
+        ov.querySelector('#v6-pvnote').textContent = '';
+      } else {
+        h = '<div class="pv-t">📝 ' + t + '</div><div class="pv-s">الأسئلة بتظهر للموظف واحد واحد بعد ما يضيفها الأدمن.</div><button type="button" class="btn-primary" disabled>ابدأ الاختبار</button>';
+        ov.querySelector('#v6-pvnote').textContent = '';
+      }
+      box.innerHTML = h;
+    };
+    ov.querySelector('.v6-mb').addEventListener('click', e => {
+      const b = e.target.closest('[data-pv]'); if(!b) return;
+      if(b.dataset.pv === 'x'){ ov.remove(); return; }
+      lang = b.dataset.pv; ov.querySelectorAll('.v6-langs button').forEach(x => x.classList.toggle('on', x === b)); paint();
+    });
+    ov.querySelector('[data-pv="x"]').onclick = () => ov.remove();
+    paint();
+    // كام موظف هيوصله
+    try{
+      const a = picker.get(); let us = [];
+      if(a.legacy) us = a.section_id ? [{id:a.section_id}] : [];
+      else if(a.restricted) us = unitsOf({R:new Set(a.R), D:new Set(a.D), U:new Set(a.U), J:new Set(a.J)});
+      const q0 = sb.from('workers_evaluations').select('id', {count:'exact', head:true});
+      const q1 = (a.legacy ? (us.length ? q0.in('section_id', us.map(u => u.id)) : q0) : (a.restricted ? (us.length ? q0.in('section_id', us.map(u => u.id)) : null) : q0));
+      if(q1) Promise.resolve(q1).then(r => { if(r && r.count != null){ const n = ov.querySelector('#v6-pvnote'); if(n) n.textContent = (n.textContent ? n.textContent + ' • ' : '') + '👥 هيوصل لحوالي ' + r.count + ' موظف.'; } }).catch(() => {});
+    }catch(e){}
+  }
+
   async function openForm(type, id){
     const T = TYPES[type];
     let it = null, vids = [];
@@ -6386,32 +6452,67 @@ try{(function(){
       if(type === 'video') vids = (hub.data.video.ex[id] || []);
     }
     const ini = initAud(type, it);
-    let body = '';
+    const wiz = !it;                                  // الإضافة الجديدة بخطوات؛ التعديل بيفضل شاشة واحدة
+    let st1 = '', st2 = '';                           // خطوة الأساسيات + خطوة المحتوى
     if(type === 'card'){
-      body += '<div class="v6-row"><label class="field-label">صورة الكارت' + (it ? ' (اختياري — لتغييرها)' : '') + '</label><input id="v6f-image" type="file" accept="image/*" class="u-fs12"/>' + (it && it.image ? '<img class="v6-thumb" src="' + esc(it.image) + '" alt=""/>' : '') + '</div>' +
-        inp('title_ar', 'العنوان (عربي) *', it && it.title_ar, 'مثال: غسل اليدين') + langsBlock('title', it, 'العنوان') +
+      st1 = '<div class="v6-row"><label class="field-label">صورة الكارت' + (it ? ' (اختياري — لتغييرها)' : '') + '</label><input id="v6f-image" type="file" accept="image/*" class="u-fs12"/>' + (it && it.image ? '<img class="v6-thumb" src="' + esc(it.image) + '" alt=""/>' : '') + '</div>';
+      st2 = inp('title_ar', 'العنوان (عربي) *', it && it.title_ar, 'مثال: غسل اليدين') + langsBlock('title', it, 'العنوان') +
         inp('description_ar', 'الوصف (عربي)', it && it.description_ar, 'وصف مختصر') + langsBlock('description', it, 'الوصف') +
         inp('sort', 'أولوية الترتيب (رقم أصغر = يظهر أول عند الموظف)', it ? (it.sort_order || 0) : 0, '', 'number');
     } else if(type === 'quiz'){
-      body += inp('title_ar', 'عنوان الاختبار (عربي) *', it && it.title_ar, 'مثال: اختبار التلوث المتبادل') + langsBlock('title', it, 'العنوان') +
+      st1 = inp('title_ar', 'عنوان الاختبار (عربي) *', it && it.title_ar, 'مثال: اختبار التلوث المتبادل') + langsBlock('title', it, 'العنوان') +
         (it ? '' : '<div class="v6-hint">بعد الإنشاء تقدر تضيف الأسئلة من "⚙️ الإدارة المتقدمة" أسفل الشاشة.</div>');
     } else {
       const u = {}; vids.forEach(v => { u[v.video_lang || 'ar'] = v.video_url; });
-      body += inp('title_ar', 'اسم التدريب (عربي) *', it && it.title_ar, 'مثال: النظافة الشخصية') + langsBlock('title', it, 'الاسم') +
-        '<div class="v6-hint">أضف رابط لغة واحدة أو أكتر — الموظف يشاهد نسخة واحدة، وأي نسخة توصل 60% تكمّل التدريب.</div>' +
+      st1 = inp('title_ar', 'اسم التدريب (عربي) *', it && it.title_ar, 'مثال: النظافة الشخصية') + langsBlock('title', it, 'الاسم');
+      st2 = '<div class="v6-hint">أضف رابط لغة واحدة أو أكتر — الموظف يشاهد نسخة واحدة، وأي نسخة توصل 60% تكمّل التدريب.</div>' +
         [['ar', 'العربي'], ['en', 'الإنجليزي'], ['bn', 'البنغالي'], ['ne', 'النيبالي'], ['hi', 'الهندي']].map(([l, n]) => inp('url_' + l, 'الفيديو ' + n, u[l] || '', 'https://youtu.be/...')).join('') +
         inp('sort', 'أولوية الترتيب (رقم أصغر = يظهر أول)', it ? (it.sort_order || 0) : 0, '', 'number');
     }
+    const audH = '<div class="v6-sec-t">🎯 الجمهور المستهدف</div><div id="v6-aud-host"></div>';
+    const visH = '<label class="v6-vis"><input id="v6f-vis" type="checkbox" ' + ((it ? it.is_visible : false) ? 'checked' : '') + '/> <span>منشور (ظاهر للموظفين)</span></label>';
+    const prevBtn = '<button type="button" class="btn-secondary v6-prev" id="v6-prev">👁️ معاينة كموظف</button>';
+    let stepNames, bodyH;
+    if(wiz){
+      const panes = type === 'quiz' ? [st1, audH, '<div id="v6-rev"></div>' + visH + prevBtn] : [st1, st2, audH, '<div id="v6-rev"></div>' + visH + prevBtn];
+      stepNames = type === 'quiz' ? ['العنوان', 'الجمهور', 'مراجعة ونشر'] : (type === 'card' ? ['الصورة', 'العنوان والوصف', 'الجمهور', 'مراجعة ونشر'] : ['الأساسيات', 'الفيديوهات', 'الجمهور', 'مراجعة ونشر']);
+      bodyH = '<div class="v6-steps" id="v6-steps">' + stepNames.map((n, i) => '<span class="v6-stp" data-s="' + i + '"><i>' + (i + 1) + '</i>' + n + '</span>').join('') + '</div>' +
+        panes.map((h, i) => '<div class="v6-pane" data-s="' + i + '">' + h + '</div>').join('');
+    } else bodyH = st1 + st2 + audH + visH + prevBtn;
     const ov = modal(
       '<div class="v6-mh"><b>' + (it ? '✏️ تعديل ' : '➕ ') + T.one + '</b><button type="button" class="v6-x" id="v6-x">✕</button></div>' +
-      '<div class="v6-mb">' + body +
-        '<div class="v6-sec-t">🎯 الجمهور المستهدف</div><div id="v6-aud-host"></div>' +
-        '<label class="v6-vis"><input id="v6f-vis" type="checkbox" ' + ((it ? it.is_visible : false) ? 'checked' : '') + '/> <span>منشور (ظاهر للموظفين)</span></label>' +
-      '</div><div class="v6-mf"><button type="button" class="btn-primary v6-save" id="v6-save">💾 حفظ</button><button type="button" class="btn-secondary" id="v6-cancel">إلغاء</button></div>');
+      '<div class="v6-mb">' + bodyH + '</div><div class="v6-mf">' +
+        (wiz ? '<button type="button" class="btn-secondary" id="v6-back">→ السابق</button><button type="button" class="btn-primary" id="v6-next">التالي ←</button>' : '') +
+        '<button type="button" class="btn-primary v6-save" id="v6-save">' + (wiz ? '🚀 حفظ' : '💾 حفظ') + '</button><button type="button" class="btn-secondary" id="v6-cancel">إلغاء</button></div>');
     ov.querySelector('#v6-x').onclick = ov.querySelector('#v6-cancel').onclick = () => ov.remove();
     ['title', 'description'].forEach(hookTranslate);
     const picker = audPicker(ov.querySelector('#v6-aud-host'), ini, ini.converted && !ini.legacy ? 'ℹ️ العنصر ده كان موجّه بالنظام القديم (وحدة/إدارة واحدة) — لما تحفظ هيتحوّل للنظام الجديد بنفس الاختيار الحالي.' : '');
     const btn = ov.querySelector('#v6-save');
+    ov.querySelector('#v6-prev').onclick = () => previewAsWorker(type, it, picker, vids);
+    if(wiz){
+      let cur = 0; const N_ = stepNames.length, panes = [...ov.querySelectorAll('.v6-pane')];
+      const stepErr = i => {
+        const nm = stepNames[i];
+        if(type === 'card' && i === 1 || type === 'quiz' && i === 0 || type === 'video' && i === 0){ if(!val('title_ar')) return 'اكتب العنوان بالعربية'; }
+        if(type === 'video' && i === 1 && !LG.some(l => val('url_' + l))) return 'أضف رابط فيديو واحد على الأقل';
+        if(nm === 'الجمهور') return picker.validate();
+        return '';
+      };
+      const show = i => {
+        cur = i;
+        panes.forEach((x, k) => x.classList.toggle('hidden', k !== i));
+        ov.querySelectorAll('.v6-stp').forEach((x, k) => { x.classList.toggle('on', k === i); x.classList.toggle('done', k < i); });
+        ov.querySelector('#v6-back').classList.toggle('hidden', i === 0);
+        ov.querySelector('#v6-next').classList.toggle('hidden', i === N_ - 1);
+        btn.classList.toggle('hidden', i !== N_ - 1);
+        if(i === N_ - 1) ov.querySelector('#v6-rev').innerHTML = reviewHtml(type, picker);
+        const mb = ov.querySelector('.v6-mb'); if(mb) mb.scrollTop = 0;
+      };
+      ov.querySelector('#v6-next').onclick = () => { const e = stepErr(cur); if(e) return toast(e); show(cur + 1); };
+      ov.querySelector('#v6-back').onclick = () => show(cur - 1);
+      ov.querySelectorAll('.v6-stp').forEach(x => x.onclick = () => { const k = Number(x.dataset.s); if(k <= cur) return show(k); for(let j = cur; j < k; j++){ const e = stepErr(j); if(e){ show(j); return toast(e); } } show(k); });
+      show(0);
+    }
     btn.onclick = async () => {
       const bad = picker.validate(); if(bad) return toast(bad);
       if(!val('title_ar')) return toast('اكتب العنوان بالعربية');
@@ -6465,6 +6566,136 @@ try{(function(){
       await sb.from('training_videos').update({is_visible:vis, section_id:ac.section_id ?? null}).eq('topic_id', rid);
     }
     if(typeof logActivityV22 === 'function' && adminUser) logActivityV22('admin', adminUser.id, (it ? 'تعديل ' : 'إضافة ') + T.one, type, rid);
+  }
+
+  /* =====================  بنك الأسئلة الموحّد (اختبارات + فيديوهات + كروت)  =====================
+     شاشة واحدة بنفس الشكل ونفس العمليات للأنواع التلاتة. البيانات ما بتتنقلش: كل نوع بيفضل في جداوله
+     (quiz_questions / content_questions)، والواجهة هي اللي اتوحّدت عن طريق "محوّل" لكل نوع. */
+  const QSRC = {
+    quiz:  {qt:'quiz_questions',    ot:'quiz_options',    cond:null},
+    video: {qt:'content_questions', ot:'content_options', cond:'video'},
+    card:  {qt:'content_questions', ot:'content_options', cond:'card'}
+  };
+  const qb = {type:'all', owner:'', q:'', rows:[], opts:{}};
+  const QL = ['ar', 'en', 'bn', 'ne', 'hi'];
+  const qFill = o => QL.map(l => '<span class="qb-l ' + (o[l] ? 'on' : '') + '">' + l.toUpperCase() + '</span>').join('');
+  async function loadBank(){
+    const out = [], opts = {};
+    for(const t of ORDER){
+      if(!hub.data[t]) await loadType(t);
+      const ids = hub.data[t].list.map(x => x.id); if(!ids.length) continue;
+      const S = QSRC[t], key = t === 'quiz' ? 'quiz_id' : 'item_id';
+      for(let i = 0; i < ids.length; i += 150){
+        let q = sb.from(S.qt).select('*').in(key, ids.slice(i, i + 150));
+        if(S.cond) q = q.eq('item_type', S.cond);
+        const r = await q; if(r.error) throw r.error;
+        (r.data || []).forEach(x => out.push({t, id:x.id, owner:t === 'quiz' ? x.quiz_id : x.item_id, raw:x}));
+      }
+    }
+    for(const t of ORDER){
+      const S = QSRC[t], qids = out.filter(x => x.t === t).map(x => x.id);
+      for(let i = 0; i < qids.length; i += 150){
+        const r = await sb.from(S.ot).select('*').in('question_id', qids.slice(i, i + 150)).order('id'); if(r.error) throw r.error;
+        (r.data || []).forEach(o => { (opts[t + ':' + o.question_id] ||= []).push(o); });
+      }
+    }
+    qb.rows = out.sort((a, b) => b.id - a.id); qb.opts = opts;
+  }
+  const ownerName = (t, id) => { const it = (hub.data[t] && hub.data[t].list || []).find(x => x.id === id); return it ? titleOf(it) : '#' + id; };
+  async function openBank(){
+    const r = root(); if(!r) return;
+    r.innerHTML = '<div class="v6-bar"><h3>🧩 بنك الأسئلة <small class="nav-en">Question Bank</small></h3><button type="button" class="v6-add" id="qb-add">＋ سؤال جديد</button></div>' +
+      '<div class="v6-hint">كل أسئلة الاختبارات والفيديوهات والكروت في مكان واحد وبنفس الشكل. التعديل هنا بيحافظ على إجابات الموظفين السابقة.</div>' +
+      '<div class="v6-tools"><div class="v6-tabs" id="qb-tabs"></div><select id="qb-owner" class="input-field v6-search"></select><input id="qb-q" class="input-field v6-search" placeholder="🔍 ابحث في نص السؤال…"/></div>' +
+      '<div id="qb-list" class="qb-list"><div class="v6-empty">جاري التحميل…</div></div>' +
+      '<div class="v6-foot"><button type="button" class="v6-legacy" id="qb-back"><span class="lg-ic">→</span><span class="lg-tx"><span class="lg-t">رجوع</span></span></button></div>';
+    $q('qb-back').onclick = () => openType(hub.type || 'video', true);
+    $q('qb-add').onclick = () => qbForm(null);
+    $q('qb-q').addEventListener('input', e => { qb.q = e.target.value; paintBank(); });
+    $q('qb-owner').addEventListener('change', e => { qb.owner = e.target.value; paintBank(); });
+    $q('qb-tabs').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; qb.type = b.dataset.v; qb.owner = ''; paintBank(); });
+    $q('qb-list').addEventListener('click', onBankClick);
+    try{ if(!regions.length && !depts.length) await loadMeta(); await loadAud(); await loadBank(); }
+    catch(e){ $q('qb-list').innerHTML = '<div class="v6-empty">تعذر تحميل الأسئلة: ' + esc(e.message || '') + '</div>'; return; }
+    paintBank();
+  }
+  function paintBank(){
+    const cnt = t => qb.rows.filter(x => t === 'all' || x.t === t).length;
+    $q('qb-tabs').innerHTML = [['all', 'الكل'], ['quiz', '📝 اختبارات'], ['video', '🎬 فيديوهات'], ['card', '🖼️ كروت']].map(([v, l]) => '<button type="button" data-v="' + v + '" class="' + (qb.type === v ? 'active' : '') + '">' + l + ' <b>' + cnt(v) + '</b></button>').join('');
+    const owners = []; qb.rows.filter(x => qb.type === 'all' || x.t === qb.type).forEach(x => { const k = x.t + ':' + x.owner; if(!owners.some(o => o.k === k)) owners.push({k, n:TYPES[x.t].icon + ' ' + ownerName(x.t, x.owner)}); });
+    $q('qb-owner').innerHTML = '<option value="">كل العناصر</option>' + owners.map(o => '<option value="' + o.k + '" ' + (qb.owner === o.k ? 'selected' : '') + '>' + esc(o.n) + '</option>').join('');
+    const q = qb.q.trim().toLowerCase();
+    const rows = qb.rows.filter(x => (qb.type === 'all' || x.t === qb.type) && (!qb.owner || (x.t + ':' + x.owner) === qb.owner) && (!q || [x.raw.question_ar, x.raw.question_en].some(v => (v || '').toLowerCase().includes(q))));
+    if(!rows.length){ $q('qb-list').innerHTML = '<div class="v6-empty">مفيش أسئلة مطابقة</div>'; return; }
+    $q('qb-list').innerHTML = rows.map(x => {
+      const os = qb.opts[x.t + ':' + x.id] || [];
+      return '<div class="qb-card" data-t="' + x.t + '" data-id="' + x.id + '"><div class="qb-h"><span class="qb-tp qbt-' + x.t + '">' + TYPES[x.t].icon + ' ' + TYPES[x.t].one + '</span><span class="qb-ow">' + esc(ownerName(x.t, x.owner)) + '</span><span class="qb-lg" title="اللغات المكتوبة للسؤال">' + qFill({ar:x.raw.question_ar, en:x.raw.question_en, bn:x.raw.question_bn, ne:x.raw.question_ne, hi:x.raw.question_hi}) + '</span></div>' +
+        '<div class="qb-q">' + esc(x.raw.question_ar || x.raw.question_en || '—') + '</div>' +
+        '<div class="qb-os">' + (os.length ? os.map(o => '<span class="qb-o ' + (o.is_correct ? 'ok' : '') + '">' + (o.is_correct ? '✓ ' : '') + esc(o.option_ar || o.option_en || '—') + '</span>').join('') : '<span class="muted u-fs11">بدون خيارات</span>') +
+        (os.length && !os.some(o => o.is_correct) ? '<span class="qb-warn">⚠️ مفيش إجابة صحيحة</span>' : '') + '</div>' +
+        '<div class="qb-ac"><button type="button" class="v6-btn" data-a="edit">✏️ تعديل</button><button type="button" class="v6-btn danger" data-a="del">🗑️ حذف</button></div></div>';
+    }).join('');
+  }
+  async function onBankClick(e){
+    const c = e.target.closest('.qb-card'), a = e.target.closest('[data-a]'); if(!c || !a) return;
+    const x = qb.rows.find(r => r.t === c.dataset.t && r.id === Number(c.dataset.id)); if(!x) return;
+    if(a.dataset.a === 'edit') return qbForm(x);
+    if(a.dataset.a === 'del'){
+      if(!confirm('حذف السؤال؟ (هيتمسح معاه أي إجابات سابقة للموظفين عليه)')) return;
+      const r = await sb.from(QSRC[x.t].qt).delete().eq('id', x.id);
+      if(r.error) return toast('تعذر الحذف: ' + r.error.message);
+      toast('تم حذف السؤال ✅'); await loadBank(); paintBank();
+    }
+  }
+  /* نموذج موحّد للإضافة والتعديل: السؤال و الخيارات بالخمس لغات */
+  async function qbForm(x){
+    const editing = !!x;
+    const ownersOpt = t => (hub.data[t] ? hub.data[t].list : []).map(it => '<option value="' + it.id + '">' + esc(titleOf(it)) + '</option>').join('');
+    const os = editing ? (qb.opts[x.t + ':' + x.id] || []).map(o => ({...o})) : [{}, {}];
+    const lgIn = (pfx, o, ph) => QL.map(l => '<input class="input-field qb-in" data-k="' + pfx + '_' + l + '" placeholder="' + ph + ' (' + l.toUpperCase() + ')" value="' + esc(o[pfx + '_' + l] || '') + '"/>').join('');
+    const optRow = (o, i) => '<div class="qb-orow" data-i="' + i + '" data-oid="' + (o.id || '') + '"><label class="qb-rad"><input type="radio" name="qb-corr" value="' + i + '" ' + (o.is_correct ? 'checked' : '') + '/> صحيحة</label><input class="input-field qb-oar" data-k="option_ar" placeholder="الخيار (عربي)" value="' + esc(o.option_ar || '') + '"/><details class="v6-more"><summary>🌐 لغات أخرى</summary><div class="v6-2">' + ['en', 'bn', 'ne', 'hi'].map(l => '<input class="input-field" data-k="option_' + l + '" placeholder="' + l.toUpperCase() + '" value="' + esc(o['option_' + l] || '') + '"/>').join('') + '</div></details></div>';
+    const q = editing ? x.raw : {};
+    const ov = modal('<div class="v6-mh"><b>' + (editing ? '✏️ تعديل سؤال' : '➕ سؤال جديد') + '</b><button type="button" class="v6-x" id="qbf-x">✕</button></div><div class="v6-mb">' +
+      (editing ? '<div class="v6-hint">' + TYPES[x.t].icon + ' ' + esc(ownerName(x.t, x.owner)) + '</div>' :
+        '<div class="v6-row"><label class="field-label">النوع</label><select id="qbf-type" class="input-field">' + ORDER.map(t => '<option value="' + t + '" ' + ((qb.type === t || (qb.type === 'all' && t === 'video')) ? 'selected' : '') + '>' + TYPES[t].icon + ' ' + TYPES[t].one + '</option>').join('') + '</select></div><div class="v6-row"><label class="field-label">العنصر</label><select id="qbf-owner" class="input-field"></select></div>') +
+      '<div class="v6-row"><label class="field-label">السؤال (عربي) *</label><input class="input-field" id="qbf-ar" value="' + esc(q.question_ar || '') + '" placeholder="اكتب السؤال"/></div>' +
+      '<details class="v6-more"><summary>🌐 لغات أخرى (السؤال)</summary><div class="v6-2">' + ['en', 'bn', 'ne', 'hi'].map(l => '<input class="input-field" id="qbf-' + l + '" placeholder="' + l.toUpperCase() + '" value="' + esc(q['question_' + l] || '') + '"/>').join('') + '</div></details>' +
+      '<div class="v6-sec-t">الخيارات (واختار الإجابة الصحيحة)</div><div id="qbf-opts">' + os.map(optRow).join('') + '</div><button type="button" class="btn-secondary btn-sm" id="qbf-addopt">＋ خيار</button>' +
+      '</div><div class="v6-mf"><button type="button" class="btn-primary v6-save" id="qbf-save">💾 حفظ</button><button type="button" class="btn-secondary" id="qbf-cancel">إلغاء</button></div>');
+    ov.querySelector('#qbf-x').onclick = ov.querySelector('#qbf-cancel').onclick = () => ov.remove();
+    if(!editing){
+      const ty = ov.querySelector('#qbf-type'), ow = ov.querySelector('#qbf-owner'); const fill = () => { ow.innerHTML = ownersOpt(ty.value); }; ty.onchange = fill; fill();
+    }
+    ov.querySelector('#qbf-addopt').onclick = () => { const h = ov.querySelector('#qbf-opts'), n = h.children.length; if(n >= 6) return toast('الحد الأقصى 6 خيارات'); h.insertAdjacentHTML('beforeend', optRow({}, n)); };
+    try{ const ar = ov.querySelector('#qbf-ar'); ar.addEventListener('blur', () => { try{ autoTranslateGroup('qbf-ar', {en:'qbf-en', bn:'qbf-bn', ne:'qbf-ne', hi:'qbf-hi'}); }catch(_){} }); }catch(_){}
+    const save = ov.querySelector('#qbf-save');
+    save.onclick = async () => {
+      const ar = ov.querySelector('#qbf-ar').value.trim(); if(!ar) return toast('اكتب السؤال بالعربية');
+      const orows = [...ov.querySelectorAll('.qb-orow')].map(r => { const o = {id:r.dataset.oid ? Number(r.dataset.oid) : null, i:Number(r.dataset.i)}; r.querySelectorAll('[data-k]').forEach(f => o[f.dataset.k] = f.value.trim()); return o; }).filter(o => o.option_ar || o.id);
+      if(orows.filter(o => o.option_ar).length < 2) return toast('لازم خيارين على الأقل');
+      const corr = ov.querySelector('input[name="qb-corr"]:checked'); if(!corr) return toast('اختار الإجابة الصحيحة');
+      const ci = Number(corr.value);
+      if(!orows.some(o => o.i === ci && o.option_ar)) return toast('الإجابة الصحيحة لازم تكون خيار مكتوب');
+      save.disabled = true; save.textContent = '… جاري الحفظ';
+      try{
+        const t = editing ? x.t : ov.querySelector('#qbf-type').value, S = QSRC[t];
+        const qp = {question_ar:ar}; ['en', 'bn', 'ne', 'hi'].forEach(l => qp['question_' + l] = ov.querySelector('#qbf-' + l).value.trim());
+        let qid;
+        if(editing){ const r = await sb.from(S.qt).update(qp).eq('id', x.id); if(r.error) throw r.error; qid = x.id; }
+        else {
+          const ow = Number(ov.querySelector('#qbf-owner').value); if(!ow) throw new Error('اختار العنصر');
+          const ins = t === 'quiz' ? {...qp, quiz_id:ow} : {...qp, item_type:t, item_id:ow, topic_id:t === 'video' ? ow : null};
+          const r = await sb.from(S.qt).insert(ins).select().single(); if(r.error) throw r.error; qid = r.data.id;
+        }
+        for(const o of orows){
+          const p = {option_ar:o.option_ar || '', is_correct:o.i === ci}; ['en', 'bn', 'ne', 'hi'].forEach(l => p['option_' + l] = o['option_' + l] || '');
+          if(o.id){ if(!o.option_ar){ continue; } const r = await sb.from(S.ot).update(p).eq('id', o.id); if(r.error) throw r.error; }
+          else if(o.option_ar){ const r = await sb.from(S.ot).insert({...p, question_id:qid}); if(r.error) throw r.error; }
+        }
+        if(typeof logActivityV22 === 'function' && adminUser) logActivityV22('admin', adminUser.id, (editing ? 'تعديل سؤال ' : 'إضافة سؤال ') + TYPES[t].one, t, qid);
+        ov.remove(); toast('تم الحفظ ✅'); await loadBank(); paintBank();
+      }catch(err){ save.disabled = false; save.textContent = '💾 حفظ'; toast('خطأ: ' + (err.message || err)); }
+    };
   }
 
   /* =====================  الإدارة المتقدمة (الشاشات القديمة كما هي)  ===================== */
@@ -8859,7 +9090,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
 /* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
 (function(){
-  const VERSION = 'v9.74';
+  const VERSION = 'v9.75';
   const $ = id => document.getElementById(id);
   let running = false;
   async function tx(text, lang){
@@ -9490,7 +9721,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
       topics().then(list => {
         const row = document.createElement('div'); row.className = 'v18-link';
         row.innerHTML = '<label class="field-label">🔗 الفيديو المرتبط بالاختبار (اختياري — يفتح للموظف بعد ما يخلص الفيديو)</label><select id="v18-hub-topic" class="input-field">' + opts(list) + '</select><div class="muted" style="font-size:10px;margin-top:4px">تقدر تغيّر الربط بعد كده من "الإدارة المتقدمة" لكل اختبار.</div>';
-        sec.parentNode.insertBefore(row, sec);
+        (mb.querySelector('.v6-pane[data-s="0"]') || sec.parentNode).appendChild ? ((mb.querySelector('.v6-pane[data-s="0"]') && mb.querySelector('.v6-pane[data-s="0"]').appendChild(row)) || sec.parentNode.insertBefore(row, sec)) : null;
       });
     });
   }).observe(document.body, {childList:true, subtree:true});
