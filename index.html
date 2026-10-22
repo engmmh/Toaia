@@ -501,6 +501,7 @@ body.v9-dark .fm-panel,body.v9-dark .v6-menu{background:#1e293b;border-color:#33
 .v6-steps{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}.v6-stp{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:800;color:#64748b;background:#f1f5f9;border-radius:999px;padding:4px 10px;cursor:pointer}.v6-stp i{font-style:normal;width:18px;height:18px;border-radius:50%;background:#cbd5e1;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:10px}.v6-stp.on{background:#e0e7ff;color:#3730a3}.v6-stp.on i{background:#4f46e5}.v6-stp.done i{background:#16a34a}.v6-pane.hidden{display:none}.v6-rev{border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:10px}.v6-rev div{display:flex;justify-content:space-between;gap:10px;padding:9px 12px;border-bottom:1px solid #f1f5f9;font-size:12.5px}.v6-rev div:last-child{border-bottom:0}.v6-rev span{color:#64748b}.v6-prev{margin-top:12px;width:100%}.v6-langs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.v6-langs button{font-family:inherit;border:1px solid var(--border);background:#fff;border-radius:999px;padding:4px 12px;font-size:12px;font-weight:800;cursor:pointer}.v6-langs button.on{background:#4f46e5;border-color:#4f46e5;color:#fff}.v6-phone{max-width:340px;margin:0 auto 10px;border:6px solid #0f172a;border-radius:26px;background:#f8fafc;padding:14px;min-height:260px}.pv-t{font-weight:900;font-size:15px;margin-bottom:10px}.pv-vid{position:relative;padding-top:56.25%;border-radius:12px;overflow:hidden;background:#000}.pv-vid iframe{position:absolute;inset:0;width:100%;height:100%;border:0}.pv-ph{background:#e2e8f0;border-radius:12px;padding:40px 10px;text-align:center;color:#64748b}.pv-img{width:100%;border-radius:12px;margin-bottom:10px}.pv-prog{height:6px;background:#e2e8f0;border-radius:9px;margin-top:10px}.pv-s{font-size:12px;color:#475569;margin-top:8px}.v6-mf .hidden{display:none}
 .v6-bar-r{display:flex;gap:8px;align-items:center}.v6-qbank{font-family:inherit;border:1px solid #c7d2fe;background:#eef2ff;color:#3730a3;border-radius:12px;padding:9px 14px;font-weight:800;font-size:13px;cursor:pointer}.qb-list{display:flex;flex-direction:column;gap:10px}.qb-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:12px 14px}.qb-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}.qb-tp{font-size:11px;font-weight:800;border-radius:999px;padding:2px 10px;background:#f1f5f9}.qb-tp.qbt-quiz{background:#ede9fe;color:#5b21b6}.qb-tp.qbt-video{background:#dbeafe;color:#1d4ed8}.qb-tp.qbt-card{background:#dcfce7;color:#15803d}.qb-ow{font-size:11.5px;color:#475569;font-weight:700;flex:1}.qb-lg{display:flex;gap:3px}.qb-l{font-size:9px;font-weight:800;padding:1px 5px;border-radius:5px;background:#f1f5f9;color:#94a3b8}.qb-l.on{background:#dcfce7;color:#15803d}.qb-q{font-weight:800;font-size:13.5px;margin-bottom:8px}.qb-os{display:flex;flex-wrap:wrap;gap:6px}.qb-o{font-size:12px;border:1px solid var(--border);border-radius:9px;padding:3px 10px;background:#f8fafc}.qb-o.ok{background:#dcfce7;border-color:#86efac;color:#15803d;font-weight:800}.qb-warn{font-size:11px;color:#b91c1c;font-weight:800}.qb-ac{display:flex;gap:8px;margin-top:10px}.qb-orow{border:1px solid var(--border);border-radius:10px;padding:8px;margin-bottom:8px;display:flex;flex-direction:column;gap:6px}.qb-rad{font-size:11.5px;font-weight:700;display:flex;gap:6px;align-items:center}
 .ql-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}.ql-g{font-family:inherit;display:flex;flex-direction:column;align-items:flex-start;gap:4px;border:1px solid var(--border);background:#fff;border-radius:14px;padding:12px;cursor:pointer;text-align:start}.ql-g:hover{box-shadow:0 6px 16px rgba(15,23,42,.1)}.ql-g .ic,.ql-h .ic{font-size:24px}.ql-g b{font-size:12.5px}.ql-g small{color:#64748b}.ql-h{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:15px}.ql-q{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--border);border-radius:12px;padding:10px;margin-bottom:8px;cursor:pointer;background:#fff}.ql-q input{margin-top:4px}.ql-os{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.qb-pub{font-family:inherit;font-size:10.5px;font-weight:800;border-radius:999px;padding:2px 9px;border:0}.qb-pub.on{background:#dcfce7;color:#15803d}.qb-pub.off{background:#fee2e2;color:#b91c1c;cursor:pointer}
 .v6-sec-t{font-weight:900;font-size:13.5px;margin:16px 0 9px;padding-top:14px;border-top:1px solid var(--border)}
 .v6-modes{display:flex;gap:8px;margin-bottom:12px}
 .v6-mode{flex:1;cursor:pointer}.v6-mode input{display:none}
@@ -6273,7 +6274,7 @@ try{(function(){
       if(typeof logActivityV22 === 'function' && adminUser) logActivityV22('admin', adminUser.id, (want ? 'نشر ' : 'إخفاء ') + T.one, type, id);
       toast(want ? 'تم النشر ✅' : 'تم الإخفاء');
     }catch(err){ toast('تعذر التحديث: ' + (err.message || '')); }
-    paintGrid();
+    if($q('v6-grid')) paintGrid();
   }
 
   async function doDelete(type, id){
@@ -6679,7 +6680,7 @@ try{(function(){
     QL_(T_('أين تُخزَّن مواد التنظيف والمواد الكيميائية؟','Where should cleaning chemicals be stored?','পরিষ্কারের রাসায়নিক কোথায় রাখতে হবে?','सफाइका रसायन कहाँ राख्नुपर्छ?','सफाई के रसायन कहाँ रखने चाहिए?'),[
       T_('بجوار الغذاء','Next to food','খাবারের পাশে','खानाको छेउमा','खाने के पास'),
       T_('في مكان مخصص بعيدًا عن الغذاء','In a dedicated place away from food','খাবার থেকে দূরে নির্দিষ্ট স্থানে','खानाबाट टाढा तोकिएको ठाउँमा','खाने से दूर निर्धारित स्थान पर'),
-      T_('على أرفف الإنتاج','On the production shelves','উৎপাদনের তাকে','उत्पादनका र‍्याकमा','उत्पादन की अलमारियों पर'),
+      T_('على أرفف الإنتاج','On the production shelves','উৎপাদনের তাকে','उत्पादनका शेल्फमा','उत्पादन की अलमारियों पर'),
       T_('في أي مكان','Anywhere','যেকোনো জায়গায়','जहाँसुकै','कहीं भी')],1),
     QL_(T_('تكسّر زجاج أو بلاستيك صلب قرب المنتج، ماذا تفعل؟','Glass or hard plastic breaks near the product. What do you do?','পণ্যের কাছে কাচ বা শক্ত প্লাস্টিক ভেঙে গেল। কী করবেন?','उत्पादनको नजिक सिसा वा कडा प्लास्टिक फुट्यो। के गर्ने?','उत्पाद के पास कांच या सख्त प्लास्टिक टूट गया। क्या करें?'),[
       T_('أكمل العمل','Carry on working','কাজ চালিয়ে যাব','काम जारी राख्ने','काम जारी रखना'),
@@ -6727,7 +6728,7 @@ try{(function(){
   {id:'ghp2', ic:'🚿', t:T_('GHP — ممارسات النظافة الجيدة (٢)','GHP — Good Hygiene Practices (2)','জিএইচপি — ভালো স্বাস্থ্যবিধি অনুশীলন (২)','जीएचपी — राम्रो सरसफाइ अभ्यास (२)','जीएचपी — अच्छी स्वच्छता प्रथाएँ (2)'), qs:[
     QL_(T_('أين نخزّن الأغذية؟','Where should food be stored?','খাবার কোথায় সংরক্ষণ করতে হবে?','खाना कहाँ भण्डारण गर्नुपर्छ?','खाना कहाँ रखना चाहिए?'),[
       T_('على الأرض مباشرة','Directly on the floor','সরাসরি মেঝেতে','सिधै भुइँमा','सीधे फर्श पर'),
-      T_('على أرفف مرتفعة عن الأرض','On shelves raised off the floor','মেঝে থেকে উঁচু তাকে','भुइँबाट माथि र‍्याकमा','फर्श से ऊपर अलमारियों पर'),
+      T_('على أرفف مرتفعة عن الأرض','On shelves raised off the floor','মেঝে থেকে উঁচু তাকে','भुइँबाट माथि शेल्फमा','फर्श से ऊपर अलमारियों पर'),
       T_('فوق مواد التنظيف','Above cleaning chemicals','পরিষ্কারের রাসায়নিকের ওপরে','सफाइका रसायनमाथि','सफाई रसायनों के ऊपर'),
       T_('ملاصقًا للحائط الرطب','Against a damp wall','ভেজা দেয়ালের গায়ে','ओसिलो भित्तासँग','नम दीवार से सटाकर')],1),
     QL_(T_('كيف نتعامل مع النفايات؟','How should waste be handled?','বর্জ্য কীভাবে সামলাতে হবে?','फोहोरलाई कसरी व्यवस्थापन गर्नुपर्छ?','कचरे को कैसे संभालना चाहिए?'),[
@@ -6753,7 +6754,7 @@ try{(function(){
   ]},
   {id:'fs1', ic:'🌡️', t:T_('سلامة الغذاء — درجات الحرارة','Food Safety — Temperatures','খাদ্য নিরাপত্তা — তাপমাত্রা','खाद्य सुरक्षा — तापक्रम','खाद्य सुरक्षा — तापमान'), qs:[
     QL_(T_('ما نطاق درجات الحرارة الخطر لنمو البكتيريا؟','Which temperature range is the danger zone for bacterial growth?','ব্যাকটেরিয়া বৃদ্ধির বিপজ্জনক তাপমাত্রার পরিসর কোনটি?','ब्याक्टेरिया बढ्ने खतरनाक तापक्रम दायरा कुन हो?','बैक्टीरिया बढ़ने का खतरनाक तापमान क्षेत्र कौन सा है?'),[
-      T_('من -١٨ إلى ٠°م','-18 to 0 °C','-১৮ থেকে ০ °সে.','-१८ देखि ० °से.','-18 से 0 °से.'),
+      T_('من ١٨ درجة تحت الصفر إلى الصفر','-18 to 0 °C','-১৮ থেকে ০ °সে.','-१८ देखि ० °से.','-18 से 0 °से.'),
       T_('من ٥ إلى ٦٠°م','5 to 60 °C','৫ থেকে ৬০ °সে.','५ देखि ६० °से.','5 से 60 °से.'),
       T_('من ٧٠ إلى ٩٠°م','70 to 90 °C','৭০ থেকে ৯০ °সে.','७० देखि ९० °से.','70 से 90 °से.'),
       T_('من ١٠٠ إلى ١٢٠°م','100 to 120 °C','১০০ থেকে ১২০ °সে.','१०० देखि १२० °से.','100 से 120 °से.')],1),
@@ -6763,10 +6764,10 @@ try{(function(){
       T_('من ٢٠ إلى ٢٥°م','20 to 25 °C','২০ থেকে ২৫ °সে.','२० देखि २५ °से.','20 से 25 °से.'),
       T_('٣٠°م','30 °C','৩০ °সে.','३० °से.','30 °से.')],0),
     QL_(T_('ما درجة حرارة الفريزر (التجميد) الصحيحة؟','What is the correct freezer temperature?','ফ্রিজারের সঠিক তাপমাত্রা কত?','फ्रिजरको सही तापक्रम कति हो?','फ्रीज़र का सही तापमान क्या है?'),[
-      T_('٥°م','+5 °C','+৫ °সে.','+५ °से.','+5 °से.'),
-      T_('٠°م','0 °C','০ °সে.','० °से.','0 °से.'),
-      T_('-١٨°م أو أقل','-18 °C or lower','-১৮ °সে. বা তার কম','-१८ °से. वा कम','-18 °से. या उससे कम'),
-      T_('-٥°م','-5 °C','-৫ °সে.','-५ °से.','-5 °से.')],2),
+      T_('٥ درجات فوق الصفر','+5 °C','+৫ °সে.','+५ °से.','+5 °से.'),
+      T_('الصفر المئوي','0 °C','০ °সে.','० °से.','0 °से.'),
+      T_('١٨ درجة تحت الصفر أو أقل','-18 °C or lower','-১৮ °সে. বা তার কম','-१८ °से. वा कम','-18 °से. या उससे कम'),
+      T_('٥ درجات تحت الصفر','-5 °C','-৫ °সে.','-५ °से.','-5 °से.')],2),
     QL_(T_('ما درجة الحرارة الكافية في مركز الدجاج عند الطبخ؟','What core temperature is needed when cooking chicken?','মুরগি রান্নার সময় ভেতরের তাপমাত্রা কত হওয়া দরকার?','कुखुरा पकाउँदा भित्री तापक्रम कति चाहिन्छ?','चिकन पकाते समय अंदर का तापमान कितना होना चाहिए?'),[
       T_('٣٠°م','30 °C','৩০ °সে.','३० °से.','30 °से.'),
       T_('٤٠°م','40 °C','৪০ °সে.','४० °से.','40 °से.'),
@@ -6837,6 +6838,7 @@ try{(function(){
     }
     qb.rows = out.sort((a, b) => b.id - a.id); qb.opts = opts;
   }
+  const ownerVisible = (t, id) => { const it = (hub.data[t] && hub.data[t].list || []).find(x => x.id === id); return !!(it && it.is_visible); };
   const ownerName = (t, id) => { const it = (hub.data[t] && hub.data[t].list || []).find(x => x.id === id); return it ? titleOf(it) : '#' + id; };
   async function openBank(){
     const r = root(); if(!r) return;
@@ -6866,7 +6868,7 @@ try{(function(){
     if(!rows.length){ $q('qb-list').innerHTML = '<div class="v6-empty">مفيش أسئلة مطابقة</div>'; return; }
     $q('qb-list').innerHTML = rows.map(x => {
       const os = qb.opts[x.t + ':' + x.id] || [];
-      return '<div class="qb-card" data-t="' + x.t + '" data-id="' + x.id + '"><div class="qb-h"><span class="qb-tp qbt-' + x.t + '">' + TYPES[x.t].icon + ' ' + TYPES[x.t].one + '</span><span class="qb-ow">' + esc(ownerName(x.t, x.owner)) + '</span><span class="qb-lg" title="اللغات المكتوبة للسؤال">' + qFill({ar:x.raw.question_ar, en:x.raw.question_en, bn:x.raw.question_bn, ne:x.raw.question_ne, hi:x.raw.question_hi}) + '</span></div>' +
+      return '<div class="qb-card" data-t="' + x.t + '" data-id="' + x.id + '"><div class="qb-h"><span class="qb-tp qbt-' + x.t + '">' + TYPES[x.t].icon + ' ' + TYPES[x.t].one + '</span><span class="qb-ow">' + esc(ownerName(x.t, x.owner)) + '</span>' + (ownerVisible(x.t, x.owner) ? '<span class="qb-pub on">● منشور</span>' : '<button type="button" class="qb-pub off" data-a="pub" title="العنصر مخفي فالأسئلة مش بتظهر للموظفين — اضغط للنشر">○ مخفي — انشر</button>') + '<span class="qb-lg" title="اللغات المكتوبة للسؤال">' + qFill({ar:x.raw.question_ar, en:x.raw.question_en, bn:x.raw.question_bn, ne:x.raw.question_ne, hi:x.raw.question_hi}) + '</span></div>' +
         '<div class="qb-q">' + esc(x.raw.question_ar || x.raw.question_en || '—') + '</div>' +
         '<div class="qb-os">' + (os.length ? os.map(o => '<span class="qb-o ' + (o.is_correct ? 'ok' : '') + '">' + (o.is_correct ? '✓ ' : '') + esc(o.option_ar || o.option_en || '—') + '</span>').join('') : '<span class="muted u-fs11">بدون خيارات</span>') +
         (os.length && !os.some(o => o.is_correct) ? '<span class="qb-warn">⚠️ مفيش إجابة صحيحة</span>' : '') + '</div>' +
@@ -6877,6 +6879,7 @@ try{(function(){
     const c = e.target.closest('.qb-card'), a = e.target.closest('[data-a]'); if(!c || !a) return;
     const x = qb.rows.find(r => r.t === c.dataset.t && r.id === Number(c.dataset.id)); if(!x) return;
     if(a.dataset.a === 'edit') return qbForm(x);
+    if(a.dataset.a === 'pub'){ await doToggle(x.t, x.owner, true); await loadType(x.t); paintBank(); return; }
     if(a.dataset.a === 'del'){
       if(!confirm('حذف السؤال؟ (هيتمسح معاه أي إجابات سابقة للموظفين عليه)')) return;
       const r = await sb.from(QSRC[x.t].qt).delete().eq('id', x.id);
@@ -6892,7 +6895,7 @@ try{(function(){
     const ov = modal('<div class="v6-mh"><b>📚 مكتبة أسئلة الجودة الجاهزة</b><button type="button" class="v6-x" id="ql-x">✕</button></div><div class="v6-mb" id="ql-body"></div><div class="v6-mf hidden" id="ql-ft"><button type="button" class="btn-primary v6-save" id="ql-imp">⬇️ استيراد المحدّد</button><button type="button" class="btn-secondary" id="ql-back">→ رجوع</button></div>');
     ov.querySelector('#ql-x').onclick = () => ov.remove();
     const body = ov.querySelector('#ql-body'), ft = ov.querySelector('#ql-ft');
-    const owners = t => (hub.data[t] ? hub.data[t].list : []).map(it => '<option value="' + it.id + '">' + esc(titleOf(it)) + '</option>').join('');
+    const owners = t => (hub.data[t] ? hub.data[t].list : []).map(it => '<option value="' + it.id + '">' + esc(titleOf(it)) + (it.is_visible ? '' : ' — (مخفي)') + '</option>').join('');
     function home(){
       g = null; ft.classList.add('hidden');
       body.innerHTML = '<div class="v6-hint">كل مجموعة = ٥ أسئلة سهلة بأربع اختيارات وإجابة صحيحة واحدة، مكتوبة بالعربي والإنجليزي والبنغالي والنيبالي والهندي. اختار المجموعة، واختار الأسئلة المناسبة بس، وارتبطها بفيديو أو اختبار أو كارت.</div>' +
@@ -6904,7 +6907,8 @@ try{(function(){
         '<div class="v6-langs" id="ql-langs">' + Object.keys(LN).map(l => '<button type="button" data-l="' + l + '" class="' + (l === lang ? 'on' : '') + '">' + LN[l] + '</button>').join('') + '</div>' +
         '<div id="ql-qs"></div>' +
         '<div class="v6-sec-t">🔗 اربطهم بـ</div><div class="v6-row"><label class="field-label">النوع</label><select id="ql-type" class="input-field">' + ORDER.map(t => '<option value="' + t + '" ' + (t === 'video' ? 'selected' : '') + '>' + TYPES[t].icon + ' ' + TYPES[t].one + '</option>').join('') + '</select></div>' +
-        '<div class="v6-row"><label class="field-label">العنصر</label><select id="ql-owner" class="input-field"></select></div><div class="muted u-fs11" id="ql-msg"></div>';
+        '<div class="v6-row"><label class="field-label">العنصر</label><select id="ql-owner" class="input-field"></select></div>' +
+        '<label class="v6-vis"><input id="ql-pub" type="checkbox" checked/> <span>انشر العنصر للموظفين لو كان مخفي (الأسئلة بتظهر للموظف بس لما العنصر يكون منشور)</span></label><div class="muted u-fs11" id="ql-msg"></div>';
       const ty = body.querySelector('#ql-type'), ow = body.querySelector('#ql-owner'); const fill = () => { ow.innerHTML = owners(ty.value) || '<option value="">— مفيش عناصر —</option>'; }; ty.onchange = fill; fill();
       paintQs();
     }
@@ -6943,6 +6947,8 @@ try{(function(){
         }
         if(typeof logActivityV22 === 'function' && adminUser) logActivityV22('admin', adminUser.id, 'استيراد أسئلة جاهزة (' + g.t.ar + ')', t, owner);
         toast('تم استيراد ' + added + ' سؤال' + (skipped ? ' (وتخطّيت ' + skipped + ' موجودين قبل كده)' : '') + ' ✅');
+        const it = (hub.data[t] ? hub.data[t].list : []).find(x => x.id === owner);
+        if(it && !it.is_visible && body.querySelector('#ql-pub').checked) await doToggle(t, owner, true);
         ov.remove(); await loadBank(); paintBank();
       }catch(err){ btn.disabled = false; btn.textContent = '⬇️ استيراد المحدّد'; msg.textContent = '⚠️ ' + (err.message || err); }
     };
@@ -9392,7 +9398,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
 /* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
 (function(){
-  const VERSION = 'v9.78';
+  const VERSION = 'v9.79';
   const $ = id => document.getElementById(id);
   let running = false;
   async function tx(text, lang){
