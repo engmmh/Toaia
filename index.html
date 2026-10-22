@@ -4437,8 +4437,17 @@ try{(function(){
   };
   window.submitOnsiteWorkerEvaluation = async function(participantId){
     const ev=$('wo-eval-'+participantId).value, comment=$('wo-comment-'+participantId).value.trim();
-    const {error} = await sb.from('onsite_training_participants').update({worker_evaluation:ev, worker_evaluation_comment:comment||null, worker_evaluated_at:new Date().toISOString()}).eq('id',participantId);
-    if(error) return showToast('خطأ: '+error.message);
+    let saved=false, err=null;
+    // الطريقة الآمنة (phase26): دالة بالسيرفر. لو مش متشغّلة بنجرب التحديث المباشر ونتأكد إنه اتسجّل فعلاً
+    const r = await sb.rpc('fs_onsite_rate',{p_participant:participantId,p_eval:ev,p_comment:comment||null});
+    if(!r.error) saved = r.data === true;
+    else if(/PGRST202|find the function|does not exist|not found/i.test((r.error.code||'')+' '+(r.error.message||''))){
+      const u = await sb.from('onsite_training_participants').update({worker_evaluation:ev, worker_evaluation_comment:comment||null, worker_evaluated_at:new Date().toISOString()}).eq('id',participantId).select('id');
+      if(u.error) err=u.error; else saved = !!(u.data && u.data.length);
+      if(!err && !saved) err={message:'التقييم ما اتسجّلش — لازم تشغّل phase26_fixes.sql'};
+    } else err=r.error;
+    if(err) return showToast('خطأ: '+(err.message||err));
+    if(!saved) return showToast('التقييم ما اتسجّلش، جرّب تاني');
     showToast('شكرًا لتقييمك ✅');
     loadWorkerOnsiteTrainings();
   };
@@ -9090,7 +9099,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
 /* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
 (function(){
-  const VERSION = 'v9.75';
+  const VERSION = 'v9.76';
   const $ = id => document.getElementById(id);
   let running = false;
   async function tx(text, lang){
@@ -9486,13 +9495,20 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     if(busy) return; busy = true;
     try{
       let worker = null;
-      try{ const r = await sb.from('workers_evaluations').select('*').eq('id', parseInt(val,10)).maybeSingle(); worker = r.data; }catch(e){}
+      let needPw = null;
+      let lk = null;
+      try{ lk = await sb.rpc('fs_login_lookup', {p_id: parseInt(val,10)}); }catch(e){ lk = null; }   // بحث آمن قبل الدخول (phase26) — شغّال حتى لو القراءة مقفولة (phase25)
+      if(lk && !lk.error && lk.data && typeof lk.data === 'object' && 'found' in lk.data){
+        if(lk.data.found){ worker = {worker_name: lk.data.worker_name, preferred_lang: lk.data.preferred_lang}; needPw = !!lk.data.needs_password; }
+      } else {
+        try{ const r = await sb.from('workers_evaluations').select('*').eq('id', parseInt(val,10)).maybeSingle(); worker = r.data; }catch(e){}
+      }
       if(!worker) return await _dl.apply(this, arguments);       // رقم غير مسجل / أدمن: نفس الرسائل القديمة
       const l = (worker.preferred_lang && WELCOME[worker.preferred_lang]) ? worker.preferred_lang : lang();
       $('login-error').classList.add('hidden');
       Warm.prefetch();                                   // تحميل البيانات العامة من دلوقتي، والموظف بيشوف الترحيب ويكتب كلمة السر
       await showSplash(worker.worker_name, l);
-      if(await needsPassword(worker)) toStep('pw', worker.worker_name);
+      if(needPw !== null ? needPw : await needsPassword(worker)) toStep('pw', worker.worker_name);
       else { step = 'pw'; return await _dl.apply(this, arguments); } // مفيش كلمة سر: يدخل علطول
     } finally { busy = false; }
   };
