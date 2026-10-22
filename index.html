@@ -8857,7 +8857,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
 /* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
 (function(){
-  const VERSION = 'v9.71';
+  const VERSION = 'v9.72';
   const $ = id => document.getElementById(id);
   let running = false;
   async function tx(text, lang){
@@ -12467,13 +12467,38 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     if(c.reason==='nothing_required') return toast(lt('none'));
     toast('سجّل الخروج ودخّل تاني وجرّب');
   }
-  function drawCertCard(){
+  /* مفتاح تشغيل شهادة التدريب للموظف (الافتراضي: مقفولة). بيتحكم فيه السوبر أدمن من الهوية */
+  var certOnC=null, certAt=0;
+  async function certOn(force){
+    if(!force&&certOnC!==null&&Date.now()-certAt<30000) return certOnC;
+    try{ var r=await sb.from('app_settings').select('value').eq('key','worker_cert_enabled').maybeSingle(); certOnC=!!(r&&r.data&&String(r.data.value)==='1'); }catch(e){ certOnC=false; }
+    certAt=Date.now(); return certOnC;
+  }
+  async function drawCertCard(){
     try{
       if(typeof currentUser==='undefined'||!currentUser) return;
-      var box=document.getElementById('wt-extras'); if(!box||document.getElementById('fs-cert-card')) return;
+      var on=await certOn(), old=document.getElementById('fs-cert-card');
+      if(!on){ if(old) old.remove(); return; }
+      var box=document.getElementById('wt-extras'); if(!box||old) return;
       box.insertAdjacentHTML('beforeend','<div id="fs-cert-card" style="margin-bottom:10px"><button class="btn-secondary" style="width:100%;padding:11px;font-weight:800" onclick="FSCert.get()">'+lt('btn')+'</button></div>');
     }catch(e){}
   }
+  async function adminCertToggle(){
+    var tab=document.getElementById('tab-branding'); if(!tab||document.getElementById('fs-certsw')) return;
+    var u=null; try{ u=adminUser; }catch(e){} if(!u||!u.isSuper) return;
+    var on=await certOn(true);
+    tab.insertAdjacentHTML('beforeend','<div class="card u-pad16" id="fs-certsw" style="margin-top:14px"><div class="section-title" style="margin-bottom:6px">🏆 شهادة التدريب للموظف</div><div class="muted" style="font-size:12px;margin-bottom:10px">لما تكون شغّالة، الموظف اللي يكمّل كل تدريباته المطلوبة يقدر يطلّع شهادة لنفسه من صفحته. وهي مقفولة افتراضياً.</div><label style="display:flex;align-items:center;gap:8px;font-weight:800;font-size:13px;cursor:pointer"><input type="checkbox" id="fs-certsw-i"'+(on?' checked':'')+'/> <span>إظهار شهادة التدريب للموظفين</span></label><div class="muted" id="fs-certsw-m" style="font-size:12px;margin-top:6px"></div></div>');
+    document.getElementById('fs-certsw-i').onchange=async function(e){
+      var v=e.target.checked, m=document.getElementById('fs-certsw-m'); e.target.disabled=true;
+      var r=await sb.from('app_settings').upsert({key:'worker_cert_enabled',value:v?'1':'0'});
+      e.target.disabled=false;
+      if(r&&r.error){ e.target.checked=!v; m.textContent='⚠️ تعذّر الحفظ'; return; }
+      certOnC=v; certAt=Date.now(); m.textContent=v?'✅ الشهادة ظاهرة للموظفين':'✅ الشهادة مخفية عن الموظفين';
+      try{ window.FSLog&&FSLog(v?'تفعيل شهادة الموظف':'إخفاء شهادة الموظف','setting',{}); }catch(_){}
+    };
+  }
+  afterCall('adminTab',function(t){ if(t==='branding') setTimeout(adminCertToggle,200); });
+  afterCall('logout',function(){ certOnC=null; });
   window.FSCert={get:getCert,show:showCert,draw:drawCertCard};
   window.FSCert.verify=function(){ return verifyPage(); };
   afterCallAsync('loadWorkerVideos', function(){ setTimeout(drawCertCard,900); });
