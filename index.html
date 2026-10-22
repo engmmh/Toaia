@@ -8768,7 +8768,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
 /* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
 (function(){
-  const VERSION = 'v9.62';
+  const VERSION = 'v9.63';
   const $ = id => document.getElementById(id);
   let running = false;
   async function tx(text, lang){
@@ -11057,6 +11057,115 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   document.addEventListener('click',function(e){ var b=e.target.closest&&e.target.closest('[onclick*="adminTab(\'compliance\')"],[data-tab="compliance"]'); if(b) setTimeout(ensure,100); });
   new MutationObserver(function(){ ensure(); }).observe(document.body,{childList:true,subtree:true});
   ensure();
+})();
+
+
+/* ===== FSWeekly + FSCert: التقرير الأسبوعي (أدمن) + شهادة التدريب بـQR + صفحة التحقق ===== */
+(function(){
+  var E=function(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
+  var col=function(p){return p>=80?'#16a34a':p>=50?'#d97706':'#dc2626';};
+  function noFn(e){ return e && /function|does not exist|not found|schema cache/i.test(String(e.message||e)); }
+  function toast(m){ try{ showToast(m); }catch(e){ alert(m); } }
+  function lg(){ try{ return currentLang||'ar'; }catch(e){ return 'ar'; } }
+
+  /* ---------- التقرير الأسبوعي ---------- */
+  var weeks=[];
+  function ensureWk(){
+    var tab=document.getElementById('tab-compliance'); if(!tab||document.getElementById('fs-wk-card')) return;
+    tab.insertAdjacentHTML('beforeend','<div class="card u-pad16" id="fs-wk-card" style="margin-top:14px"><div class="section-title" style="margin-bottom:6px">📅 التقارير الأسبوعية (بتتعمل أوتوماتيك كل أحد)</div><div class="muted" style="font-size:12px;margin-bottom:10px">كل مكان: كام موظف، نسبة اكتمال التدريبات المطلوبة، والمتأخرين بأسمائهم. المدير بيشوف أماكن نطاقه بس.</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center"><select id="fs-wk-sel" class="input-field" style="width:auto;min-width:150px" onchange="FSWeekly.show(this.value)"></select><button class="btn-primary btn-sm" onclick="FSWeekly.load()">🔄 تحديث</button><button class="btn-secondary btn-sm" onclick="FSWeekly.run()">⚙️ اعمل تقرير الأسبوع دلوقتي</button><button class="btn-secondary btn-sm" onclick="FSWeekly.print()">🖨️ طباعة</button></div><div id="fs-wk-body" class="muted">اضغط تحديث.</div></div>');
+  }
+  function table(rows){
+    if(!rows||!rows.length) return '<div class="muted">لا توجد بيانات في هذا الأسبوع لنطاقك.</div>';
+    return '<div style="overflow:auto"><table style="border-collapse:collapse;font-size:12.5px;min-width:100%"><thead><tr><th style="text-align:right;padding:6px">المكان</th><th>موظفين</th><th>مطلوب</th><th>اكتمل</th><th>النسبة</th><th>متأخر</th></tr></thead><tbody>'+rows.map(function(r,i){
+      var pct=Number(r.pct)||0, pend=r.pending||[];
+      return '<tr style="border-top:1px solid var(--border)"><td style="padding:6px;font-weight:700">'+E(r.name)+(pend.length?' <button class="btn-secondary btn-sm" style="padding:1px 8px" onclick="var d=document.getElementById(\'fs-wk-d'+i+'\');d.style.display=d.style.display===\'none\'?\'\':\'none\'">التفاصيل</button>':'')+'</td><td style="text-align:center">'+r.workers+'</td><td style="text-align:center">'+r.required+'</td><td style="text-align:center">'+r.done+'</td><td style="text-align:center;font-weight:800;color:'+col(pct)+'">'+pct+'%</td><td style="text-align:center;color:'+(r.overdue?'#dc2626':'inherit')+'">'+r.overdue+'</td></tr>'+
+        (pend.length?'<tr id="fs-wk-d'+i+'" style="display:none"><td colspan="6" style="padding:4px 14px"><ul style="margin:0 18px;font-size:12px">'+pend.map(function(p){return '<li>'+E(p.name)+' — '+E(p.topic)+(p.overdue?' <span style="color:#dc2626">(متأخر)</span>':'')+'</li>';}).join('')+'</ul></td></tr>':'');
+    }).join('')+'</tbody></table></div>';
+  }
+  var FSWeekly=window.FSWeekly={
+    load:async function(){ ensureWk(); var b=document.getElementById('fs-wk-body'); b.textContent='⏳...';
+      try{ var r=await sb.rpc('fs_weekly_reports_list'); if(r.error){ b.textContent=noFn(r.error)?FSNeedSql():'تعذّر التحميل: '+r.error.message; return; }
+        weeks=r.data||[]; var s=document.getElementById('fs-wk-sel'); s.innerHTML=weeks.map(function(w){return '<option value="'+w.week_start+'">أسبوع '+w.week_start+'</option>';}).join('');
+        if(!weeks.length){ b.innerHTML='<div class="muted">لا توجد تقارير لسه — اضغط "اعمل تقرير الأسبوع دلوقتي".</div>'; return; }
+        FSWeekly.show(weeks[0].week_start);
+      }catch(e){ b.textContent='تعذّر التحميل'; } },
+    show:function(ws){ var w=weeks.filter(function(x){return String(x.week_start)===String(ws);})[0]; var b=document.getElementById('fs-wk-body'); if(b) b.innerHTML=w?table(w.data):''; },
+    run:async function(){ var r=await sb.rpc('fs_run_weekly_report'); if(r.error){ toast(noFn(r.error)?FSNeedSql():'تعذّر: '+r.error.message); return; } toast('✅ اتعمل التقرير'); FSWeekly.load(); },
+    print:function(){ var s=document.getElementById('fs-wk-sel'); var w=weeks.filter(function(x){return String(x.week_start)===String(s&&s.value);})[0]; if(!w) return toast('مفيش تقرير'); var win=window.open('','_blank'); if(!win) return toast('اسمح بالنوافذ المنبثقة'); win.document.write('<html dir="rtl"><head><meta charset="utf-8"><title>تقرير أسبوعي</title><style>body{font-family:Tahoma,Arial;padding:18px}table{border-collapse:collapse}td,th{border:1px solid #cbd5e1;padding:5px}</style></head><body><h2>تقرير الالتزام الأسبوعي — أسبوع '+E(w.week_start)+'</h2>'+table(w.data).replace(/<button[^>]*>.*?<\/button>/g,'').replace(/display:none/g,'')+'<script>setTimeout(function(){print()},400)<\/script></body></html>'); win.document.close(); }
+  };
+
+  /* ---------- QR ---------- */
+  function qrData(text){
+    return new Promise(function(res,rej){
+      function draw(){ try{ var d=document.createElement('div'); d.style.cssText='position:fixed;left:-9999px'; document.body.appendChild(d); new QRCode(d,{text:text,width:180,height:180}); setTimeout(function(){ var c=d.querySelector('canvas'),i=d.querySelector('img'); var u=c?c.toDataURL():(i&&i.src); d.remove(); u?res(u):rej(new Error('qr')); },80); }catch(e){ rej(e); } }
+      if(window.QRCode) return draw();
+      var s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'; s.onload=draw; s.onerror=function(){ rej(new Error('qrlib')); }; document.head.appendChild(s);
+    });
+  }
+
+  /* ---------- شهادة الموظف ---------- */
+  var LT={
+    btn:{ar:'🎓 شهادة إتمام التدريب',en:'🎓 Training certificate',bn:'🎓 প্রশিক্ষণ সনদ',ne:'🎓 तालिम प्रमाणपत्र',hi:'🎓 प्रशिक्षण प्रमाणपत्र'},
+    inc:{ar:'لسه باقي تدريبات: ',en:'Trainings left: ',bn:'বাকি প্রশিক্ষণ: ',ne:'बाँकी तालिम: ',hi:'बाकी प्रशिक्षण: '},
+    none:{ar:'مفيش تدريبات مطلوبة منك حاليًا',en:'No trainings required right now',bn:'এখন কোনো প্রশিক্ষণ প্রয়োজন নেই',ne:'अहिले कुनै तालिम आवश्यक छैन',hi:'अभी कोई प्रशिक्षण आवश्यक नहीं'}
+  };
+  function lt(k){ return LT[k][lg()]||LT[k].ar; }
+  async function showCert(c){
+    var url=location.origin+location.pathname+'?cert='+c.code, img=''; try{ img=await qrData(url); }catch(e){}
+    var d=function(x){ try{ return new Date(x).toLocaleDateString('en-GB'); }catch(e){ return x; } };
+    var old=document.getElementById('fs-cert-ov'); if(old) old.remove();
+    var ov=document.createElement('div'); ov.id='fs-cert-ov'; ov.style.cssText='position:fixed;inset:0;z-index:99998;background:rgba(15,23,42,.9);overflow:auto;padding:14px';
+    ov.innerHTML='<style>@media print{body>*:not(#fs-cert-ov){display:none!important}#fs-cert-ov{position:static!important;background:#fff!important;padding:0!important}.fs-no-print{display:none!important}}</style>'+
+      '<div class="fs-no-print" style="text-align:center;margin-bottom:10px"><button class="btn-primary" onclick="window.print()">🖨️ طباعة / حفظ PDF</button> <button class="btn-secondary" onclick="document.getElementById(\'fs-cert-ov\').remove()">إغلاق</button></div>'+
+      '<div style="background:#fff;border:6px double #15803d;border-radius:14px;padding:26px;max-width:720px;margin:auto;text-align:center;direction:rtl;font-family:Tahoma,Arial">'+
+      '<div style="color:#475569;font-size:14px">شركة أفق الحروف التجارية — UFUQ Al Horouf</div><h1 style="color:#15803d;margin:6px 0">شهادة إتمام تدريب سلامة الغذاء</h1><div style="color:#475569;font-size:13px">Food Safety Training Completion Certificate</div>'+
+      '<div style="color:#475569;margin-top:10px">تشهد الشركة بأن</div><div style="font-size:30px;font-weight:800;margin:14px 0">'+E(c.name)+'</div><div style="color:#475569">'+E(c.section||'')+'</div>'+
+      '<div style="color:#475569;font-size:14px;margin-top:8px">أتمّ '+c.topics+' تدريب/تدريبات مطلوبة — Completed '+c.topics+' required training(s)</div>'+
+      '<div style="color:#475569;font-size:14px;margin-top:6px">تاريخ الإصدار: '+d(c.issued_at)+' | صالحة حتى: '+d(c.valid_until)+'</div>'+
+      (img?'<div style="margin-top:14px"><img src="'+img+'" width="150" height="150"/></div><div style="color:#475569;font-size:13px">للتحقق امسح الكود — رقم الشهادة: <b dir="ltr">'+E(c.code)+'</b></div>':'<div style="color:#475569;font-size:13px;margin-top:14px">رقم الشهادة: <b dir="ltr">'+E(c.code)+'</b><br/><span dir="ltr">'+E(url)+'</span></div>')+
+      '</div>';
+    document.body.appendChild(ov);
+  }
+  async function getCert(){
+    var r=await sb.rpc('fs_issue_certificate');
+    if(r.error){ toast(noFn(r.error)?FSNeedSql():'تعذّر: '+r.error.message); return; }
+    var c=r.data||{};
+    if(c.ok) return showCert(c);
+    if(c.reason==='incomplete') return toast(lt('inc')+(c.required-c.done));
+    if(c.reason==='nothing_required') return toast(lt('none'));
+    toast('سجّل الخروج ودخّل تاني وجرّب');
+  }
+  function drawCertCard(){
+    try{
+      if(typeof currentUser==='undefined'||!currentUser) return;
+      var box=document.getElementById('wt-extras'); if(!box||document.getElementById('fs-cert-card')) return;
+      box.insertAdjacentHTML('beforeend','<div id="fs-cert-card" style="margin-bottom:10px"><button class="btn-secondary" style="width:100%;padding:11px;font-weight:800" onclick="FSCert.get()">'+lt('btn')+'</button></div>');
+    }catch(e){}
+  }
+  window.FSCert={get:getCert,show:showCert,draw:drawCertCard};
+  window.FSCert.verify=function(){ return verifyPage(); };
+  afterCallAsync('loadWorkerVideos', function(){ setTimeout(drawCertCard,900); });
+
+  /* ---------- صفحة التحقق (?cert=CODE) ---------- */
+  async function verifyPage(){
+    var m=/[?&]cert=([A-Za-z0-9]{6,20})/.exec(location.search); if(!m) return;
+    var ov=document.createElement('div'); ov.id='fs-verify'; ov.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(15,23,42,.92);display:flex;align-items:center;justify-content:center;padding:16px';
+    ov.innerHTML='<div style="background:#fff;border-radius:16px;max-width:420px;width:100%;padding:22px;text-align:center;direction:rtl"><div id="fs-v-body">⏳ جاري التحقق...</div><button class="btn-secondary" style="margin-top:14px" onclick="document.getElementById(\'fs-verify\').remove()">إغلاق</button></div>';
+    document.body.appendChild(ov);
+    var b=document.getElementById('fs-v-body');
+    try{
+      var r=await sb.rpc('fs_verify_certificate',{p_code:m[1]});
+      if(r.error){ b.textContent=noFn(r.error)?'خدمة التحقق غير مفعّلة':'تعذّر التحقق'; return; }
+      var c=r.data||{}, d=function(x){ try{ return new Date(x).toLocaleDateString('en-GB'); }catch(e){ return x; } };
+      if(!c.found) b.innerHTML='<div style="font-size:40px">❌</div><h2 style="color:#dc2626">شهادة غير موجودة</h2><div class="muted">الكود مش مسجّل عندنا.</div>';
+      else if(!c.valid) b.innerHTML='<div style="font-size:40px">⚠️</div><h2 style="color:#d97706">شهادة منتهية</h2><div><b>'+E(c.name)+'</b></div><div class="muted">انتهت بتاريخ '+d(c.valid_until)+'</div>';
+      else b.innerHTML='<div style="font-size:40px">✅</div><h2 style="color:#16a34a">شهادة صحيحة</h2><div style="font-size:20px;font-weight:800">'+E(c.name)+'</div><div class="muted">'+E(c.section||'')+'</div><div class="muted">أتم '+c.topics+' تدريب — صدرت '+d(c.issued_at)+' — صالحة حتى '+d(c.valid_until)+'</div>';
+    }catch(e){ b.textContent='تعذّر التحقق'; }
+  }
+  setTimeout(verifyPage,600);
+
+  new MutationObserver(function(){ ensureWk(); }).observe(document.body,{childList:true,subtree:true});
+  ensureWk();
 })();
 
 </script>
