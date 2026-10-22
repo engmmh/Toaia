@@ -1,0 +1,32 @@
+<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ملف التصميم</title>
+<style>:root{
+    /* الألوان الأساسية */
+    --primary:#176b43; --primary-light:#2aa764; --primary-dark:#0f4d30;
+    --accent:#f59e0b; --danger:#ef4444; --bg:#f4f6f9; --card:#fff;
+    --text:#16202b; --muted:#718096; --border:#e3e8ef;
+    /* ألوان الحالات (للشارات والتنبيهات) */
+    --ok:#166534; --ok-bg:#dcfce7; --warn:#92400e; --warn-bg:#fef3c7;
+    --bad:#991b1b; --bad-bg:#fee2e2; --info:#1e40af; --info-bg:#dbeafe;
+    --mute:#475569; --mute-bg:#f1f5f9;
+    /* الظل والحواف */
+    --shadow:0 1px 2px rgba(15,23,42,.04),0 8px 24px rgba(15,23,42,.06);
+    --radius:14px; --r-sm:8px; --r-md:12px; --r-lg:16px; --r-pill:999px;
+    --ring:0 0 0 3px rgba(42,167,100,.35);
+    /* المسافات */
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px;
+    /* أحجام الخط */
+    --fs-xs:11px; --fs-sm:12.5px; --fs-md:14px; --fs-lg:16px; --fs-xl:20px;
+  }
+body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--text);margin:0;padding:24px;max-width:900px;margin-inline:auto}
+h2{margin:28px 0 10px}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn-primary,.btn-secondary,.btn-danger,.btn-ghost{padding:9px 18px;border-radius:10px;font-weight:700;cursor:pointer;border:0;font-family:inherit}
+.btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff}.btn-secondary{background:var(--mute-bg);border:1px solid var(--border)}.btn-danger{background:var(--bad-bg);color:var(--bad)}.btn-ghost{background:transparent;color:var(--muted)}
+.bdg{display:inline-flex;font-size:11px;font-weight:800;padding:2px 9px;border-radius:999px;background:var(--mute-bg);color:var(--mute)}
+.bdg-ok{background:var(--ok-bg);color:var(--ok)}.bdg-warn{background:var(--warn-bg);color:var(--warn)}.bdg-bad{background:var(--bad-bg);color:var(--bad)}.bdg-info{background:var(--info-bg);color:var(--info)}
+.sw{width:90px;height:50px;border-radius:10px;border:1px solid var(--border);display:flex;align-items:end;padding:4px;font-size:10px;box-sizing:border-box}
+table{border-collapse:collapse;width:100%;background:#fff}th{background:var(--mute-bg);padding:9px;text-align:right}td{padding:9px;border-bottom:1px solid var(--border)}
+</style><h1>ملف التصميم — نسخة v9.53</h1><p>القيم دي هي نفسها اللي في التطبيق (بتتغير من مكان واحد: :root في index.html).</p>
+<h2>الألوان</h2><div class="row"><div class="sw" style="background:var(--primary)">primary</div><div class="sw" style="background:var(--primary-light)">primary-light</div><div class="sw" style="background:var(--primary-dark)">primary-dark</div><div class="sw" style="background:var(--accent)">accent</div><div class="sw" style="background:var(--danger)">danger</div><div class="sw" style="background:var(--bg)">bg</div><div class="sw" style="background:var(--card)">card</div><div class="sw" style="background:var(--text)">text</div><div class="sw" style="background:var(--muted)">muted</div><div class="sw" style="background:var(--border)">border</div><div class="sw" style="background:var(--ok-bg)">ok-bg</div><div class="sw" style="background:var(--warn-bg)">warn-bg</div><div class="sw" style="background:var(--bad-bg)">bad-bg</div><div class="sw" style="background:var(--info-bg)">info-bg</div><div class="sw" style="background:var(--mute-bg)">mute-bg</div></div><h2>الأزرار</h2><div class="row"><button class="btn-primary">أساسي</button><button class="btn-secondary">ثانوي</button><button class="btn-danger">حذف</button><button class="btn-ghost">شفاف</button><button class="btn-primary" disabled style="opacity:.5">معطّل</button></div>
+<h2>الشارات</h2><div class="row"><span class="bdg">عادي</span><span class="bdg bdg-ok">ملتزم</span><span class="bdg bdg-warn">تنبيه</span><span class="bdg bdg-bad">مخالفة</span><span class="bdg bdg-info">معلومة</span></div>
+<h2>الجداول</h2><table><tr><th>الاسم</th><th>الحالة</th></tr><tr><td>أحمد</td><td><span class="bdg bdg-ok">ملتزم</span></td></tr><tr><td>سالم</td><td><span class="bdg bdg-bad">مخالف</span></td></tr></table>
+<h2>الدرج الجانبي وتابات اللغات</h2><p>كل النماذج بتفتح من الجنب (وعلى الموبايل من تحت). حقول اللغات: تابات AR / EN / BN / NE / HI ونقطة خضرا على اللغة اللي فيها نص.</p></html>

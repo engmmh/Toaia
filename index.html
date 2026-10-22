@@ -910,6 +910,17 @@ table.data th{white-space:nowrap}
 .v6-more.lt-done{border:0;padding:0;margin:0}.v6-more.lt-done>summary{display:none}
 body.v9-dark .lt-bar{background:#0f172a}body.v9-dark .lt-tab.on{background:#1e293b}
 
+/* ===== الهيكل الجديد: الأماكن ===== */
+.v28-kind{margin-top:10px}.v28-kind-h{font-size:12.5px;font-weight:800;color:var(--primary-dark);margin-bottom:6px}
+.v28-place{border:1px solid var(--border);border-radius:var(--r-md);background:#f8fafc;margin:6px 0;padding:8px 10px}
+.v28-place>summary{cursor:pointer;display:flex;align-items:center;gap:8px;flex-wrap:wrap;list-style:none}
+.v28-place>summary::-webkit-details-marker{display:none}
+.v28-pn{font-weight:800;font-size:13.5px}.v28-pm{font-size:11.5px;margin-inline-start:auto}
+.v28-code{font-size:10.5px;font-weight:800;background:var(--info-bg);color:var(--info);border-radius:var(--r-pill);padding:1px 8px}
+.v28-place>.v4-units{margin-top:8px}.v28-pa{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
+.v4-unit.v28-zero{opacity:.55}
+
+.v4-stats{grid-template-columns:repeat(auto-fit,minmax(110px,1fr))!important}
 </style>
 </head>
 <body class="on-login">
@@ -2920,8 +2931,18 @@ async function doLoginFinal(){
   /* مفيش إنترنت: دخول الموظف من آخر بيانات محفوظة على الجهاز (V9) */
   if(!navigator.onLine && /^\d+$/.test(val) && val!=='592001' && window.V9 && V9.offlineLogin) return V9.offlineLogin(val, pass);
   if(val==='592001'){
+    /* كود الطوارئ: بيتقفل أول ما يبقى فيه سوبر أدمن حقيقي (موظف) ليه كلمة سر. لو حصل أي خطأ في الفحص بيفضل شغال عشان محدش يتقفل بره. */
+    let ready = false;
+    try{
+      const a = await sb.from('admins').select('worker_id').eq('is_super', true);
+      const ids = (a.data || []).map(x => x.worker_id).filter(Boolean);
+      if(ids.length){ const w = await sb.from('workers_evaluations').select('id,password').in('id', ids); ready = (w.data || []).some(x => x.password); }
+    }catch(e){ ready = false; }
+    if(ready){ err.textContent='الكود ده اتقفل — ادخل برقمك وكلمة السر'; err.classList.remove('hidden'); return; }
     adminUser={isSuper:true,name:'المدير الرئيسي',section_id:null,section_ids:sections.map(s=>s.id)};
-    await enterAdmin(); return;
+    await enterAdmin();
+    try{ showToast('⚠️ دخول الطوارئ: ضيف سوبر أدمن من الموظفين وحط له كلمة سر، وبعدها الكود ده بيتقفل لوحده'); }catch(e){}
+    return;
   }
   const id=parseInt(val);
   const {data:worker}=await sb.from('workers_evaluations').select('*').eq('id',id).maybeSingle();
@@ -4803,7 +4824,8 @@ try{(function(){
    ===================================================================== */
 (function(){
   const $q = id => document.getElementById(id);
-  let regions = [], orgDepts = [], wcount = {}, orgReady = false;
+  let regions = [], orgDepts = [], wcount = {}, orgReady = false, places = [], placesOn = false;
+  const openPlaces = new Set();
   const TITLES = ['مدير فرع','مدير مصنع','مدير إنتاج','مدير تشغيل','مشرف','مسؤول جودة'];
   const num = v => (v === '' || v == null) ? null : Number(v);
   const nameOf = (list, id) => { const x = list.find(o => Number(o.id) === Number(id)); return x ? x.name_ar : ''; };
@@ -4850,12 +4872,15 @@ try{(function(){
 
   /* ---------- تحميل بيانات الهيكل ---------- */
   async function loadOrgMeta(){
-    const [r, d] = await Promise.all([
+    const [r, d, pl] = await Promise.all([
       sb.from('regions').select('*').order('sort_order').order('id'),
-      sb.from('target_departments').select('*').order('id')
+      sb.from('target_departments').select('*').order('id'),
+      sb.from('places').select('*').order('sort_order').order('id')
     ]);
     orgReady = !r.error;
     regions = r.data || [];
+    places = pl && !pl.error ? (pl.data || []) : [];
+    placesOn = places.length > 0;   // الهيكل الجديد بيشتغل أول ما phase14.sql يتشغّل ويبقى فيه أماكن
     orgDepts = (d.data || []).filter(x => x.is_active !== false);
   }
   async function loadOrg(){          // + أعداد الموظفين لكل وحدة (للشاشة الرئيسية فقط)
@@ -4879,10 +4904,11 @@ try{(function(){
       return;
     }
     const all = secs();
+    if(placesOn) return renderPlaceTree(box, all);
     const unlinked = all.filter(s => !s.region_id || !s.department_id);
     const totalW = Object.values(wcount).reduce((a, b) => a + b, 0);
 
-    let html = '<div class="v4-head"><div><div class="v4-title">🏢 الهيكل التنظيمي</div><div class="muted u-fs12">المنطقة ← الإدارة ← الوحدة (مصنع / فرع) ← الموظفين</div></div>' +
+    let html = (places.length || !orgReady ? '' : '<div class="v4-warn">ℹ️ الهيكل الجديد (مكان ← وحدة) هيشتغل بعد ما تشغّل ملف <b>phase14.sql</b> في Supabase.</div>') + '<div class="v4-head"><div><div class="v4-title">🏢 الهيكل التنظيمي</div><div class="muted u-fs12">المنطقة ← الإدارة ← الوحدة (مصنع / فرع) ← الموظفين</div></div>' +
       '<div class="v4-actions"><button class="btn-secondary btn-sm" onclick="v4RegionModal()">+ منطقة</button><button class="btn-primary btn-sm" onclick="v4UnitModal()">+ وحدة (مصنع / فرع)</button><button class="btn-secondary btn-sm" onclick="toggleOrgTab(\'targets\')">🏬 إدارة قائمة الإدارات</button></div></div>' +
       '<div class="v4-stats"><div><b>' + regions.length + '</b><span>منطقة</span></div><div><b>' + orgDepts.length + '</b><span>إدارة</span></div><div><b>' + all.length + '</b><span>وحدة</span></div><div><b>' + totalW + '</b><span>موظف</span></div></div>';
 
@@ -4913,10 +4939,93 @@ try{(function(){
     box.innerHTML = html;
   }
 
-  window.v4UnitModal = function(id, presetRegion){
+  /* =====  الهيكل الجديد: المنطقة ← المكان (مصنع / فرع) ← الوحدة ← الموظفين  ===== */
+  const KIND_H = {factory:'🏭 المصانع', branch:'🏪 الفروع', other:'📦 أماكن أخرى'};
+  const KIND_1 = {factory:'مصنع', branch:'فرع', other:'مكان'};
+  const byName = (a, b) => String(a.name_ar).localeCompare(String(b.name_ar), 'en', {numeric:true});
+  function unitBtn(u){
+    const n = wcount[u.id] || 0, dep = u.department_id ? nameOf(orgDepts, u.department_id) : '';
+    return '<button class="v4-unit' + (n ? '' : ' v28-zero') + '" onclick="v4UnitModal(' + u.id + ')"><b>' + esc(u.brand || u.name_ar) + '</b><span>' + n + ' موظف' + (dep ? ' • ' + esc(dep) : '') + '</span></button>';
+  }
+  function placeCard(p, units){
+    const w = units.reduce((a, u) => a + (wcount[u.id] || 0), 0);
+    return '<details class="v28-place" data-pid="' + p.id + '"' + (openPlaces.has(p.id) ? ' open' : '') + '><summary><span class="v28-pn">' + esc(p.name_ar) + '</span>' +
+      (p.code ? '<span class="v28-code">' + esc(p.code) + '</span>' : '') +
+      '<span class="muted v28-pm">' + units.length + ' وحدة • ' + w + ' موظف' + (p.manager_name ? ' • 👤 ' + esc(p.manager_name) : '') + '</span></summary>' +
+      '<div class="v4-units" data-v20="1">' + (units.map(unitBtn).join('') || '<span class="muted u-fs12">مفيش وحدات في المكان ده لسه.</span>') + '</div>' +
+      '<div class="v28-pa"><button class="btn-secondary btn-sm" onclick="v4UnitModal(null,' + (p.region_id || 'null') + ',' + p.id + ')">+ وحدة هنا</button> <button class="btn-secondary btn-sm" onclick="v4PlaceModal(' + p.id + ')">✏️ تعديل المكان</button></div></details>';
+  }
+  function kindBlocks(list, all){
+    return ['factory', 'branch', 'other'].map(k => {
+      const ps = list.filter(p => (p.kind || 'other') === k).sort(byName); if(!ps.length) return '';
+      return '<div class="v28-kind"><div class="v28-kind-h">' + KIND_H[k] + ' <span class="muted">(' + ps.length + ')</span></div>' +
+        ps.map(p => placeCard(p, all.filter(s => Number(s.place_id) === Number(p.id)))).join('') + '</div>';
+    }).join('');
+  }
+  function renderPlaceTree(box, all){
+    const noPlace = all.filter(s => !s.place_id);
+    const totalW = Object.values(wcount).reduce((a, b) => a + b, 0);
+    let html = '<div class="v4-head"><div><div class="v4-title">🏢 الهيكل التنظيمي</div><div class="muted u-fs12">المنطقة ← المكان (مصنع / فرع) ← الوحدة ← الموظفين. الإدارات (الجودة / الإنتاج / التشغيل) قايمة منفصلة وبتتحدد من الوظيفة.</div></div>' +
+      '<div class="v4-actions"><button class="btn-secondary btn-sm" onclick="v4RegionModal()">+ منطقة</button><button class="btn-primary btn-sm" onclick="v4PlaceModal()">+ مكان (مصنع / فرع)</button><button class="btn-secondary btn-sm" onclick="v4UnitModal()">+ وحدة</button></div></div>' +
+      '<div class="v4-stats"><div><b>' + regions.length + '</b><span>منطقة</span></div><div><b>' + places.length + '</b><span>مكان</span></div><div><b>' + all.length + '</b><span>وحدة</span></div><div><b>' + orgDepts.length + '</b><span>إدارة</span></div><div><b>' + totalW + '</b><span>موظف</span></div></div>';
+    if(noPlace.length) html += '<div class="v4-warn">⚠️ <b>' + noPlace.length + '</b> وحدة لسه مش مربوطة بمكان. دوس على الوحدة واختار مكانها.</div>';
+    regions.forEach(rg => {
+      const ps = places.filter(p => Number(p.region_id) === Number(rg.id));
+      const units = all.filter(s => ps.some(p => Number(p.id) === Number(s.place_id)));
+      const w = units.reduce((a, u) => a + (wcount[u.id] || 0), 0);
+      html += '<div class="v4-region"><div class="v4-region-head"><div><span class="v4-region-name">📍 ' + esc(rg.name_ar) + '</span> <span class="muted" style="font-size:11.5px;">' + ps.length + ' مكان • ' + units.length + ' وحدة • ' + w + ' موظف</span></div>' +
+        '<div><button class="btn-secondary btn-sm" onclick="v4PlaceModal(null,' + rg.id + ')">+ مكان هنا</button> <button class="btn-secondary btn-sm" onclick="v4RegionModal(' + rg.id + ')">✏️</button></div></div>' +
+        (ps.length ? kindBlocks(ps, all) : '<div class="muted" style="font-size:12px;padding:8px 2px;">مفيش أماكن في المنطقة دي لسه.</div>') + '</div>';
+    });
+    const noRegion = places.filter(p => !regions.some(r => Number(r.id) === Number(p.region_id)));
+    if(noRegion.length) html += '<div class="v4-region v4-orphan"><div class="v4-region-head"><span class="v4-region-name">📦 أماكن بدون منطقة</span></div>' + kindBlocks(noRegion, all) + '</div>';
+    if(noPlace.length) html += '<div class="v4-region v4-orphan"><div class="v4-region-head"><span class="v4-region-name">📦 وحدات بدون مكان</span></div><div class="v4-units" data-v20="1">' + noPlace.map(unitBtn).join('') + '</div></div>';
+    box.innerHTML = html;
+    if(!box._v28){ box._v28 = 1; box.addEventListener('toggle', e => { const d = e.target; if(d && d.classList && d.classList.contains('v28-place')){ const id = Number(d.dataset.pid); d.open ? openPlaces.add(id) : openPlaces.delete(id); } }, true); }
+  }
+  window.v4PlaceModal = function(id, presetRegion){
+    const p = id ? places.find(x => Number(x.id) === Number(id)) : null;
+    const nUnits = p ? secs().filter(s => Number(s.place_id) === Number(p.id)).length : 0;
+    modal('<div class="v4-mt">' + (p ? '✏️ تعديل المكان' : '➕ مكان جديد (مصنع / فرع)') + '</div>' +
+      '<label class="field-label">اسم المكان</label><input id="v4p-name" class="input-field" placeholder="مثال: مصنع الرياض / B37" value="' + esc(p ? p.name_ar : '') + '"/>' +
+      '<label class="field-label u-mt8">النوع</label><select id="v4p-kind" class="input-field"><option value="factory"' + (p && p.kind === 'factory' ? ' selected' : '') + '>🏭 مصنع</option><option value="branch"' + (!p || p.kind === 'branch' ? ' selected' : '') + '>🏪 فرع</option><option value="other"' + (p && p.kind === 'other' ? ' selected' : '') + '>📦 أخرى</option></select>' +
+      '<label class="field-label u-mt8">المنطقة</label><select id="v4p-region" class="input-field">' + opts(regions, p ? p.region_id : presetRegion, '— اختر المنطقة —') + '</select>' +
+      '<label class="field-label u-mt8">الكود (اختياري)</label><input id="v4p-code" class="input-field" placeholder="مثال: BR-37" value="' + esc(p ? (p.code || '') : '') + '"/>' +
+      '<label class="field-label u-mt8">مدير المكان (اختياري)</label><input id="v4p-mgr" class="input-field" value="' + esc(p ? (p.manager_name || '') : '') + '"/>' +
+      (p ? '<div class="muted" style="font-size:11.5px;margin-top:8px;">' + nUnits + ' وحدة في المكان ده — تغيير الاسم أو المنطقة مبيمسحش أي بيانات.</div>' : '') +
+      '<div class="v4-mf"><button class="btn-primary" onclick="v4SavePlace(' + (p ? p.id : 'null') + ')">💾 حفظ</button><button class="btn-secondary" onclick="this.closest(\'.v4-ov\').remove()">إلغاء</button>' +
+      (p ? '<button class="btn-danger btn-sm" style="margin-right:auto;" onclick="v4DeletePlace(' + p.id + ')">🗑️ حذف المكان</button>' : '') + '</div><div id="v4p-msg" class="u-fs12-mt8"></div>');
+    setTimeout(() => $q('v4p-name')?.focus(), 50);
+  };
+  window.v4SavePlace = async function(id){
+    const name_ar = ($q('v4p-name').value || '').trim(), msg = $q('v4p-msg');
+    if(!name_ar){ msg.innerHTML = '<span class="u-red">اكتب اسم المكان</span>'; return; }
+    const payload = {name_ar, kind:$q('v4p-kind').value, region_id:num($q('v4p-region').value), code:($q('v4p-code').value || '').trim() || null, manager_name:($q('v4p-mgr').value || '').trim() || null};
+    const res = id ? await sb.from('places').update(payload).eq('id', id) : await sb.from('places').insert(payload);
+    if(res.error){ msg.innerHTML = '<span class="u-red">' + esc(res.error.message) + '</span>'; return; }
+    if(id && payload.region_id){ await sb.from('sections').update({region_id:payload.region_id}).eq('place_id', id); }   // وحدات المكان تتبع منطقته
+    document.querySelector('.v4-ov')?.remove();
+    await loadSections(); await renderOrgTree(); showToast('تم الحفظ ✅');
+  };
+  window.v4DeletePlace = async function(id){
+    const n = secs().filter(s => Number(s.place_id) === Number(id)).length;
+    if(n) return showToast('مينفعش تحذف المكان: فيه ' + n + ' وحدة. انقلها لمكان تاني الأول.');
+    if(!confirm('حذف المكان الفاضي ده؟')) return;
+    const {error} = await sb.from('places').delete().eq('id', id);
+    if(error) return showToast('خطأ: ' + error.message);
+    document.querySelector('.v4-ov')?.remove();
+    await renderOrgTree(); showToast('تم الحذف');
+  };
+  window.v4PlacePicked = function(sel){
+    const p = places.find(x => Number(x.id) === Number(sel.value)); const r = $q('v4u-region');
+    if(p && p.region_id && r) r.value = String(p.region_id);
+  };
+
+  window.v4UnitModal = function(id, presetRegion, presetPlace){
     const u = id ? secs().find(s => Number(s.id) === Number(id)) : null;
     const ov = modal('<div class="v4-mt">' + (u ? '✏️ تعديل الوحدة' : '➕ وحدة جديدة (مصنع / فرع)') + '</div>' +
       '<label class="field-label">اسم الوحدة</label><input id="v4u-name" class="input-field" placeholder="مثال: مصنع الرياض / فرع بريدة" value="' + esc(u ? u.name_ar : '') + '"/>' +
+      (placesOn ? '<label class="field-label u-mt8">المكان</label><select id="v4u-place" class="input-field" onchange="v4PlacePicked(this)"><option value="">— اختر المكان —</option>' + places.slice().sort(byName).map(p => '<option value="' + p.id + '"' + (Number(p.id) === Number(u ? u.place_id : presetPlace) ? ' selected' : '') + '>' + esc(p.name_ar) + ' (' + KIND_1[p.kind || 'other'] + (p.region_id ? ' - ' + esc(nameOf(regions, p.region_id)) : '') + ')</option>').join('') + '</select>' : '') +
       '<label class="field-label u-mt8">المنطقة</label><select id="v4u-region" class="input-field">' + opts(regions, u ? u.region_id : presetRegion, '— اختر المنطقة —') + '</select>' +
       '<label class="field-label u-mt8">الإدارة</label><div style="display:flex;gap:6px;"><select id="v4u-dept" class="input-field">' + opts(orgDepts, u ? u.department_id : null, '— اختر الإدارة —') + '</select><button class="btn-secondary btn-sm" type="button" onclick="v4QuickDept()">+ إدارة</button></div>' +
       (u ? '<div class="muted" style="font-size:11.5px;margin-top:8px;">' + (wcount[u.id] || 0) + ' موظف في الوحدة دي — تغيير المنطقة أو الإدارة مبيمسحش أي بيانات.</div>' : '') +
@@ -4936,6 +5045,7 @@ try{(function(){
     const name_ar = ($q('v4u-name').value || '').trim(), msg = $q('v4u-msg');
     if(!name_ar){ msg.innerHTML = '<span class="u-red">اكتب اسم الوحدة</span>'; return; }
     const payload = {name_ar, region_id:num($q('v4u-region').value), department_id:num($q('v4u-dept').value)};
+    if(placesOn && $q('v4u-place')) payload.place_id = num($q('v4u-place').value);
     const res = id ? await sb.from('sections').update(payload).eq('id', id) : await sb.from('sections').insert(payload);
     if(res.error){ msg.innerHTML = '<span class="u-red">' + esc(res.error.message) + '</span>'; return; }
     document.querySelector('.v4-ov')?.remove();
@@ -8678,7 +8788,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
 /* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
 (function(){
-  const VERSION = 'v9.54';
+  const VERSION = 'v9.55';
   const $ = id => document.getElementById(id);
   let running = false;
   async function tx(text, lang){
@@ -9785,7 +9895,9 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   async function paintBranches(){
     const kpis = $('dashboard-kpis'); if(!kpis) return;
     let secs = [];
-    try{ secs = (await sb.from('sections').select('id,name_ar,branch_name,brand,department_id,region_id')).data || []; }catch(e){ return; }
+    try{ secs = (await sb.from('sections').select('id,name_ar,branch_name,brand,department_id,region_id,place_id')).data || []; }catch(e){ return; }
+    let pls = []; try{ const pr = await sb.from('places').select('id,name_ar,kind,region_id'); pls = pr.error ? [] : (pr.data || []); }catch(e){}
+    const pm = {}; pls.forEach(p => pm[p.id] = p);
     const hid = window.__v20hid || new Set();
     let list = secs.filter(s => !hid.has(String(s.id)));
     if(typeof getAdminScopeIds === 'function' && typeof adminUser !== 'undefined' && adminUser && !adminUser.isSuper){ const ids = getAdminScopeIds().map(Number); list = list.filter(s => ids.includes(Number(s.id))); }
@@ -9807,14 +9919,18 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     const avg = v => v.length ? v.reduce((a, c) => a + c, 0) / v.length : 0;
     const nodes = {};
     list.forEach(s => {
-      const nk = (s.department_id || 0) + '|' + (s.region_id || 0);
-      const node = (nodes[nk] ||= {name: (dn[s.department_id] || 'بدون إدارة') + (s.region_id ? ' - ' + (rn[s.region_id] || '') : ''), br: {}, vals: [], units: 0});
-      const key = s.branch_name || s.name_ar;
-      const b = (node.br[key] ||= {name: key, single: !s.branch_name, units: [], vals: []});
+      const pl = pm[s.place_id];
+      const nk = pl ? 'p' + (pl.kind || 'other') + '|' + (pl.region_id || 0) : (s.department_id || 0) + '|' + (s.region_id || 0);
+      const nm = pl ? ({factory:'المصانع', branch:'الفروع', other:'أماكن أخرى'}[pl.kind || 'other']) + ' - ' + (rn[pl.region_id] || 'بدون منطقة')
+                    : (dn[s.department_id] || 'بدون إدارة') + (s.region_id ? ' - ' + (rn[s.region_id] || '') : '');
+      const node = (nodes[nk] ||= {name: nm, br: {}, vals: [], units: 0});
+      const key = pl ? pl.name_ar : (s.branch_name || s.name_ar);
+      const b = (node.br[key] ||= {name: key, single: pl ? null : !s.branch_name, units: [], vals: []});
       const v = by[String(s.id)] || [];
       b.units.push({sid: s.id, name: s.brand || s.name_ar, n: v.length, p: avg(v)});
       b.vals.push(...v); node.vals.push(...v); node.units++;
     });
+    Object.values(nodes).forEach(n => Object.values(n.br).forEach(b => { if(b.single === null) b.single = b.units.length === 1; }));
     const nodeArr = Object.values(nodes).map(n => ({...n, n: n.vals.length, p: avg(n.vals), brs: Object.values(n.br).map(b => ({...b, n: b.vals.length, p: avg(b.vals)})).sort((a, b) => (a.n === 0) - (b.n === 0) || a.p - b.p)}));
     nodeArr.sort((a, b) => b.n - a.n || a.name.localeCompare(b.name, 'ar'));
     const box = $('dashboard-sections-list'); if(!box) return;
