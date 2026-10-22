@@ -775,6 +775,66 @@ body:has(#admin-section.fs-boot) footer{visibility:hidden}
 .tab-btn.fs7.on7{background:var(--primary);color:#fff;border-color:var(--primary);box-shadow:0 7px 18px rgba(23,107,67,.18)}
 .tab-btn.fs7.on7 .nav-icon{background:rgba(255,255,255,.18);color:#fff}
 .fs7-danger .nav-icon{background:#fee2e2;color:#b91c1c}
+#fs7-bottom{display:none}
+@media(max-width:900px){
+  body.on-admin #fs7-bottom{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:60;background:#fff;border-top:1px solid var(--border);box-shadow:0 -4px 16px rgba(15,23,42,.08);padding:6px 6px calc(6px + env(safe-area-inset-bottom))}
+  body.on-admin{padding-bottom:70px}
+  #fs7-bottom button{flex:1;border:0;background:transparent;font:700 10.5px/1.2 inherit;font-family:inherit;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border-radius:12px;position:relative;cursor:pointer}
+  #fs7-bottom button .i{font-size:19px;line-height:1}
+  #fs7-bottom button.on{color:var(--primary);background:#edf7f1}
+  #fs7-bottom .nav-badge{position:absolute;top:0;left:50%;margin-left:6px}
+}
+#fs7-create{border:0;background:var(--primary);color:#fff;font:800 13px/1 inherit;font-family:inherit;border-radius:12px;padding:10px 14px;cursor:pointer}
+#fs7-cmenu{position:fixed;z-index:80;background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:0 12px 32px rgba(15,23,42,.18);padding:6px;min-width:200px;display:none;flex-direction:column;gap:2px}
+#fs7-cmenu.open{display:flex}
+#fs7-cmenu button{border:0;background:transparent;text-align:start;font:700 13px/1.3 inherit;font-family:inherit;padding:10px 12px;border-radius:10px;cursor:pointer;color:#0f172a}
+#fs7-cmenu button:hover{background:#edf7f1}
+#fs7-search{position:fixed;inset:0;z-index:120;background:rgba(15,23,42,.45);display:none;align-items:flex-start;justify-content:center;padding:70px 14px 0}
+#fs7-search.open{display:flex}
+#fs7-search .box{background:#fff;border-radius:16px;width:100%;max-width:560px;box-shadow:0 24px 60px rgba(15,23,42,.35);overflow:hidden}
+#fs7-search input{width:100%;border:0;border-bottom:1px solid var(--border);padding:16px 18px;font:700 15px/1.2 inherit;font-family:inherit;outline:none;box-sizing:border-box}
+#fs7-search .res{max-height:60vh;overflow:auto;padding:6px}
+#fs7-search .grp{font:800 11px/1 inherit;color:var(--muted);padding:10px 12px 4px}
+#fs7-search .it{display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:10px;cursor:pointer;font:700 13px/1.3 inherit}
+#fs7-search .it small{color:var(--muted);font-weight:600;margin-inline-start:auto}
+#fs7-search .it.sel,#fs7-search .it:hover{background:#edf7f1}
+#fs7-search .empty{padding:18px;text-align:center;color:var(--muted);font-weight:700;font-size:13px}
+#fs7-sbtn{border:1px solid var(--border);background:#fff;border-radius:12px;padding:9px 12px;cursor:pointer;font-size:15px}
+#fs7-filter{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 12px;padding:10px 12px;background:#fff;border:1px solid var(--border);border-radius:14px}
+#fs7-filter.hidden{display:none}
+#fs7-filter select{border:1px solid var(--border);border-radius:10px;padding:8px 10px;font:700 12px/1 inherit;font-family:inherit;background:#f8fafc;max-width:160px}
+#fs7-filter .x{border:0;background:#fee2e2;color:#991b1b;border-radius:10px;padding:8px 12px;font:800 12px/1 inherit;font-family:inherit;cursor:pointer}
+#fs7-filter .x.hidden{display:none}
+#tab-library .lib-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+#tab-library .lib-bar input,#tab-library .lib-bar select{border:1px solid var(--border);border-radius:10px;padding:9px 11px;font:700 12.5px/1 inherit;font-family:inherit;background:#fff}
+#tab-library .lib-bar input{flex:1 1 180px;min-width:140px}
+#tab-library .lib-new{margin-inline-start:auto;border:0;background:var(--primary);color:#fff;font:800 13px/1 inherit;font-family:inherit;border-radius:12px;padding:10px 16px;cursor:pointer}
+#tab-library .lib-wrap{overflow:auto;border:1px solid var(--border);border-radius:14px;background:#fff}
+#tab-library table{width:100%;border-collapse:collapse;font-size:13px}
+#tab-library th{background:#f8fafc;text-align:start;padding:10px 12px;font-weight:800;font-size:12px;color:var(--muted);white-space:nowrap}
+#tab-library td{padding:11px 12px;border-top:1px solid var(--border);vertical-align:middle}
+#tab-library tbody tr{cursor:pointer}#tab-library tbody tr:hover{background:#f0fdf4}
+#tab-library .st{display:inline-block;padding:3px 10px;border-radius:999px;font:800 11.5px/1.4 inherit;white-space:nowrap}
+#tab-library .st.pub{background:#dcfce7;color:#166534}#tab-library .st.sch{background:#fef9c3;color:#854d0e}#tab-library .st.drf{background:#e2e8f0;color:#334155}#tab-library .st.end{background:#1e293b;color:#fff}
+#tab-library .lg{font-size:11px;font-weight:800;color:var(--muted)}
+#fs7-drawer{position:fixed;top:0;bottom:0;inset-inline-start:0;width:min(420px,100vw);background:#fff;z-index:110;box-shadow:12px 0 40px rgba(15,23,42,.25);transform:translateX(-105%);transition:transform .22s ease;display:flex;flex-direction:column}
+html[dir=rtl] #fs7-drawer{transform:translateX(105%)}
+#fs7-drawer.open{transform:none!important}
+#fs7-drawer .dh{display:flex;align-items:center;gap:8px;padding:14px 16px;border-bottom:1px solid var(--border);font-weight:900;font-size:15px}
+#fs7-drawer .dh button{margin-inline-start:auto;border:0;background:#f1f5f9;border-radius:10px;padding:8px 12px;cursor:pointer;font-weight:800}
+#fs7-drawer .db{padding:14px 16px;overflow:auto;flex:1;font-size:13px;line-height:1.7}
+#fs7-drawer .dk{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px dashed var(--border)}
+#fs7-drawer .dk b{color:var(--muted);font-size:12px}
+#fs7-drawer .da{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+#fs7-drawer .da button{border:0;border-radius:10px;padding:10px 14px;font:800 12.5px/1 inherit;font-family:inherit;cursor:pointer;background:var(--primary);color:#fff}
+#fs7-drawer .da button.s{background:#f1f5f9;color:#0f172a}#fs7-drawer .da button.d{background:#fee2e2;color:#991b1b}
+#fs7-bulk{position:sticky;top:0;z-index:30;display:none;gap:8px;flex-wrap:wrap;align-items:center;background:#0f172a;color:#fff;border-radius:14px;padding:10px 14px;margin-bottom:10px;font-weight:800;font-size:13px}
+#fs7-bulk.on{display:flex}
+#fs7-bulk button,#fs7-bulk select{border:0;border-radius:10px;padding:8px 12px;font:800 12px/1 inherit;font-family:inherit;cursor:pointer;background:#334155;color:#fff}
+#fs7-bulk button.d{background:#b91c1c}
+#fs7-bulk .sp{margin-inline-start:auto}
+.fs7-ck{margin-inline-end:6px;width:16px;height:16px;accent-color:var(--primary);vertical-align:middle}
+.fs7-eye{border:0;background:#edf7f1;border-radius:8px;padding:5px 9px;cursor:pointer;font-size:13px}
 .v12-push{margin:8px 12px;padding:7px 8px 7px 10px;border-radius:12px;background:var(--ok-bg);border:1px solid #bbf7d0;font-size:12px;color:#0f172a;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .v12-push .v12-x{margin-inline-start:auto;border:0;background:transparent;color:var(--muted);font-size:16px;line-height:1;cursor:pointer;padding:6px 8px;border-radius:8px}
 .v12-push .v12-x:hover{background:rgba(15,23,42,.08)}
@@ -3911,6 +3971,7 @@ try{(function(){
     const scopeIds=getAdminScopeIdsSafe();
     if(!(adminUser?.isSuper) && scopeIds.length) q=q.in('section_id',scopeIds);
     if(filterSec) q=q.eq('section_id',Number(filterSec));
+    else { const fi=window.FSFilter&&window.FSFilter.ids(); if(fi) q=q.in('section_id',[...fi]); }   // شريط الفلتر الموحّد
     if(search){ if(/^\d+$/.test(search)) q=q.eq('id',Number(search)); else q=q.ilike('worker_name','%'+search.replace(/[%_]/g,'')+'%'); }
     const {data,error,count}=await q;
     if(error){console.error(error);return;}
@@ -5410,7 +5471,7 @@ try{(function(){
         CATS.map(c => '<label class="v4-cat"><input type="checkbox" class="v4p-cat" value="' + c.k + '"/><div><b>' + c.icon + ' ' + c.label + '</b><small>' + c.desc + '</small></div><span class="v4-cnt" id="v4p-cnt-' + c.k + '"></span></label>').join('') +
       '</div><button type="button" class="btn-secondary btn-sm" id="v4p-all" style="margin-top:8px;">تحديد الكل</button></div>' +
       '<div class="v4-step"><div class="v4-step-t"><span>3</span> راجع قبل التنفيذ</div>' +
-        '<label class="v4-radio"><input type="checkbox" id="v4p-backup" checked/> 💾 نزّل نسخة احتياطية (ملف JSON) قبل المسح — <b>موصى بيه</b></label>' +
+        '<label class="v4-radio"><input type="checkbox" id="v4p-backup" checked disabled/> 💾 نسخة احتياطية (ملف JSON) بتتنزّل <b>أوتوماتيك</b> قبل المسح — لو فشلت مفيش أي مسح</label>' +
         '<button type="button" class="btn-primary" id="v4p-preview" style="margin-top:8px;padding:10px 22px;font-size:13px;">🔍 معاينة اللي هيتمسح</button><div id="v4p-msg" style="font-size:12.5px;margin-top:8px;"></div>' +
         '<div id="v4p-summary"></div></div>' +
       '<div id="v4p-confirm" class="v4-confirm hidden"><div class="v4-warn-red">⛔ الإجراء ده نهائي ومينفعش يتراجع عنه (غير بالنسخة الاحتياطية).</div>' +
@@ -5536,7 +5597,7 @@ try{(function(){
     let done = 0; const tick = () => { bar.style.width = Math.round(++done / steps * 100) + '%'; };
     const result = {}; const line = t => { log.innerHTML += '<div>' + t + '</div>'; };
     try{
-      if($q('v4p-backup').checked){                          // 1) نسخة احتياطية الأول — لو فشلت مفيش أي مسح
+      {                                                      // 1) نسخة احتياطية إجبارية الأول — لو فشلت مفيش أي مسح
         line('💾 جاري تجهيز النسخة الاحتياطية...');
         const dump = {meta:{createdAt:new Date().toISOString(), by:adminUser.name, scope:workers.label, workers:ids.length, categories:cats.map(c => c.k)}, tables:{}};
         for(const c of cats){
@@ -5578,6 +5639,7 @@ try{(function(){
       for(const c of cats) for(const [t, col, extra] of c.tables){ const r = await countTable(t, col, extra, ids); left += r.total || 0; }
       tick(); bar.style.width = '100%';
       line('<b style="color:' + (left ? '#991b1b' : '#166534') + ';">' + (left ? '⚠️ فضل ' + left + ' سجل (جرّب تنفّذ تاني)' : '✅ تم المسح بنجاح، ومفيش سجلات متبقية') + '</b>');
+      try{ if(window.FSLog) await window.FSLog('مسح بيانات موظفين', 'purge', {scope:workers.label, workers:ids.length, categories:cats.map(c => c.k), deleted:result, left:left}); }catch(e){}
       if(adminUser.id){ try{ await sb.from('activity_logs').insert({actor_type:'admin', actor_id:adminUser.id, action:'مسح بيانات موظفين', item_type:'purge', metadata:{scope:workers.label, workers:ids.length, deleted:result}}); }catch(e){} }
       showToast('تم مسح البيانات ✅');
       preview = null; syncRun();
@@ -5869,7 +5931,7 @@ try{(function(){
         safe(async () => (await sb.from('target_departments').select('*').order('id')).data, []),
         safe(() => fetchAll(() => sb.from('worker_violations').select('id,worker_id,violation_title,deduction_points,status,created_at').neq('status', 'closed').order('id')), [])
       ]);
-      rows = r; regions = rg || []; depts = dp || [];
+      { const fi = window.FSFilter && window.FSFilter.ids(); rows = fi ? r.filter(x => fi.has(Number(x.worker.section_id))) : r; } regions = rg || []; depts = dp || [];
       const ids = new Set(rows.map(x => Number(x.worker.id)));
       openViol = (ov || []).filter(v => ids.has(Number(v.worker_id)));
       window._dashPerWorker = rows;                          // نفس شكل البيانات القديم، بس بأرقام كاملة
@@ -8794,7 +8856,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
 /* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
 (function(){
-  const VERSION = 'v9.68';
+  const VERSION = 'v9.70';
   const $ = id => document.getElementById(id);
   let running = false;
   async function tx(text, lang){
@@ -10067,7 +10129,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   const G = [
     {k:'home',     ic:'🏠', ar:'الرئيسية', en:'Home',     subs:[['dashboard','لوحة التحكم']]},
     {k:'reports',  ic:'📊', ar:'التقارير', en:'Reports',  subs:[['compliance','الامتثال والأسبوعي']]},
-    {k:'content',  ic:'🎓', ar:'المحتوى',  en:'Content',  subs:[['videos','🎬 فيديوهات'],['cards','🖼️ كروت'],['quizzes','📝 اختبارات']]},
+    {k:'content',  ic:'🎓', ar:'المحتوى',  en:'Content',  subs:[['library','📚 الكل'],['videos','🎬 فيديوهات'],['cards','🖼️ كروت'],['quizzes','📝 اختبارات']]},
     {k:'field',    ic:'🦺', ar:'الميدان',  en:'Field',    subs:[['onsite','التدريبات الميدانية'],['vio-lib','المخالفات']]},
     {k:'inbox',    ic:'📥', ar:'الوارد',   en:'Inbox',    subs:[['comments','💬 التعليقات'],['reports','📣 بلاغات الموظفين']]},
     {k:'people',   ic:'👥', ar:'الناس',    en:'People',   subs:[['workers','الموظفين'],['admins','الأدمن والأدوار'],['passwords','كلمات السر']]},
@@ -10075,7 +10137,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   ];
   let curG = 'home', curTab = 'dashboard', busy = false;
   const oldBtn = k => $n('tabbtn-' + k);
-  const allowed = k => { const b = oldBtn(k); return !!b && !b.classList.contains('hidden') && b.style.display !== 'none'; };
+  const allowed = k => { if(k === 'library') return allowed('videos') || allowed('cards') || allowed('quizzes'); const b = oldBtn(k); return !!b && !b.classList.contains('hidden') && b.style.display !== 'none'; };
   const badgeOf = k => { const s = oldBtn(k) && oldBtn(k).querySelector('.nav-badge'); return (s && !s.classList.contains('hidden')) ? (parseInt(s.textContent, 10) || (s.textContent === '99+' ? 99 : 0)) : 0; };
   const visSubs = g => g.subs.filter(s => allowed(s[0]));
   const groupOf = (tab) => {
@@ -10094,7 +10156,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
           sb.appendChild(b);
         }
         const vs = visSubs(g); b.classList.toggle('hidden', !vs.length);
-        const n = g.subs.reduce((a, s) => a + (allowed(s[0]) ? badgeOf(s[0]) : 0), 0), bd = b.querySelector('.nav-badge');
+        const n = g.subs.reduce((a, s) => a + (allowed(s[0]) && s[0] !== 'library' ? badgeOf(s[0]) : 0), 0) + (g.k === 'reports' ? (window.__fsLateN || 0) : 0), bd = b.querySelector('.nav-badge');
         if(bd){ const nt = String(n > 99 ? '99+' : n); if(bd.textContent !== nt) bd.textContent = nt; bd.classList.toggle('hidden', !n); }
         b.classList.toggle('on7', g.k === curG);
       });
@@ -10124,8 +10186,473 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   afterCall('applyAdminScope', function(){ try{ build(); }catch(e){} });
   const sb0 = $n('admin-sidebar');
   if(sb0 && window.MutationObserver){ new MutationObserver(() => { if(!busy){ clearTimeout(build._t); build._t = setTimeout(build, 30); } }).observe(sb0, {attributes:true, subtree:true, attributeFilter:['class'], childList:true}); }
-  window.FSNav7 = { build, groups: G, state: () => ({curG, curTab}) };
+  window.FSNav7 = { build, groups: G, state: () => ({curG, curTab}), go(g, tab){ const gg = G.find(x => x.k === g); if(!gg || !gg.subs.some(s => s[0] === tab) || !allowed(tab)) return false; curG = g; adminTab(tab); return true; }, allowed };
   build();
+})();
+
+
+
+/* ===== FSRoute — رابط لكل صفحة (#/content/videos): زرار الرجوع يشتغل، وتقدر تبعت الرابط لزميلك ===== */
+(function(){
+  let silent = false, last = '';
+  const parse = () => { const m = /^#\/([a-z]+)\/([\w-]+)$/.exec(location.hash || ''); return m ? {g: m[1], t: m[2]} : null; };
+  const inAdmin = () => !!(typeof adminUser !== 'undefined' && adminUser);
+  function apply(){
+    if(!inAdmin() || !window.FSNav7) return;
+    const r = parse(); if(!r) return;
+    const s = FSNav7.state(); if(s.curG === r.g && s.curTab === r.t) return;
+    silent = true; try{ FSNav7.go(r.g, r.t); } finally { setTimeout(() => { silent = false; }, 150); }
+  }
+  afterCall('adminTab', function(tab){
+    try{
+      if(silent || !window.FSNav7) return;
+      setTimeout(() => {
+        const s = FSNav7.state(), h = '#/' + s.curG + '/' + s.curTab;
+        if(location.hash !== h){ history.pushState({fs:1}, '', h); }
+        last = h;
+      }, 70);
+    }catch(e){}
+  });
+  window.addEventListener('popstate', apply);
+  window.addEventListener('hashchange', apply);
+  afterCallAsync('enterAdmin', async function(){ try{ setTimeout(apply, 50); }catch(e){} }, true);
+  beforeCall('logout', function(){ try{ if(location.hash) history.replaceState(null, '', location.pathname + location.search); }catch(e){} });
+  window.FSRoute = { parse, apply };
+})();
+
+
+
+/* ===== FSMobile — شريط سفلي للموبايل + زرار ＋ إنشاء سريع ===== */
+(function(){
+  const $m = id => document.getElementById(id);
+  const BOT = [['home','🏠','الرئيسية'],['content','🎓','المحتوى'],['field','🦺','الميدان'],['inbox','📥','الوارد']];
+  function bar(){
+    let b = $m('fs7-bottom');
+    if(!b){
+      b = document.createElement('nav'); b.id = 'fs7-bottom';
+      b.innerHTML = BOT.map(x => '<button type="button" data-g="' + x[0] + '"><span class="i">' + x[1] + '</span>' + x[2] + '<span class="nav-badge hidden"></span></button>').join('') + '<button type="button" data-g="more"><span class="i">☰</span>المزيد</button>';
+      b.onclick = e => { const k = e.target.closest('button[data-g]'); if(!k) return; const g = k.dataset.g; if(g === 'more'){ toggleAdminSidebar(); return; } const src = $m('fs7-' + g); if(src) src.click(); };
+      document.body.appendChild(b);
+    }
+    const s = window.FSNav7 ? FSNav7.state() : {curG:'home'};
+    b.querySelectorAll('button[data-g]').forEach(k => {
+      const g = k.dataset.g, src = $m('fs7-' + g);
+      k.classList.toggle('on', g === s.curG);
+      if(g !== 'more'){ k.style.display = (src && src.classList.contains('hidden')) ? 'none' : ''; const sb = src && src.querySelector('.nav-badge'), bd = k.querySelector('.nav-badge'); if(sb && bd){ if(bd.textContent !== sb.textContent) bd.textContent = sb.textContent; bd.classList.toggle('hidden', sb.classList.contains('hidden')); } }
+    });
+  }
+  const ITEMS = [
+    ['🎬 تدريب جديد',  () => hub('videos')],
+    ['📝 اختبار جديد', () => hub('quizzes')],
+    ['🖼️ كارت جديد',  () => hub('cards')],
+    ['👤 موظف جديد',  () => go('people', 'workers', () => window.FM && FM.open('worker')), 'workers'],
+    ['⚠️ مخالفة (للمكتبة)', () => go('field', 'vio-lib', () => window.FM && FM.open('vio')), 'vio-lib'],
+    ['🎓 جلسة ميدانية', () => go('field', 'onsite', () => window.openNewOnsiteSessionForm && openNewOnsiteSessionForm()), 'onsite']
+  ];
+  function go(g, tab, then){ if(!window.FSNav7 || !FSNav7.go(g, tab)) return; setTimeout(() => { try{ then && then(); }catch(e){} }, 500); }
+  function hub(tab){
+    if(!window.FSNav7 || !FSNav7.go('content', tab)) return;
+    let n = 0; const iv = setInterval(() => { const a = $m('v6-add'); if(a && /مرة|جديد|＋|إضافة|إنشاء/.test(a.textContent) || ++n > 30){ clearInterval(iv); if(a) a.click(); } }, 150);
+  }
+  function menu(){
+    let m = $m('fs7-cmenu');
+    if(!m){ m = document.createElement('div'); m.id = 'fs7-cmenu'; document.body.appendChild(m); document.addEventListener('click', e => { if(!e.target.closest('#fs7-cmenu') && !e.target.closest('#fs7-create')) m.classList.remove('open'); }); }
+    const tabOf = it => it[2] || ({'🎬':'videos','📝':'quizzes','🖼️':'cards'})[it[0].split(' ')[0]];
+    m.innerHTML = ITEMS.filter(it => !window.FSNav7 || FSNav7.allowed(tabOf(it))).map((it, i) => '<button type="button" data-i="' + i + '">' + it[0] + '</button>').join('');
+    m.onclick = e => { const b = e.target.closest('button[data-i]'); if(!b) return; m.classList.remove('open'); const it = ITEMS.filter(x => !window.FSNav7 || FSNav7.allowed(tabOf(x)))[Number(b.dataset.i)]; if(it) it[1](); };
+    return m;
+  }
+  function createBtn(){
+    if($m('fs7-create')) return;
+    const host = $m('admin-sidebar-toggle') && $m('admin-sidebar-toggle').parentElement; if(!host) return;
+    const b = document.createElement('button'); b.type = 'button'; b.id = 'fs7-create'; b.textContent = '＋ إنشاء';
+    b.onclick = e => { const m = menu(); const r = b.getBoundingClientRect(); m.style.top = (r.bottom + 6) + 'px'; m.style.left = Math.max(8, r.left) + 'px'; m.classList.toggle('open'); e.stopPropagation(); };
+    host.insertBefore(b, host.firstChild);
+  }
+  function refresh(){ try{ bar(); createBtn(); }catch(e){} }
+  afterCall('adminTab', function(){ setTimeout(refresh, 90); });
+  afterCall('applyAdminScope', refresh);
+  afterCallAsync('enterAdmin', async function(){ refresh(); }, true);
+  const sb0 = $m('admin-sidebar'); if(sb0 && window.MutationObserver) new MutationObserver(() => { clearTimeout(refresh._t); refresh._t = setTimeout(refresh, 60); }).observe(sb0, {attributes:true, subtree:true, attributeFilter:['class']});
+  window.FSMobile = { refresh, ITEMS };
+})();
+
+
+
+/* ===== FSSearch — بحث سريع (Ctrl+K أو 🔍): رقم موظف، اسم، اسم تدريب/اختبار/كارت، أو اسم صفحة ===== */
+(function(){
+  const $s = id => document.getElementById(id);
+  const E = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const inAdmin = () => !!(typeof adminUser !== 'undefined' && adminUser);
+  let items = [], sel = 0, seq = 0, tmr = null;
+  const PAGES = [['الرئيسية / لوحة التحكم','home','dashboard'],['التقارير والامتثال','reports','compliance'],['الفيديوهات','content','videos'],['كروت السلامة','content','cards'],['الاختبارات','content','quizzes'],['التدريبات الميدانية','field','onsite'],['المخالفات','field','vio-lib'],['التعليقات','inbox','comments'],['بلاغات الموظفين','inbox','reports'],['الموظفين','people','workers'],['الأدمن والأدوار','people','admins'],['كلمات السر','people','passwords'],['الهيكل التنظيمي','settings','org'],['الهوية','settings','branding'],['منطقة الخطر / مسح البيانات','settings','purge']];
+  function ui(){
+    let o = $s('fs7-search');
+    if(!o){
+      o = document.createElement('div'); o.id = 'fs7-search';
+      o.innerHTML = '<div class="box"><input id="fs7-q" type="search" autocomplete="off" placeholder="🔍 رقم موظف، اسم، تدريب، اختبار، أو صفحة…"/><div class="res" id="fs7-res"></div></div>';
+      document.body.appendChild(o);
+      o.addEventListener('mousedown', e => { if(e.target === o) close(); });
+      const q = o.querySelector('#fs7-q');
+      q.addEventListener('input', () => { clearTimeout(tmr); tmr = setTimeout(run, 180); });
+      q.addEventListener('keydown', e => {
+        if(e.key === 'ArrowDown'){ sel = Math.min(items.length - 1, sel + 1); paint(); e.preventDefault(); }
+        else if(e.key === 'ArrowUp'){ sel = Math.max(0, sel - 1); paint(); e.preventDefault(); }
+        else if(e.key === 'Enter'){ if(items[sel]) choose(items[sel]); }
+        else if(e.key === 'Escape') close();
+      });
+      o.querySelector('#fs7-res').addEventListener('click', e => { const el = e.target.closest('.it'); if(el) choose(items[Number(el.dataset.i)]); });
+    }
+    return o;
+  }
+  function open(){ if(!inAdmin()) return; const o = ui(); o.classList.add('open'); const q = $s('fs7-q'); q.value = ''; items = []; run(); setTimeout(() => q.focus(), 30); }
+  function close(){ const o = $s('fs7-search'); if(o) o.classList.remove('open'); }
+  function flash(sel2, id){
+    let n = 0; const iv = setInterval(() => { const c = document.querySelector(sel2.replace('{id}', id)); if(c || ++n > 25){ clearInterval(iv); if(c){ c.scrollIntoView({block:'center'}); c.style.outline = '3px solid var(--primary)'; setTimeout(() => { c.style.outline = ''; }, 2500); } } }, 160);
+  }
+  function choose(it){
+    close();
+    if(it.kind === 'worker'){ if(typeof openWorkerModal === 'function') openWorkerModal(it.id); return; }
+    if(it.kind === 'page'){ FSNav7 && FSNav7.go(it.g, it.t); return; }
+    if(FSNav7 && FSNav7.go('content', it.t)) flash('#tab-content .v6-card[data-id="{id}"]', it.id);
+  }
+  function paint(){
+    const r = $s('fs7-res'); if(!r) return; let last = '', h = '';
+    items.forEach((it, i) => { if(it.grp !== last){ h += '<div class="grp">' + it.grp + '</div>'; last = it.grp; } h += '<div class="it' + (i === sel ? ' sel' : '') + '" data-i="' + i + '"><span>' + it.ic + '</span><span>' + E(it.label) + '</span><small>' + E(it.sub || '') + '</small></div>'; });
+    r.innerHTML = h || '<div class="empty">اكتب للبحث…</div>';
+    const s = r.querySelector('.it.sel'); if(s && s.scrollIntoView) s.scrollIntoView({block:'nearest'});
+  }
+  async function run(){
+    const my = ++seq, raw = ($s('fs7-q').value || '').trim(), term = raw.replace(/[%,()*\\]/g, ' ').trim();
+    const out = [];
+    const pg = PAGES.filter(p => (!term || p[0].includes(term)) && window.FSNav7 && FSNav7.allowed(p[2])).slice(0, term ? 5 : 6);
+    pg.forEach(p => out.push({grp:'صفحات', ic:'📄', label:p[0], kind:'page', g:p[1], t:p[2]}));
+    if(term.length >= 1){
+      try{
+        const ids = (typeof getAdminScopeIds === 'function' && adminUser && !adminUser.isSuper) ? getAdminScopeIds() : null;
+        let wq = sb.from('workers_evaluations').select('id,worker_name,section_id').limit(8);
+        if(ids && ids.length) wq = wq.in('section_id', ids);
+        wq = /^\d+$/.test(term) ? wq.or('id.eq.' + term + ',worker_name.ilike.%' + term + '%') : wq.ilike('worker_name', '%' + term + '%');
+        const like = '%' + term + '%';
+        const [w, tp, qz, cd] = await Promise.all([
+          Promise.resolve(wq).catch(() => ({})),
+          Promise.resolve(sb.from('training_topics').select('id,title_ar,title_en').or('title_ar.ilike.' + like + ',title_en.ilike.' + like).limit(5)).catch(() => ({})),
+          Promise.resolve(sb.from('quizzes').select('id,title_ar,title_en').or('title_ar.ilike.' + like + ',title_en.ilike.' + like).limit(5)).catch(() => ({})),
+          Promise.resolve(sb.from('safety_cards').select('id,title_ar,title_en').or('title_ar.ilike.' + like + ',title_en.ilike.' + like).limit(5)).catch(() => ({}))
+        ]);
+        if(my !== seq) return;
+        const sn = id => { const s = (typeof sections !== 'undefined' ? sections : []).find(x => String(x.id) === String(id)); return s ? s.name_ar : ''; };
+        (w.data || []).forEach(x => out.unshift({grp:'موظفين', ic:'👤', label:x.worker_name + ' #' + x.id, sub:sn(x.section_id), kind:'worker', id:x.id}));
+        (tp.data || []).forEach(x => out.push({grp:'تدريبات', ic:'🎬', label:x.title_ar || x.title_en, kind:'content', t:'videos', id:x.id}));
+        (qz.data || []).forEach(x => out.push({grp:'اختبارات', ic:'📝', label:x.title_ar || x.title_en, kind:'content', t:'quizzes', id:x.id}));
+        (cd.data || []).forEach(x => out.push({grp:'كروت', ic:'🖼️', label:x.title_ar || x.title_en, kind:'content', t:'cards', id:x.id}));
+      }catch(e){ console.error('fs7 search', e); }
+    }
+    if(my !== seq) return;
+    const order = ['موظفين','تدريبات','اختبارات','كروت','صفحات'];
+    items = out.sort((a, b) => order.indexOf(a.grp) - order.indexOf(b.grp)); sel = 0; paint();
+  }
+  function btn(){
+    if($s('fs7-sbtn')) return; const c = $s('fs7-create'); if(!c) return;
+    const b = document.createElement('button'); b.type = 'button'; b.id = 'fs7-sbtn'; b.title = 'بحث سريع (Ctrl+K)'; b.textContent = '🔍'; b.onclick = open; c.parentElement.insertBefore(b, c);
+  }
+  document.addEventListener('keydown', e => { if((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')){ if(!inAdmin()) return; e.preventDefault(); const o = $s('fs7-search'); (o && o.classList.contains('open')) ? close() : open(); } });
+  afterCall('adminTab', function(){ setTimeout(btn, 120); });
+  afterCallAsync('enterAdmin', async function(){ setTimeout(btn, 150); }, true);
+  window.FSSearch = { open, close, run, items: () => items };
+})();
+
+
+
+/* ===== FSFilter — شريط فلتر موحّد (منطقة / مكان / إدارة / براند): ثابت بين الرئيسية والتقارير والناس ===== */
+(function(){
+  const $f = id => document.getElementById(id);
+  const E = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const KEY = 'fs7_filter', TABS = ['dashboard', 'compliance', 'workers'];
+  let st = {region:'', place:'', dept:'', brand:''}, meta = {regions:[], places:[], depts:[]}, metaP = null;
+  try{ const x = JSON.parse(sessionStorage.getItem(KEY) || 'null'); if(x) st = Object.assign(st, x); }catch(e){}
+  const save = () => { try{ sessionStorage.setItem(KEY, JSON.stringify(st)); }catch(e){} };
+  const secs = () => {
+    let l = (typeof sections !== 'undefined' ? sections : []);
+    try{ if(adminUser && !adminUser.isSuper){ const ids = getAdminScopeIds().map(Number); l = l.filter(s => ids.includes(Number(s.id))); } }catch(e){}
+    return l;
+  };
+  const active = () => !!(st.region || st.place || st.dept || st.brand);
+  function ids(){
+    if(!active()) return null;
+    const out = new Set(secs().filter(s => (!st.region || String(s.region_id) === st.region) && (!st.place || String(s.place_id) === st.place) && (!st.dept || String(s.department_id) === st.dept) && (!st.brand || (s.brand || '') === st.brand)).map(s => Number(s.id)));
+    return out;
+  }
+  const sig = () => active() ? [st.region, st.place, st.dept, st.brand].join('/') : '';
+  function loadMeta(){
+    if(metaP) return metaP;
+    metaP = Promise.all([
+      Promise.resolve(sb.from('regions').select('id,name_ar')).catch(() => ({})),
+      Promise.resolve(sb.from('places').select('id,name_ar,region_id')).catch(() => ({})),
+      Promise.resolve(sb.from('target_departments').select('id,name_ar')).catch(() => ({}))
+    ]).then(([r, p, d]) => { meta = {regions:(r && r.data) || [], places:(p && p.data) || [], depts:(d && d.data) || []}; });
+    return metaP;
+  }
+  function opts(list, cur, all){ return '<option value="">' + all + '</option>' + list.map(x => '<option value="' + E(x.v) + '"' + (String(x.v) === String(cur) ? ' selected' : '') + '>' + E(x.n) + '</option>').join(''); }
+  function render(){
+    const host = $f('fs7-filter'); if(!host) return;
+    const S = secs();
+    const rg = new Set(S.map(s => String(s.region_id)).filter(x => x && x !== 'null'));
+    const pl = new Set(S.filter(s => !st.region || String(s.region_id) === st.region).map(s => String(s.place_id)).filter(x => x && x !== 'null'));
+    const dp = new Set(S.map(s => String(s.department_id)).filter(x => x && x !== 'null'));
+    const br = [...new Set(S.map(s => s.brand).filter(Boolean))].sort();
+    host.innerHTML =
+      '<select data-k="region">' + opts(meta.regions.filter(x => rg.has(String(x.id))).map(x => ({v:x.id, n:x.name_ar})), st.region, '📍 كل المناطق') + '</select>' +
+      '<select data-k="place">' + opts(meta.places.filter(x => pl.has(String(x.id))).map(x => ({v:x.id, n:x.name_ar})), st.place, '🏭 كل الأماكن') + '</select>' +
+      '<select data-k="dept">' + opts(meta.depts.filter(x => dp.has(String(x.id))).map(x => ({v:x.id, n:x.name_ar})), st.dept, '🏬 كل الإدارات') + '</select>' +
+      (br.length ? '<select data-k="brand">' + opts(br.map(b => ({v:b, n:b})), st.brand, '🏷️ كل البراندات') + '</select>' : '') +
+      '<button type="button" class="x' + (active() ? '' : ' hidden') + '">✕ مسح الفلتر</button>';
+    host.querySelectorAll('select').forEach(s => s.onchange = () => {
+      st[s.dataset.k] = s.value; if(s.dataset.k === 'region'){ st.place = ''; }
+      if(s.dataset.k === 'brand') window.__v22brand = s.value;
+      save(); apply();
+    });
+    const x = host.querySelector('.x'); if(x) x.onclick = () => { st = {region:'', place:'', dept:'', brand:''}; window.__v22brand = ''; save(); apply(); };
+  }
+  function apply(){ render(); if(window.Warm) Warm.clear(); const tab = window.FSNav7 ? FSNav7.state().curTab : 'dashboard'; if(typeof window._workersPage !== 'undefined') window._workersPage = 0; adminTab(tab); }
+  async function show(tab){
+    const c = document.querySelector('#admin-section .admin-content'); if(!c) return;
+    let host = $f('fs7-filter');
+    if(!host){ host = document.createElement('div'); host.id = 'fs7-filter'; const strip = $f('fs7-sub'); c.insertBefore(host, strip ? strip.nextSibling : c.firstChild); }
+    host.classList.toggle('hidden', !TABS.includes(tab));
+    if(TABS.includes(tab)){ await loadMeta(); render(); }
+  }
+  afterCall('adminTab', function(tab){ try{ show(tab); }catch(e){ console.error('fs7 filter', e); } });
+  beforeCall('logout', function(){ st = {region:'', place:'', dept:'', brand:''}; save(); });
+  window.FSFilter = { ids, sig, state: () => Object.assign({}, st), set(o){ st = Object.assign(st, o); save(); apply(); }, active };
+})();
+
+
+
+/* ===== FSDrawer — لوحة جانبية عامة (بتتفتح بدل النوافذ المنبثقة) ===== */
+(function(){
+  const $d = id => document.getElementById(id);
+  function el(){
+    let d = $d('fs7-drawer');
+    if(!d){
+      d = document.createElement('aside'); d.id = 'fs7-drawer';
+      d.innerHTML = '<div class="dh"><span id="fs7-dt"></span><button type="button" id="fs7-dx">✕</button></div><div class="db" id="fs7-db"></div>';
+      document.body.appendChild(d);
+      d.querySelector('#fs7-dx').onclick = close;
+      document.addEventListener('keydown', e => { if(e.key === 'Escape' && d.classList.contains('open') && !(($d('fs7-search') || {classList:{contains:()=>false}}).classList.contains('open'))) close(); });
+    }
+    return d;
+  }
+  function open(title, html){ const d = el(); $d('fs7-dt').textContent = title; $d('fs7-db').innerHTML = html; d.classList.add('open'); return $d('fs7-db'); }
+  function close(){ const d = $d('fs7-drawer'); if(d) d.classList.remove('open'); }
+  window.FSDrawer = { open, close };
+})();
+
+/* ===== FSLibrary — مكتبة المحتوى الموحّدة: جدول واحد للفيديو/الكارت/الاختبار بحالات واضحة (مسودة / مجدول / منشور / منتهي) ===== */
+(function(){
+  const $l = id => document.getElementById(id);
+  const E = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const FLAG = {ar:'🇸🇦', en:'🇬🇧', bn:'🇧🇩', ne:'🇳🇵', hi:'🇮🇳'};
+  const TYPES = {video:{ic:'🎬', ar:'فيديو', tab:'videos'}, quiz:{ic:'📝', ar:'اختبار', tab:'quizzes'}, card:{ic:'🖼️', ar:'كارت', tab:'cards'}};
+  const STAT = {pub:'🟢 منشور', sch:'🟡 مجدول', drf:'⚪ مسودة', end:'⚫ منتهي'};
+  let rows = [], loaded = false, q = {text:'', type:'', status:'', sec:''}, busy = false;
+  async function all(table, cols){
+    let out = [], from = 0;
+    for(;;){ const r = await Promise.resolve(sb.from(table).select(cols).range(from, from + 999)).catch(() => ({data:[]})); const d = (r && r.data) || []; out = out.concat(d); if(d.length < 1000) break; from += 1000; if(from > 20000) break; }
+    return out;
+  }
+  function statusOf(x){
+    const now = Date.now(), since = x.visible_since ? Date.parse(x.visible_since) : 0, until = x.visible_until ? Date.parse(x.visible_until) : 0;
+    if(until && until <= now) return 'end';
+    if(!x.is_visible) return 'drf';
+    if(since && since > now) return 'sch';
+    return 'pub';
+  }
+  const langsOf = x => ['ar','en','bn','ne','hi'].filter(l => String(x['title_' + l] || '').trim());
+  async function load(){
+    if(busy) return; busy = true;
+    const body = $l('lib-body'); if(body) body.innerHTML = '<tr><td colspan="6" class="muted" style="text-align:center;padding:24px">⏳ جاري التحميل…</td></tr>';
+    try{
+      const [tp, vd, qz, cd, au, tpr, qat, cvw, wk] = await Promise.all([
+        all('training_topics', '*'), all('training_videos', 'topic_id,video_lang'), all('quizzes', '*'), all('safety_cards', '*'), all('content_audience', 'item_type,item_id,kind,ref_id'),
+        all('training_progress', 'topic_id,worker_id,completed'), all('quiz_attempts', 'quiz_id,worker_id'), all('card_views', 'card_id,worker_id'), Promise.resolve(0)
+      ]);
+      const secName = id => { const s = (typeof sections !== 'undefined' ? sections : []).find(x => String(x.id) === String(id)); return s ? s.name_ar : ''; };
+      const vl = {}; vd.forEach(v => { (vl[v.topic_id] ||= new Set()).add(v.video_lang || 'ar'); });
+      const aud = {}; au.forEach(a => { (aud[a.item_type + ':' + a.item_id] ||= []).push(a); });
+      const done = {}; const addDone = (k, w) => { (done[k] ||= new Set()).add(w); };
+      tpr.forEach(r => { if(r.completed) addDone('video:' + r.topic_id, r.worker_id); });
+      qat.forEach(r => addDone('quiz:' + r.quiz_id, r.worker_id));
+      cvw.forEach(r => addDone('card:' + r.card_id, r.worker_id));
+      let ids = null; try{ if(adminUser && !adminUser.isSuper) ids = getAdminScopeIds().map(Number); }catch(e){}
+      const mk = (type, x, langs) => {
+        const key = type + ':' + x.id, a = aud[key] || [];
+        let label = 'كل الموظفين';
+        if(a.length){ const names = a.map(z => z.kind === 'section' ? secName(z.ref_id) : (z.kind === 'region' ? '📍' + z.ref_id : z.kind === 'department' ? '🏬' + z.ref_id : '👷' + z.ref_id)).filter(Boolean); label = names.slice(0, 2).join('، ') + (names.length > 2 ? ' +' + (names.length - 2) : ''); }
+        else if(x.section_id) label = secName(x.section_id) || 'قسم #' + x.section_id;
+        return {type, id:x.id, title:x.title_ar || x.title_en || ('#' + x.id), langs, aud:label, sec:x.section_id, status:statusOf(x), done:(done[key] || new Set()).size, until:x.visible_until, since:x.visible_since, created:x.created_at};
+      };
+      rows = [].concat(
+        tp.map(x => mk('video', x, [...(vl[x.id] || [])].length ? [...vl[x.id]] : langsOf(x))),
+        qz.map(x => mk('quiz', x, langsOf(x))),
+        cd.map(x => mk('card', x, langsOf(x)))
+      ).filter(r => !ids || !r.sec || ids.includes(Number(r.sec)));
+      loaded = true;
+    }catch(e){ console.error('fslib', e); }
+    busy = false; paint();
+  }
+  function filtered(){
+    const t = q.text.trim().toLowerCase();
+    return rows.filter(r => (!q.type || r.type === q.type) && (!q.status || r.status === q.status) && (!q.sec || String(r.sec) === q.sec) && (!t || r.title.toLowerCase().includes(t)));
+  }
+  const fd = iso => { if(!iso) return '—'; try{ return new Date(iso).toLocaleDateString('ar-EG', {dateStyle:'medium'}); }catch(e){ return iso; } };
+  function paint(){
+    const body = $l('lib-body'); if(!body) return;
+    const l = filtered();
+    body.innerHTML = l.length ? l.map((r, i) => '<tr data-i="' + i + '"><td>' + TYPES[r.type].ic + '</td><td><b>' + E(r.title) + '</b></td><td class="lg">' + (r.langs.map(x => FLAG[x] || x).join(' ') || '—') + '</td><td>' + E(r.aud) + '</td><td><span class="st ' + r.status + '">' + STAT[r.status] + '</span></td><td>' + (r.done ? '✅ ' + r.done : '—') + '</td></tr>').join('')
+      : '<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--muted);font-weight:700">' + (rows.length ? 'مفيش نتائج مطابقة للفلتر' : 'لسه مفيش محتوى — اضغط «＋ جديد» وأضف أول تدريب') + '</td></tr>';
+    const cnt = $l('lib-count'); if(cnt) cnt.textContent = l.length + ' من ' + rows.length;
+    body.dataset.n = l.length;
+    body._rows = l;
+  }
+  function side(r){
+    const t = TYPES[r.type];
+    const h = '<div class="dk"><b>النوع</b><span>' + t.ic + ' ' + t.ar + '</span></div>' +
+      '<div class="dk"><b>الحالة</b><span class="st ' + r.status + '">' + STAT[r.status] + '</span></div>' +
+      '<div class="dk"><b>الجمهور</b><span>' + E(r.aud) + '</span></div>' +
+      '<div class="dk"><b>اللغات</b><span>' + (r.langs.map(x => (FLAG[x] || '') + ' ' + x.toUpperCase()).join(' • ') || '—') + '</span></div>' +
+      '<div class="dk"><b>يبدأ</b><span>' + fd(r.since) + '</span></div><div class="dk"><b>ينتهي</b><span>' + fd(r.until) + '</span></div>' +
+      '<div class="dk"><b>' + (r.type === 'quiz' ? 'اختبروا' : r.type === 'card' ? 'شافوه' : 'أكملوه') + '</b><span>' + r.done + ' موظف</span></div>' +
+      '<div class="da"><button type="button" data-a="open">✏️ فتح للتعديل</button><button type="button" class="s" data-a="close">إغلاق</button></div>';
+    const b = FSDrawer.open(t.ic + ' ' + r.title, h);
+    b.querySelector('[data-a="open"]').onclick = () => { FSDrawer.close(); if(window.FSNav7 && FSNav7.go('content', t.tab)){ let n = 0; const iv = setInterval(() => { const c = document.querySelector('#tab-content .v6-card[data-id="' + r.id + '"]'); if(c || ++n > 25){ clearInterval(iv); if(c){ c.scrollIntoView({block:'center'}); c.style.outline = '3px solid var(--primary)'; setTimeout(() => { c.style.outline = ''; }, 2500); } } }, 160); } };
+    b.querySelector('[data-a="close"]').onclick = FSDrawer.close;
+  }
+  function ensure(){
+    let tab = $l('tab-library');
+    if(!tab){
+      const c = document.querySelector('#admin-section .admin-content'); if(!c) return null;
+      tab = document.createElement('div'); tab.className = 'admin-tab'; tab.id = 'tab-library';
+      tab.innerHTML = '<div class="lib-bar"><input id="lib-q" type="search" placeholder="🔍 بحث بالعنوان…"/>' +
+        '<select id="lib-type"><option value="">كل الأنواع</option><option value="video">🎬 فيديو</option><option value="card">🖼️ كارت</option><option value="quiz">📝 اختبار</option></select>' +
+        '<select id="lib-status"><option value="">كل الحالات</option><option value="pub">🟢 منشور</option><option value="sch">🟡 مجدول</option><option value="drf">⚪ مسودة</option><option value="end">⚫ منتهي</option></select>' +
+        '<select id="lib-sec"></select><span class="muted" id="lib-count" style="font-size:12px"></span>' +
+        '<button type="button" class="lib-new" id="lib-new">＋ جديد ▾</button></div>' +
+        '<div class="lib-wrap"><table><thead><tr><th></th><th>العنوان</th><th>اللغات</th><th>الجمهور</th><th>الحالة</th><th>الإكمال</th></tr></thead><tbody id="lib-body"></tbody></table></div>';
+      c.appendChild(tab);
+      const on = () => { q.text = $l('lib-q').value; q.type = $l('lib-type').value; q.status = $l('lib-status').value; q.sec = $l('lib-sec').value; paint(); };
+      ['lib-q', 'lib-type', 'lib-status', 'lib-sec'].forEach(id => $l(id).addEventListener(id === 'lib-q' ? 'input' : 'change', on));
+      $l('lib-body').addEventListener('click', e => { const tr = e.target.closest('tr[data-i]'); if(tr) side($l('lib-body')._rows[Number(tr.dataset.i)]); });
+      $l('lib-new').onclick = e => { const b = e.currentTarget, r = b.getBoundingClientRect(); const m = document.getElementById('fs7-cmenu') || (window.FSMobile && FSMobile.refresh(), document.getElementById('fs7-cmenu')); const cb = $l('fs7-create'); if(cb){ cb.click(); const mm = $l('fs7-cmenu'); if(mm){ mm.style.top = (r.bottom + 6) + 'px'; mm.style.left = Math.max(8, r.left) + 'px'; } } };
+    }
+    const sel = $l('lib-sec'); if(sel && !sel.dataset.f){ sel.dataset.f = '1'; sel.innerHTML = '<option value="">كل الجمهور</option>' + (typeof sections !== 'undefined' ? sections : []).map(s => '<option value="' + s.id + '">' + E(s.name_ar) + '</option>').join(''); }
+    return tab;
+  }
+  afterCall('adminTab', function(tab){ if(tab === 'library'){ const p = ensure(); if(p){ document.querySelectorAll('.admin-tab').forEach(e => e.classList.remove('active')); p.classList.add('active'); } load(); } });
+  window.FSLibrary = { load, rows: () => rows, paint, statusOf };
+})();
+
+
+
+/* ===== FSPeople — الموظفين: لوحة جانبية للموظف + تحديد جماعي (إيقاف / نقل / تصفير كلمة السر) + حالة فاضية مفيدة ===== */
+(function(){
+  const $p = id => document.getElementById(id);
+  const E = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const can = k => { try{ return !window.FSRole || FSRole.can(k); }catch(e){ return true; } };
+  const sel = new Set();
+  const secName = id => { const s = (typeof sections !== 'undefined' ? sections : []).find(x => String(x.id) === String(id)); return s ? s.name_ar : '—'; };
+  const fd = iso => { if(!iso) return '—'; try{ return new Date(iso).toLocaleDateString('ar-EG', {dateStyle:'medium'}); }catch(e){ return iso; } };
+  async function resetPw(ids){
+    if(!ids.length) return;
+    const r = (window.FSAuth && await FSAuth.ready() && FSAuth.token) ? await sb.rpc('fs_admin_set_passwords', {p_ids:ids, p_pw:'', p_must:null}) : await sb.from('workers_evaluations').update({password:null}).in('id', ids);
+    showToast(r.error ? 'تعذر التصفير' : 'تم تصفير كلمة السر لـ ' + ids.length + ' موظف ✅');
+    if(!r.error){ try{ FSLog('تصفير كلمة سر (جماعي)', ids.join(','), {count:ids.length}); }catch(e){} }
+  }
+  async function suspend(ids, on){
+    const r = await sb.from('workers_evaluations').update({status: on ? 'suspended' : 'active'}).in('id', ids);
+    if(r.error){ showToast(/status/i.test(r.error.message || '') ? FSNeedSql() : 'تعذر التنفيذ'); return false; }
+    try{ FSLog(on ? 'إيقاف موظفين' : 'تفعيل موظفين', ids.join(','), {count:ids.length}); }catch(e){}
+    showToast((on ? 'تم إيقاف ' : 'تم تفعيل ') + ids.length + ' موظف ✅'); return true;
+  }
+  async function move(ids, sid){
+    if(!sid) return false;
+    if(adminUser && !adminUser.isSuper && !getAdminScopeIds().map(Number).includes(Number(sid))){ showToast('لا يمكنك النقل لمكان خارج نطاقك'); return false; }
+    const r = await sb.from('workers_evaluations').update({section_id:Number(sid)}).in('id', ids);
+    if(r.error){ showToast('تعذر النقل'); return false; }
+    try{ FSLog('نقل موظفين', ids.join(','), {to:sid, count:ids.length}); }catch(e){}
+    showToast('تم نقل ' + ids.length + ' موظف إلى ' + secName(sid) + ' ✅'); return true;
+  }
+  async function view(id){
+    const b = FSDrawer.open('👤 موظف #' + id, '<div class="muted">⏳ جاري التحميل…</div>');
+    const [w, tp, qa, vi] = await Promise.all([
+      Promise.resolve(sb.from('workers_evaluations').select('*').eq('id', id).maybeSingle()).catch(() => ({})),
+      Promise.resolve(sb.from('training_progress').select('topic_id,completed').eq('worker_id', id)).catch(() => ({})),
+      Promise.resolve(sb.from('quiz_attempts').select('quiz_id,score,passed').eq('worker_id', id)).catch(() => ({})),
+      Promise.resolve(sb.from('worker_violations').select('id,status').eq('worker_id', id)).catch(() => ({}))
+    ]);
+    const x = w && w.data; if(!x){ b.innerHTML = '<div class="muted">الموظف مش موجود</div>'; return; }
+    let role = '—'; try{ const r = await sb.from('job_roles').select('name_ar').eq('id', x.job_role_id).maybeSingle(); role = (r.data && r.data.name_ar) || '—'; }catch(e){}
+    const done = (tp.data || []).filter(r => r.completed).length, att = (qa.data || []), vio = (vi.data || []), openV = vio.filter(v => v.status !== 'closed').length;
+    document.getElementById('fs7-dt').textContent = '👤 ' + x.worker_name;
+    const row = (k, v) => '<div class="dk"><b>' + k + '</b><span>' + v + '</span></div>';
+    const hc = x.health_cert_expiry ? (Date.parse(x.health_cert_expiry) < Date.now() ? '<span style="color:#b91c1c;font-weight:800">منتهية ' + fd(x.health_cert_expiry) + '</span>' : fd(x.health_cert_expiry)) : '—';
+    b.innerHTML = row('الرقم', '#' + x.id) + row('المكان', E(secName(x.section_id))) + row('الوظيفة', E(role)) + row('الحالة', x.status === 'suspended' ? '⏸️ موقوف' : '🟢 نشط') +
+      row('التدريبات المكتملة', done) + row('الاختبارات', att.length + ' محاولة') + row('المخالفات', vio.length + (openV ? ' (' + openV + ' مفتوحة)' : '')) + row('الشهادة الصحية', hc) +
+      '<div class="da"><button type="button" data-a="full">📂 الملف الكامل</button>' +
+      '<button type="button" class="s" data-a="pw">🔑 تصفير الباسورد</button>' +
+      (can('suspend') ? '<button type="button" class="s" data-a="sus">' + (x.status === 'suspended' ? '▶️ تفعيل' : '⏸️ إيقاف') + '</button>' : '') +
+      (adminUser && adminUser.isSuper ? '<button type="button" class="s" data-a="adm">🛡️ منح صلاحية أدمن</button>' : '') + '</div>';
+    b.querySelector('[data-a="full"]').onclick = () => { FSDrawer.close(); openWorkerModal(id); };
+    b.querySelector('[data-a="pw"]').onclick = async () => { if(confirm('تصفير كلمة السر؟ الموظف هيحط كلمة جديدة عند أول دخول.')) await resetPw([id]); };
+    const s = b.querySelector('[data-a="sus"]'); if(s) s.onclick = async () => { if(await suspend([id], x.status !== 'suspended')){ view(id); loadWorkers(); } };
+    const a = b.querySelector('[data-a="adm"]'); if(a) a.onclick = () => { FSDrawer.close(); FSNav7.go('people', 'admins'); setTimeout(() => { if(window.FM) FM.open('admin'); const i = $p('ad-worker-id'); if(i) i.value = id; }, 600); };
+  }
+  function bar(){
+    let b = $p('fs7-bulk');
+    if(!b){
+      const host = $p('tab-workers'); if(!host) return null;
+      b = document.createElement('div'); b.id = 'fs7-bulk'; host.insertBefore(b, host.firstChild);
+      b.onclick = async e => {
+        const k = e.target.closest('button[data-a]'); if(!k) return; const ids = [...sel];
+        if(k.dataset.a === 'clear'){ sel.clear(); sync(); return; }
+        if(k.dataset.a === 'pw'){ if(confirm('تصفير كلمة السر لـ ' + ids.length + ' موظف؟')) await resetPw(ids); }
+        if(k.dataset.a === 'sus'){ if(confirm('إيقاف ' + ids.length + ' موظف؟ (مش بيتحذفوا)') && await suspend(ids, true)){ sel.clear(); loadWorkers(); } }
+        if(k.dataset.a === 'move'){ const sid = $p('fs7-mv').value; if(sid && confirm('نقل ' + ids.length + ' موظف إلى ' + secName(sid) + '؟') && await move(ids, sid)){ sel.clear(); loadWorkers(); } }
+      };
+    }
+    return b;
+  }
+  function sync(){
+    const b = bar(); if(!b) return;
+    b.classList.toggle('on', sel.size > 0);
+    if(sel.size){
+      let S = (typeof sections !== 'undefined' ? sections : []); try{ if(adminUser && !adminUser.isSuper){ const ids = getAdminScopeIds().map(Number); S = S.filter(s => ids.includes(Number(s.id))); } }catch(e){}
+      b.innerHTML = '<span>✔ ' + sel.size + ' موظف محدد</span><button type="button" data-a="pw">🔑 تصفير الباسورد</button>' + (can('suspend') ? '<button type="button" class="d" data-a="sus">⏸️ إيقاف</button>' : '') +
+        '<select id="fs7-mv"><option value="">🏭 نقل إلى…</option>' + S.map(s => '<option value="' + s.id + '">' + E(s.name_ar) + '</option>').join('') + '</select><button type="button" data-a="move">نقل</button><button type="button" class="sp" data-a="clear">✕ إلغاء التحديد</button>';
+    }
+    document.querySelectorAll('#workers-tbody .fs7-ck').forEach(c => { c.checked = sel.has(Number(c.dataset.id)); });
+  }
+  function decorate(){
+    const tb = $p('workers-tbody'); if(!tb) return;
+    const rows = [...tb.querySelectorAll('tr.worker-row')];
+    rows.forEach(tr => {
+      if(tr.dataset.fs7) return; tr.dataset.fs7 = '1';
+      const id = Number(tr.children[0].textContent.trim()); if(!id) return;
+      const ck = document.createElement('input'); ck.type = 'checkbox'; ck.className = 'fs7-ck'; ck.dataset.id = id; ck.checked = sel.has(id);
+      ck.onclick = e => e.stopPropagation(); ck.onchange = () => { ck.checked ? sel.add(id) : sel.delete(id); sync(); };
+      tr.children[0].insertBefore(ck, tr.children[0].firstChild);
+      const last = tr.children[tr.children.length - 1];
+      if(last){ const eye = document.createElement('button'); eye.type = 'button'; eye.className = 'fs7-eye'; eye.title = 'ملخص سريع'; eye.textContent = '👁️'; eye.onclick = e => { e.stopPropagation(); view(id); }; last.insertBefore(eye, last.firstChild); }
+    });
+    if(!rows.length && !tb.querySelector('.fm-empty') && typeof emptyStateV26 === 'function'){
+      const f = window.FSFilter && FSFilter.active();
+      tb.innerHTML = '<tr><td colspan="9">' + emptyStateV26('👥', f ? 'مفيش موظفين مطابقين للفلتر' : 'لسه مفيش موظفين', f ? '✕ مسح الفلتر' : '＋ أضف أول موظف', f ? 'FSFilter.set({region:"",place:"",dept:"",brand:""})' : "FM.open('worker')") + '</td></tr>';
+    }
+    sync();
+  }
+  afterCallAsync('loadWorkers', async function(){ try{ decorate(); }catch(e){ console.error('fs7 people', e); } }, true);
+  beforeCall('logout', function(){ sel.clear(); });
+  window.FSPeople = { view, sel, decorate, resetPw, suspend, move };
 })();
 
 
@@ -10456,6 +10983,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     var list=await pages(function(){ var q=sb.from('workers_evaluations').select('id,worker_name,section_id,job_role_id,kpi_score'); if(!adminUser.isSuper&&ids.length) q=q.in('section_id',ids); return q.order('id'); });
     var before=list.length;
     try{ var ex=await window.V19.excludedWorkers(); if(ex.size) list=list.filter(function(w){return !ex.has(Number(w.id));}); }catch(e){}
+    var fi=window.FSFilter&&window.FSFilter.ids(); if(fi) list=list.filter(function(w){return fi.has(Number(w.section_id));});   // شريط الفلتر الموحّد
     var c=await ctx(list.map(function(w){return w.id;}));
     var per=list.map(function(w){return calc(w,c,wt);});
     var bySection={}; per.forEach(function(r){ var sid=r.worker.section_id||'none'; (bySection[sid]=bySection[sid]||[]).push(r); });
@@ -10472,7 +11000,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
       return p;
     };
   }
-  var computeM=memo(compute,function(){ return String(adminUser&&adminUser.id)+'|'+(getAdminScopeIds()||[]).join(','); });
+  var computeM=memo(compute,function(){ return String(adminUser&&adminUser.id)+'|'+(getAdminScopeIds()||[]).join(',')+'|'+(window.FSFilter?window.FSFilter.sig():''); });
   var ctxM=memo(ctx,function(ids){ return String(adminUser&&adminUser.id)+'|'+(ids||[]).join(','); });
   window.FSStats={weights:weights,windowDays:windowDays,ctx:ctxM,calc:calc,counts:counts,forWorkers:forWorkers,compute:computeM};
   /* خلايا التدريب والاختبارات في جدول الموظفين */
@@ -11163,7 +11691,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     try{
       var u=typeof adminUser!=='undefined'?adminUser:null; if(!u){ alerted=null; return; }
       var key=String(u.id||u.workerId||'x'); if(alerted===key) return; alerted=key;
-      var m=await build(); if(!m.late.length) return;
+      var m=await build(); window.__fsLateN=(m.late||[]).length; try{ window.FSNav7&&FSNav7.build(); }catch(e){} if(!m.late.length) return;
       var tab=document.getElementById('tab-dashboard'); if(!tab||document.getElementById('fs-late-banner')) return;
       var ppl={}; m.late.forEach(function(x){ppl[x.id]=1;}); var over=m.late.filter(function(x){return x.overdue;}).length;
       tab.insertAdjacentHTML('afterbegin','<div class="card" id="fs-late-banner" style="padding:12px 14px;margin-bottom:12px;border-inline-start:4px solid #dc2626;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><div>⏰ <b>'+Object.keys(ppl).length+' موظف</b> متأخر أو قرّب ميعاد تدريبه'+(over?' (<span style="color:#dc2626">'+over+' متأخر فعلًا</span>)':'')+'</div><div><button class="btn-secondary btn-sm" onclick="FSPlan.openLate()">عرض التفاصيل</button> <button class="btn-secondary btn-sm" onclick="this.closest(\'#fs-late-banner\').remove()">✕</button></div></div>');
