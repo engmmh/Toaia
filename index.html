@@ -1345,7 +1345,6 @@ body.v9-dark .lt-bar{background:#0f172a}body.v9-dark .lt-tab.on{background:#1e29
           </div>
         </div>
         <div style="margin-top:12px;"><button class="btn-primary" style="padding:10px 22px;font-size:13px;" onclick="saveCard()">حفظ البطاقة</button></div>
-        <div class="u-mt8"><button class="btn-secondary btn-sm" onclick="migrateLegacyCardImages()">⚡ تحسين الصور القديمة</button><span class="muted" style="font-size:10px;margin-right:8px;">ينقل الصور القديمة من Base64 إلى Storage بدون حذفها قبل نجاح النقل.</span></div>
       </div>
       <div id="admin-cards-list" style="display:flex;flex-direction:column;gap:12px;"></div>
     </div>
@@ -1766,10 +1765,7 @@ let browserVideoLang = (navigator.language||'').toLowerCase().startsWith('bn') ?
 let currentUser = null;
 let adminUser = null;
 /* رسالة واحدة موحّدة لأي ميزة محتاجة ملف SQL (بدل رسائل متفرقة) */
-window.FSNeedSql=function(file){
-  var what={'phase4.sql':'جدول البلاغات','phase6.sql':'تايمر الظهور','phase8.sql':'الاختبارات','phase9.sql':'الترجمة','phase10.sql':'ربط الاختبار بفيديو','phase11.sql':'الاختبارات','phase13.sql':'جديد/اترد عليه','phase15.sql':'الأدوار والحالة والسجل والشهادة الصحية','phase16.sql':'ردود الأدمن','phase17.sql':'الدخول الآمن','phase19.sql':'«من اطلع» على الكروت'}[file]||'الميزة دي';
-  return 'محتاج تشغيل '+file+' مرة واحدة في Supabase (SQL Editor) عشان '+what+' — وبعدها حدّث الصفحة';
-};
+window.FSNeedSql=function(){ return 'الميزة دي محتاجة تحديث قاعدة البيانات (SQL) — لسه مش مفعّلة عندك'; };
 let sections = [];
 let workerViewedIds = new Set();
 let workerChartInstance = null;
@@ -2318,21 +2314,6 @@ async function uploadSafetyCardImage(file){
   return data.publicUrl;
 }
 function dataUrlToBlob(dataUrl){ const parts=dataUrl.split(','); const mime=(parts[0].match(/:(.*?);/)||[])[1]||'image/jpeg'; const bin=atob(parts[1]||''); const arr=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i); return new Blob([arr],{type:mime}); }
-async function migrateLegacyCardImages(){
-  if(!adminUser?.isSuper)return showToast('هذه العملية للسوبر أدمن فقط');
-  const {data,error}=await sb.from('safety_cards').select('id,image').like('image','data:%');
-  if(error)return showToast('تعذر قراءة الصور القديمة');
-  if(!data?.length)return showToast('لا توجد صور قديمة تحتاج نقل');
-  let ok=0;
-  for(const c of data){
-    try{
-      const blob=dataUrlToBlob(c.image); const file=new File([blob],'legacy-'+c.id+'.jpg',{type:blob.type}); const url=await uploadSafetyCardImage(file);
-      const {error:e}=await sb.from('safety_cards').update({image:url}).eq('id',c.id); if(!e)ok++;
-    }catch(e){ }
-  }
-  await loadAdminCards(); showToast('تم تحسين '+ok+' من '+data.length+' صورة قديمة ✅');
-}
-
 async function toggleCardVisibility(id){ const { data }=await sb.from('safety_cards').select('is_visible').eq('id',id).single(); if(!data)return; await sb.from('safety_cards').update({is_visible:!data.is_visible}).eq('id',id); await loadAdminCards(); showToast('تم التحديث'); }
 async function deleteCard(id){ if(!confirm('حذف البطاقة؟'))return; await sb.from('safety_cards').delete().eq('id',id); loadAdminCards(); loadWorkerCards(); showToast('تم الحذف'); }
 
@@ -3277,7 +3258,7 @@ try{(function(){
   window.setCommentFilterV26 = function(f){ cmtFilter = f; paintCommentsV26(); };
   window.markCommentV26 = async function(id, done){
     const {error}=await sb.from('content_comments').update({handled_at: done ? new Date().toISOString() : null, handled_by: done ? adminUser.id : null}).eq('id',id);
-    if(error) return showToast(/handled/i.test(error.message||'') ? FSNeedSql('phase13.sql') : 'تعذر التحديث: '+error.message);
+    if(error) return showToast(/handled/i.test(error.message||'') ? FSNeedSql() : 'تعذر التحديث: '+error.message);
     await loadAdminComments(); showToast(done ? 'اتعلّم إنه اترد عليه ✅' : 'رجع جديد');
   };
   function paintCommentsV26(){
@@ -3285,7 +3266,7 @@ try{(function(){
     const cnt = {all:cmtRows.length, new:0, done:0, hidden:0}; cmtRows.forEach(c => cnt[cmtState(c)]++);
     if(fb) fb.innerHTML = (cmtHasCol ? [['all','الكل'],['new','جديد'],['done','اترد عليه'],['hidden','مخفي']] : [['all','الكل'],['hidden','مخفي']]).map(([k,l]) =>
       '<button type="button" class="btn-'+(cmtFilter===k?'primary':'secondary')+' btn-sm" onclick="setCommentFilterV26(\''+k+'\')">'+l+' <b>'+cnt[k]+'</b></button>').join('') +
-      (cmtHasCol ? '' : '<div class="v9-warn" style="flex-basis:100%">علشان تفعيل «جديد / اترد عليه» والعداد: شغّل ملف <b>phase13.sql</b> مرة واحدة في Supabase.</div>');
+      (cmtHasCol ? '' : '<div class="v9-warn" style="flex-basis:100%">تفعيل «جديد / اترد عليه» والعداد محتاج تحديث قاعدة البيانات.</div>');
     const rows = cmtRows.filter(c => cmtFilter === 'all' || cmtState(c) === cmtFilter);
     box.innerHTML = rows.map(c => {
       const st = cmtState(c), hidden = st === 'hidden', sup = adminUser?.isSuper;
@@ -4828,7 +4809,7 @@ try{(function(){
     orgReady = !r.error;
     regions = r.data || [];
     places = pl && !pl.error ? (pl.data || []) : [];
-    placesOn = places.length > 0;   // الهيكل الجديد بيشتغل أول ما phase14.sql يتشغّل ويبقى فيه أماكن
+    placesOn = places.length > 0;   // الهيكل الجديد بيشتغل لما يبقى فيه أماكن
     orgDepts = (d.data || []).filter(x => x.is_active !== false);
   }
   async function loadOrg(){          // + أعداد الموظفين لكل وحدة (للشاشة الرئيسية فقط)
@@ -4848,7 +4829,7 @@ try{(function(){
     box.innerHTML = '<div class="muted u-pad16">جاري التحميل...</div>';
     try{ await loadOrg(); }catch(e){ console.error(e); }
     if(!orgReady){
-      box.innerHTML = '<div class="card" style="padding:18px;border-right:4px solid #dc2626;"><b>محتاج تشغّل ملف الـSQL الأول</b><p class="muted" style="font-size:12.5px;margin-top:6px;">ملف <b>phase1.sql</b> بيضيف جدول المناطق وربط الوحدات. شغّله في Supabase (SQL Editor) وبعدها اعمل تحديث للصفحة.</p></div>';
+      box.innerHTML = '<div class="card" style="padding:18px;border-right:4px solid #dc2626;"><b>محتاج تشغّل ملف الـSQL الأول</b><p class="muted" style="font-size:12.5px;margin-top:6px;">جدول المناطق وربط الوحدات لسه مش مفعّل في قاعدة البيانات.</p></div>';
       return;
     }
     const all = secs();
@@ -4856,7 +4837,7 @@ try{(function(){
     const unlinked = all.filter(s => !s.region_id || !s.department_id);
     const totalW = Object.values(wcount).reduce((a, b) => a + b, 0);
 
-    let html = (places.length || !orgReady ? '' : '<div class="v4-warn">ℹ️ الهيكل الجديد (مكان ← وحدة) هيشتغل بعد ما تشغّل ملف <b>phase14.sql</b> في Supabase.</div>') + '<div class="v4-head"><div><div class="v4-title">🏢 الهيكل التنظيمي</div><div class="muted u-fs12">المنطقة ← الإدارة ← الوحدة (مصنع / فرع) ← الموظفين</div></div>' +
+    let html = (places.length || !orgReady ? '' : '<div class="v4-warn">ℹ️ الهيكل الجديد (مكان ← وحدة) لسه مش مفعّل في قاعدة البيانات.</div>') + '<div class="v4-head"><div><div class="v4-title">🏢 الهيكل التنظيمي</div><div class="muted u-fs12">المنطقة ← الإدارة ← الوحدة (مصنع / فرع) ← الموظفين</div></div>' +
       '<div class="v4-actions"><button class="btn-secondary btn-sm" onclick="v4RegionModal()">+ منطقة</button><button class="btn-primary btn-sm" onclick="v4UnitModal()">+ وحدة (مصنع / فرع)</button><button class="btn-secondary btn-sm" onclick="toggleOrgTab(\'targets\')">🏬 إدارة قائمة الإدارات</button></div></div>' +
       '<div class="v4-stats"><div><b>' + regions.length + '</b><span>منطقة</span></div><div><b>' + orgDepts.length + '</b><span>إدارة</span></div><div><b>' + all.length + '</b><span>وحدة</span></div><div><b>' + totalW + '</b><span>موظف</span></div></div>';
 
@@ -5087,14 +5068,14 @@ try{(function(){
     const base = {name:worker.worker_name, code:String(worker.id), worker_id:worker.id, is_super, title:title || null};
     let ins = await sb.from('admins').insert({...base, role, department_id:department_id || null, can_violations:!!can_violations}).select().single();
     if(ins.error && /role|department_id|can_violations/i.test(ins.error.message || '')){
-      if(role === 'dept_manager' || role === 'place_manager') return {error:FSNeedSql('phase15.sql')};
+      if(role === 'dept_manager' || role === 'place_manager') return {error:FSNeedSql()};
       ins = await sb.from('admins').insert(base).select().single();
     }
     if(ins.error && /title/i.test(ins.error.message || '')){ delete base.title; ins = await sb.from('admins').insert(base).select().single(); }
     if(ins.error) return {error:ins.error.message};
     if(!is_super && rules.length){
       const r2 = await sb.from('admin_scopes').insert(rules.map(r => ({admin_id:ins.data.id, ...cleanRule(r)})));
-      if(r2.error){ await sb.from('admins').delete().eq('id', ins.data.id); return {error:'تعذر حفظ النطاق: ' + r2.error.message + ' (اتأكد إنك شغّلت phase1.sql و phase15.sql)'}; }
+      if(r2.error){ await sb.from('admins').delete().eq('id', ins.data.id); return {error:'تعذر حفظ النطاق: ' + r2.error.message + ' '}; }
     }
     return {admin:ins.data};
   }
@@ -5215,7 +5196,7 @@ try{(function(){
       const upd = {title:($q('v4e-title').value || '').trim() || null, is_super:role === 'super', role, department_id:role === 'dept_manager' ? dept : null, can_violations:role === 'place_manager' && $q('v4e-vio').checked};
       let u1 = await sb.from('admins').update(upd).eq('id', id);
       if(u1.error && /role|department_id|can_violations/i.test(u1.error.message || '')){
-        if(role === 'dept_manager' || role === 'place_manager'){ msg.innerHTML = '<span class="u-red">الدور ده محتاج تشغيل phase15.sql الأول</span>'; return; }
+        if(role === 'dept_manager' || role === 'place_manager'){ msg.innerHTML = '<span class="u-red">الدور ده محتاج تحديث قاعدة البيانات</span>'; return; }
         delete upd.role; delete upd.department_id; delete upd.can_violations; u1 = await sb.from('admins').update(upd).eq('id', id);
       }
       if(u1.error){ msg.innerHTML = '<span class="u-red">' + esc(u1.error.message) + '</span>'; return; }
@@ -5907,7 +5888,7 @@ try{(function(){
   }
 
   /* =====================  الجمهور: التخزين والمطابقة  ===================== */
-  let AUD = {}, audLoaded = false, audReady = null;     // audReady: هل phase2.sql اتشغّل؟
+  let AUD = {}, audLoaded = false, audReady = null;     // audReady: هل جدول الجمهور موجود؟
   const akey = (t, id) => t + ':' + id;
   async function loadAud(force){
     if(audLoaded && !force) return AUD;
@@ -6213,8 +6194,8 @@ try{(function(){
     const allowR = sup ? null : new Set(myUnits.map(u => Number(u.region_id)).filter(Boolean));
     const allowD = sup ? null : new Set(myUnits.map(u => Number(u.department_id)).filter(Boolean));
     const st = {mode: init.restricted || !sup ? 'custom' : 'all', R:new Set(init.R), D:new Set(init.D), U:new Set(init.U)};
-    if(!audReady){   // phase2.sql لسه ما اتشغّلش → نفس النظام القديم (وحدة + إدارة واحدة)
-      host.innerHTML = '<div class="v6-warn">⚠️ ميزة تعدد الجمهور محتاجة تشغيل <b>phase2.sql</b> مرة واحدة في Supabase. لحد ما تشغّله بيشتغل التوجيه القديم (وحدة واحدة + إدارة واحدة).</div>' +
+    if(!audReady){   // جدول الجمهور مش موجود → نفس النظام القديم (وحدة + إدارة واحدة)
+      host.innerHTML = '<div class="v6-warn">⚠️ ميزة تعدد الجمهور محتاجة تحديث قاعدة البيانات. لحد ما يتعمل بيشتغل التوجيه القديم (وحدة واحدة + إدارة واحدة).</div>' +
         '<div class="v6-row"><label class="field-label">الوحدة</label><select id="v6-old-sec" class="input-field"><option value="">كل الوحدات</option>' + myUnits.map(u => '<option value="' + u.id + '" ' + (init.legacySec === Number(u.id) ? 'selected' : '') + '>' + esc(u.name_ar) + '</option>').join('') + '</select></div>' +
         '<div class="v6-row"><label class="field-label">الإدارة المستهدفة</label><select id="v6-old-dept" class="input-field"><option value="">— بدون تحديد —</option>' + depts.map(d => '<option value="' + d.id + '" ' + (init.legacyDept === Number(d.id) ? 'selected' : '') + '>' + esc(d.name_ar) + '</option>').join('') + '</select></div>';
       return {legacy:true, get(){ return {legacy:true, section_id:N($q('v6-old-sec').value), target_department_id:N($q('v6-old-dept').value)}; },
@@ -6509,7 +6490,7 @@ try{(function(){
     const p = await sb.from('workers_evaluations').select('must_change_password').limit(1);
     hasForce = !p.error;
     $q('v7-force').disabled = !hasForce;
-    if(!hasForce) $q('v7-force-note').innerHTML = '⚠️ خاصية الاقتراح محتاجة تشغيل <b>phase3.sql</b> مرة واحدة في Supabase.';
+    if(!hasForce) $q('v7-force-note').innerHTML = '⚠️ خاصية الاقتراح محتاجة تحديث قاعدة البيانات.';
   }
   function reset(){ last = null; $q('v7-summary')?.classList.add('hidden'); $q('v7-confirm')?.classList.add('hidden'); }
 
@@ -7026,7 +7007,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     'ملاحظة: وإنت داخل بصفة أدمن مينفعش تعدّل نتايجك أو مخالفاتك أو بلاغاتك — الأدمن التاني هو اللي يتعامل معاها.':'Note: while signed in as admin you cannot edit your own results, violations or reports — another admin handles them.',
     'تعذر تحميل حالتك':'Could not load your status','لا توجد بلاغات':'No reports','رد الإدارة (بيظهر للموظف)':'Management reply (visible to the employee)',
     '🖼️ عرض الصورة':'🖼️ View photo','لا توجد صورة':'No photo','ده بلاغ بتاعك — مينفعش تتعامل معاه وإنت داخل بصفة أدمن.':'This is your own report — you cannot handle it while signed in as admin.',
-    'جدول البلاغات مش موجود لسه. شغّل ملف phase4.sql في Supabase (SQL Editor) وارجع افتح الصفحة دي.':'The reports table does not exist yet. Run phase4.sql in Supabase (SQL Editor) then reopen this page.',
+    'جدول البلاغات مش موجود لسه في قاعدة البيانات.':'The reports table does not exist yet in the database.',
     '⚙️ إعدادات تجربة الموظف':'⚙️ Employee experience settings','التغييرات دي بتأثر على شاشة الموظف فقط، ومفيش بيانات بتتمسح.':'These changes affect the employee screen only; no data is deleted.',
     'مراجعة الإجابات بعد الاختبار':'Answer review after the quiz','مفعّلة (يشوف الصح والغلط)':'On (sees right and wrong)','مقفولة':'Off','لوحة ترتيب الوحدة':'Unit leaderboard','مفعّلة':'On',
     'أسماء الموظفين في الترتيب':'Employee names in the leaderboard','الاسم الأول':'First name','مخفية (أرقام فقط)':'Hidden (numbers only)',
@@ -7554,7 +7535,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     if(flt !== 'all') q = q.eq('status', flt);
     const ids = scopeIds(); if(ids){ if(!ids.length){ $q('v9-rep-l').innerHTML = '<div class="muted">لا توجد بلاغات</div>'; return; } q = q.in('section_id', ids); }
     const r = await q;
-    if(r.error){ $q('v9-rep-l').innerHTML = '<div class="v9-warn">جدول البلاغات مش موجود لسه. شغّل ملف phase4.sql في Supabase (SQL Editor) وارجع افتح الصفحة دي.</div>'; missing = true; return; }
+    if(r.error){ $q('v9-rep-l').innerHTML = '<div class="v9-warn">جدول البلاغات مش موجود لسه في قاعدة البيانات.</div>'; missing = true; return; }
     const rows = (r.data || []).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     if(!rows.length){ $q('v9-rep-l').innerHTML = window.emptyStateV26('📸', 'مفيش بلاغات من الموظفين لحد دلوقتي', 'تحديث', 'refreshCurrentView()'); countNew(); return; }
     const wids = Array.from(new Set(rows.map(x => x.worker_id))), wn = {};
@@ -8026,7 +8007,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
    • عند الإظهار: تختار مدة (ساعات/أيام) أو تاريخ انتهاء أو بدون تايمر
    • بعد انتهاء المدة بيختفي عن كل الموظفين تلقائيًا، وبيتسجّل في القاعدة إنه مخفي
    • زر "المتابعة" في كل عنصر: مين دخل ومين لسه في فترة العرض الأخيرة + تصدير Excel
-   يحتاج phase6.sql (أعمدة visible_since / visible_until). بدونه بيشتغل الإظهار العادي.
+   يحتاج أعمدة ( visible_since / visible_until). بدونه بيشتغل الإظهار العادي.
    ===================================================================== */
 (function(){
   const $q = id => document.getElementById(id);
@@ -8130,7 +8111,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   async function saveTimes(type, id, patch){
     const r = await sb.from(TB[type]).update(patch).eq('id', id);
     if(r.error){
-      if(/visible_(since|until)/i.test(r.error.message || '')){ colsOk = false; toast(FSNeedSql('phase6.sql')+' (اتعمل إظهار عادي بدون مدة)'); }
+      if(/visible_(since|until)/i.test(r.error.message || '')){ colsOk = false; toast(FSNeedSql()+' (اتعمل إظهار عادي بدون مدة)'); }
       else toast('تعذر حفظ المدة: ' + (r.error.message || ''));
       return false;
     }
@@ -8424,7 +8405,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
       let c = $q('v12-admin');
       if(!c){ c = document.createElement('div'); c.id = 'v12-admin'; c.className = 'card'; c.style.cssText = 'padding:14px;margin-top:12px'; host.appendChild(c); }
       const r = await sb.from('fs_push_subs').select('id', { count: 'exact', head: true });
-      if(r.error){ c.innerHTML = '<b>🔔 إشعارات الموظفين</b><div class="muted" style="font-size:12px;margin-top:4px">لسه محتاجة تشغيل phase7.sql (راجع README-push.txt).</div>'; return; }
+      if(r.error){ c.innerHTML = '<b>🔔 إشعارات الموظفين</b><div class="muted" style="font-size:12px;margin-top:4px">لسه محتاجة تفعيل (راجع README-push.txt).</div>'; return; }
       c.innerHTML = '<b>🔔 إشعارات الموظفين</b><div style="font-size:13px;margin-top:6px">الأجهزة المشتركة دلوقتي: <b>' + (r.count || 0) + '</b></div><div class="muted" style="font-size:11px;margin-top:4px">بتوصل تلقائيًا عند نشر تدريب/اختبار، وقبل اختفائه بـ 5 ساعات (لو مدته أكبر من 5 ساعات).</div>';
     }catch(e){}
   }
@@ -8727,7 +8708,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
       msg.textContent = /NEW_ID_EXISTS/.test(m) ? 'الرقم '+nv+' مستخدم لموظف تاني' :
         /OLD_NOT_FOUND/.test(m) ? 'الموظف مش موجود' :
         /INVALID_ID/.test(m) ? 'رقم غير صالح' :
-        /fs_change_worker_id|function|schema cache/i.test(m) ? FSNeedSql('phase8.sql') : ('تعذر التغيير: '+m);
+        /fs_change_worker_id|function|schema cache/i.test(m) ? FSNeedSql() : ('تعذر التغيير: '+m);
       return;
     }
     try{ if(adminUser && adminUser.id) await logActivityV22('admin', adminUser.id, 'تغيير رقم موظف من '+oldId+' إلى '+nv, 'worker', nv, { old_id: oldId, new_id: nv }); }catch(e){}
@@ -8758,7 +8739,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     if(colsOk !== null) return colsOk;
     try{ const r = await sb.from('onsite_trainings').select('title_en,title_bn,title_ne,title_hi').limit(1); colsOk = !r.error; }catch(e){ colsOk = false; }
     const n = $('v16-note');
-    if(n && !colsOk) n.innerHTML = '<span style="color:#b45309">⚠️ لازم تشغّل ملف phase9.sql في Supabase عشان الترجمة تتحفظ.</span>';
+    if(n && !colsOk) n.innerHTML = '<span style="color:#b45309">⚠️ الترجمة محتاجة تحديث قاعدة البيانات عشان تتحفظ.</span>';
     return colsOk;
   }
   window.v16Translate = async function(){ hasCols(); try{ await autoTranslateGroup('os-title', MAP); }catch(e){} };
@@ -8779,7 +8760,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
 /* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
 (function(){
-  const VERSION = 'v9.60';
+  const VERSION = 'v9.61';
   const $ = id => document.getElementById(id);
   let running = false;
   async function tx(text, lang){
@@ -9359,7 +9340,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     const oi = q.insert && q.insert.bind(q); if(oi) q.insert = (p, ...r) => oi(inj(p), ...r);
     return q;
   });
-  const hint = e => /topic_id/i.test(String(e && e.message || '')) ? FSNeedSql('phase10.sql') : (e && e.message || e);
+  const hint = e => /topic_id/i.test(String(e && e.message || '')) ? FSNeedSql() : (e && e.message || e);
 
   // النموذج القديم (تبويب الاختبارات)
   async function legacyForm(){
@@ -9383,7 +9364,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   async function perQuiz(){
     const box = $('admin-quizzes-list'); if(!box) return;
     const r = await sb.from('quizzes').select('id,topic_id');
-    if(r.error){ if(!box.querySelector('.v18-hint')){ const d = document.createElement('div'); d.className = 'v18-link v18-hint'; d.textContent = '⚠️ ربط الاختبار بفيديو محتاج تشغيل ملف phase10.sql في Supabase (مرة واحدة).'; box.prepend(d); } return; }
+    if(r.error){ if(!box.querySelector('.v18-hint')){ const d = document.createElement('div'); d.className = 'v18-link v18-hint'; d.textContent = '⚠️ ربط الاختبار بفيديو محتاج تحديث قاعدة البيانات.'; box.prepend(d); } return; }
     const map = {}; (r.data || []).forEach(x => map[x.id] = x.topic_id);
     const list = await topics();
     box.querySelectorAll(':scope > .card').forEach(card => {
@@ -9475,7 +9456,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   /* ---------- الإدارات المستهدفة: زر الاستبعاد ---------- */
   async function toggleEx(id, val){
     const r = await sb.from('target_departments').update({exclude_from_stats: val}).eq('id', id);
-    if(r.error){ showToast(/exclude_from_stats/i.test(r.error.message || '') ? FSNeedSql('phase11.sql') : r.error.message); return; }
+    if(r.error){ showToast(/exclude_from_stats/i.test(r.error.message || '') ? FSNeedSql() : r.error.message); return; }
     cache = null; exW = null;
     try{ await loadV23Meta(); }catch(e){}
     showToast(val ? '🔎 الإدارة دي بقت خارج إحصائيات الداشبورد ✅' : 'الإدارة دي رجعت تدخل في الإحصائيات ✅');
@@ -10514,7 +10495,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     if(!can('suspend')){ showToast('مالكش صلاحية'); return; }
     if(!confirm('إيقاف الموظف؟ (مش هيتحذف، السوبر أدمن بس يقدر يحذف)')) return;
     var r = await sb.from('workers_evaluations').update({status:'suspended'}).eq('id', id);
-    if(r.error){ showToast(/status/i.test(r.error.message || '') ? FSNeedSql('phase15.sql') : 'تعذر الإيقاف'); return; }
+    if(r.error){ showToast(/status/i.test(r.error.message || '') ? FSNeedSql() : 'تعذر الإيقاف'); return; }
     showToast('تم إيقاف الموظف'); loadWorkers();
   };
   var _lw = loadWorkers;
@@ -10591,7 +10572,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   beforeCallAsync('saveEditWorker', async function(){
     var s = document.getElementById('ed-status'); if(!s || s.disabled) return;
     var r = await sb.from('workers_evaluations').update({status:s.value}).eq('id', currentModalWorkerId);
-    if(r.error) showToast(FSNeedSql('phase15.sql'));
+    if(r.error) showToast(FSNeedSql());
     else { try{ window.V19.excludedWorkers(true); }catch(e){} }
   });
   /* شارة الحالة في جدول الموظفين */
@@ -10694,7 +10675,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
       var a = u_(); if(!a) return;
       var r = await sb.from('audit_log').insert({actor_id:a.workerId || a.id || null, actor_name:a.name || null, action:action, target:target == null ? null : String(target), details:details || null});
       logOk = !r.error;
-      if(r.error && u_() && u_().isSuper && !window.__fsLogWarned){ window.__fsLogWarned = true; try{ showToast(FSNeedSql('phase15.sql')); }catch(e){} }
+      if(r.error && u_() && u_().isSuper && !window.__fsLogWarned){ window.__fsLogWarned = true; try{ showToast(FSNeedSql()); }catch(e){} }
     }catch(e){ logOk = false; }
   };
   async function drawLog(){
@@ -10702,7 +10683,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     var box = $('fs-log-card');
     if(!box){ box = document.createElement('div'); box.className = 'card'; box.id = 'fs-log-card'; box.innerHTML = '<h3 style="margin:0 0 6px">📜 سجل التغييرات</h3><div class="muted u-fs12" style="margin-bottom:8px">آخر العمليات الحساسة (منح/تعديل أدمن، إيقاف/حذف موظف، تصفير كلمة سر، استيراد).</div><div id="fs-log-body"></div>'; tab.appendChild(box); }
     var r = await sb.from('audit_log').select('*').order('id', {ascending:false}).limit(40), b = $('fs-log-body');
-    if(r.error){ b.innerHTML = '<div class="muted u-fs12">شغّل phase15.sql مرة واحدة عشان السجل يشتغل.</div>'; return; }
+    if(r.error){ b.innerHTML = '<div class="muted u-fs12">السجل محتاج تحديث قاعدة البيانات.</div>'; return; }
     b.innerHTML = (r.data || []).map(function(x){ return '<div style="font-size:12px;padding:4px 0;border-bottom:1px solid var(--border)"><b>' + esc(x.actor_name || '—') + '</b> • ' + esc(x.action) + (x.target ? ' • ' + esc(x.target) : '') + ' <span class="muted">' + esc(String(x.at || '').slice(0, 16).replace('T', ' ')) + '</span></div>'; }).join('') || '<div class="muted u-fs12">لسه مفيش عمليات.</div>';
   }
   afterCall('adminTab', function(tab){ if(tab === 'admins') setTimeout(function(){ drawLog().catch(function(){}); }, 700); });
@@ -10732,7 +10713,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   beforeCallAsync('saveEditWorker', async function(){
     var i = $('ed-health'); if(!i || i.disabled) return;
     var r = await sb.from('workers_evaluations').update({health_cert_expiry:i.value || null}).eq('id', currentModalWorkerId);
-    if(r.error) showToast(FSNeedSql('phase15.sql'));
+    if(r.error) showToast(FSNeedSql());
   });
   async function drawHealth(){
     var k = $('dashboard-kpis'); if(!k || !u_()) return;
@@ -10880,11 +10861,11 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
       var has = !r.error, map = {}; ((r.data) || []).forEach(function(x){ map[x.id] = x.admin_reply || ''; });
       info.forEach(function(x){
         var d = document.createElement('div'); d.className = 'fs-reply'; d.style.cssText = 'margin-top:8px';
-        d.innerHTML = '<textarea class="input-field" rows="2" id="fs-rp-' + x.id + '" placeholder="اكتب ردك (بيظهر للموظف)">' + esc(map[x.id] || '') + '</textarea><button type="button" class="btn-primary btn-sm" style="margin-top:4px" data-id="' + x.id + '">💬 إرسال الرد</button>' + (has ? '' : ' <span class="muted u-fs11">شغّل phase16.sql عشان الرد يتحفظ</span>');
+        d.innerHTML = '<textarea class="input-field" rows="2" id="fs-rp-' + x.id + '" placeholder="اكتب ردك (بيظهر للموظف)">' + esc(map[x.id] || '') + '</textarea><button type="button" class="btn-primary btn-sm" style="margin-top:4px" data-id="' + x.id + '">💬 إرسال الرد</button>' + (has ? '' : ' <span class="muted u-fs11">الرد محتاج تحديث قاعدة البيانات عشان يتحفظ</span>');
         d.querySelector('button').onclick = async function(){
           var t = $('fs-rp-' + x.id).value.trim(); if(!t) return showToast('اكتب الرد الأول');
           var u = await sb.from('content_comments').update({admin_reply:t, replied_at:new Date().toISOString(), handled_at:new Date().toISOString(), handled_by:adminUser && adminUser.id || null}).eq('id', x.id);
-          if(u.error) return showToast(/admin_reply|replied_at/.test(u.error.message || '') ? FSNeedSql('phase16.sql') : 'تعذر حفظ الرد');
+          if(u.error) return showToast(/admin_reply|replied_at/.test(u.error.message || '') ? FSNeedSql() : 'تعذر حفظ الرد');
           showToast('تم إرسال الرد ✅'); try{ FSLog('رد على تعليق', x.id); }catch(e){}
         };
         x.card.appendChild(d);
@@ -10958,7 +10939,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     try{ var x = [].concat(Array.from(await window.V19.excludedWorkers())); if(x.length) wq = wq.not('id', 'in', '(' + x.join(',') + ')'); }catch(e){}
     var res = await Promise.all([wq, sb.from('card_views').select('worker_id,seen_at').eq('card_id', cardId)]);
     var list = res[0].data || [], vr = res[1], map = {};
-    if(vr.error){ showToast(FSNeedSql('phase19.sql')); return; }
+    if(vr.error){ showToast(FSNeedSql()); return; }
     (vr.data || []).forEach(function(v){ map[v.worker_id] = v; });
     var seen = list.filter(function(w){ return map[w.id]; }), not = list.filter(function(w){ return !map[w.id]; });
     var row = function(w){ var v = map[w.id]; return '<div style="display:flex;justify-content:space-between;align-items:center;background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:7px 10px;margin-bottom:6px"><span class="u-fs12-b">#' + w.id + ' — ' + esc(w.worker_name) + '</span>' + (v ? '<span class="badge badge-green u-fs10">اطّلع ✅ ' + esc(String(v.seen_at || '').slice(0, 10)) + '</span>' : '<span class="badge badge-red u-fs10">لم يطّلع</span>') + '</div>'; };
