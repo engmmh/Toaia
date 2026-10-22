@@ -8779,7 +8779,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
 /* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
 (function(){
-  const VERSION = 'v9.59';
+  const VERSION = 'v9.60';
   const $ = id => document.getElementById(id);
   let running = false;
   async function tx(text, lang){
@@ -10911,29 +10911,6 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   });
 })();
 
-/* ===== 🔐 فحص الأمان (للسوبر أدمن): هل الدخول من السيرفر شغّال؟ وهل القفل اتعمل؟ ===== */
-(function(){
-  function $(id){ return document.getElementById(id); }
-  function row(ok, txt, hint){ return '<div style="padding:5px 0;border-bottom:1px solid var(--border);font-size:13px">' + (ok === null ? '⚪' : ok ? '✅' : '❌') + ' ' + txt + (hint && !ok ? ' <span class="muted u-fs11">— ' + hint + '</span>' : '') + '</div>'; }
-  async function draw(){
-    var tab = $('tab-admins'); if(!tab || typeof adminUser === 'undefined' || !adminUser || !adminUser.isSuper) return;
-    var box = $('fs-sec-card');
-    if(!box){ box = document.createElement('div'); box.id = 'fs-sec-card'; box.className = 'card'; box.innerHTML = '<h3 style="margin:0 0 6px">🔐 فحص الأمان</h3><div id="fs-sec-body" class="muted">جاري الفحص…</div><button type="button" class="btn-secondary btn-sm" id="fs-sec-re" style="margin-top:8px">🔄 افحص تاني</button>'; tab.insertBefore(box, tab.firstChild); box.querySelector('#fs-sec-re').onclick = function(){ draw(); }; }
-    var b = $('fs-sec-body'), on = await FSAuth.ready(), html = '';
-    html += row(on, 'الدخول بيتم من السيرفر (كلمات السر مشفّرة)', 'شغّل phase17.sql في Supabase');
-    if(on){
-      var who = await sb.rpc('fs_whoami'), w = who.data || {};
-      html += row(!!(w.token_seen && w.admin_id), 'الجلسة واصلة لقاعدة البيانات (التوكن شغّال)', 'سجّل خروج وادخل تاني كسوبر أدمن؛ لو فضل كده متقفلش القفل');
-      var st = (await sb.rpc('fs_security_status')).data || {};
-      html += row(Number(st.super_admins) >= 1, 'فيه سوبر أدمن حقيقي (' + (st.super_admins || 0) + ')', 'شغّل: select public.fs_make_super(رقم_موظفك);');
-      html += row(Number(st.plaintext_passwords) === 0, 'كلمات السر المكتوبة عادي: ' + (st.plaintext_passwords || 0), 'بتتمسح لما تشغّل phase17b_lockdown.sql');
-      html += row(!!st.locked, 'القفل (الكتابة بجلسة أدمن بس)', 'لما كل اللي فوق ✅ شغّل phase17b_lockdown.sql');
-    }
-    b.innerHTML = html;
-  }
-  afterCall('adminTab', function(tab){ if(tab === 'admins') setTimeout(function(){ draw().catch(function(){}); }, 600); });
-  window.FSSecurityPanel = {draw:draw};
-})();
 
 /* ===== «تم الاطلاع» على الكروت في قاعدة البيانات + «من اطلع؟» للأدمن (phase19) ===== */
 (function(){
