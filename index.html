@@ -4096,16 +4096,7 @@ try{(function(){
       return {sid, name, pct, count:arr.length};
     }).sort((a,b)=>b.pct-a.pct);
 
-    secBox.innerHTML = rows.map(r=>
-      '<div style="background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:11px 13px;">'+
-        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;flex-wrap:wrap;gap:6px;">'+
-          '<span class="u-fs13-b">🏢 '+esc(r.name)+' <span class="muted" style="font-weight:400;font-size:11px;">('+r.count+' موظف)</span></span>'+
-          '<span style="display:flex;align-items:center;gap:8px;"><b style="color:'+complianceColor(r.pct)+';font-size:14px;">'+Math.round(r.pct)+'%</b>'+
-          (r.sid!=='none'?'<button class="btn-secondary btn-sm u-fs10" onclick="openCertificateModal(\''+r.sid+'\',\''+esc(r.name).replace(/'/g,"\\'")+'\','+r.pct.toFixed(1)+')">🏆 شهادة</button>':'')+'</span>'+
-        '</div>'+
-        '<div style="background:#e2e8f0;border-radius:20px;height:8px;overflow:hidden;"><div style="background:'+complianceColor(r.pct)+';height:100%;width:'+Math.min(100,r.pct)+'%;"></div></div>'+
-      '</div>'
-    ).join('') || '<div class="muted" style="text-align:center;padding:10px;">لا توجد بيانات كافية بعد</div>';
+    // (قايمة الأقسام بترسمها طبقة V22 الأخيرة — الرسم القديم اتشال)
 
   };
 
@@ -5855,14 +5846,7 @@ try{(function(){
       const sec = secs().find(x => String(x.id) === String(sid));
       return {sid, name:sec ? sec.name_ar : 'بدون قسم', pct:avg(bs[sid], 'compliance'), count:bs[sid].length};
     }).sort((a, b) => b.pct - a.pct);
-    const box = $q('dashboard-sections-list');
-    if(box) box.innerHTML = list.map(r =>
-      '<div style="background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:11px 13px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;flex-wrap:wrap;gap:6px;">' +
-      '<span class="u-fs13-b">🏢 ' + esc(r.name) + ' <span class="muted" style="font-weight:400;font-size:11px;">(' + r.count + ' موظف)</span></span>' +
-      '<span style="display:flex;align-items:center;gap:8px;"><b style="color:' + col(r.pct) + ';font-size:14px;">' + Math.round(r.pct) + '%</b>' +
-      (r.sid !== 'none' && typeof openCertificateModal === 'function' ? '<button class="btn-secondary btn-sm u-fs10" onclick="openCertificateModal(\'' + r.sid + '\',\'' + esc(r.name).replace(/'/g, "\\'") + '\',' + r.pct.toFixed(1) + ')">🏆 شهادة</button>' : '') + '</span></div>' +
-      '<div style="background:#e2e8f0;border-radius:20px;height:8px;overflow:hidden;"><div style="background:' + col(r.pct) + ';height:100%;width:' + Math.min(100, r.pct) + '%;"></div></div></div>'
-    ).join('') || '<div class="muted" style="text-align:center;padding:10px;">لا توجد بيانات كافية بعد</div>';
+    // (رسم قايمة الأقسام اتشال: V22 بيرسمها مرة واحدة)
   }
 
   /* ---------- ربط بالداشبورد الحالية ---------- */
@@ -8801,7 +8785,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
 /* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
 (function(){
-  const VERSION = 'v9.64';
+  const VERSION = 'v9.65';
   const $ = id => document.getElementById(id);
   let running = false;
   async function tx(text, lang){
