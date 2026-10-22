@@ -781,6 +781,10 @@ body:has(#admin-section.fs-boot) footer{visibility:hidden}
 @media(max-width:900px){
   body.on-admin #fs7-bottom{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:60;background:#fff;border-top:1px solid var(--border);box-shadow:0 -4px 16px rgba(15,23,42,.08);padding:6px 6px calc(6px + env(safe-area-inset-bottom))}
   body.on-admin{padding-bottom:70px}
+  /* الموبايل: الشريط السفلي كفاية (فيه «المزيد») — شيل زرار ☰ العلوي، وخلّي أزرار الهيدر تلتف بدل ما تتقطع */
+  body.on-admin #admin-sidebar-toggle{display:none!important}
+  #admin-section>.card:first-child{flex-direction:column!important;align-items:stretch!important;gap:10px}
+  #admin-section>.card:first-child>div:last-child{flex-wrap:wrap;justify-content:flex-start;row-gap:8px}
   #fs7-bottom button{flex:1;border:0;background:transparent;font:700 10.5px/1.2 inherit;font-family:inherit;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border-radius:12px;position:relative;cursor:pointer}
   #fs7-bottom button .i{font-size:19px;line-height:1}
   #fs7-bottom button.on{color:var(--primary);background:#edf7f1}
@@ -9099,7 +9103,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
 /* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
 (function(){
-  const VERSION = 'v9.76';
+  const VERSION = 'v9.77';
   const $ = id => document.getElementById(id);
   let running = false;
   async function tx(text, lang){
@@ -10529,6 +10533,23 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 })();
 
 
+
+
+/* ===== FSTop — أي ضغطة على أيقونة تنقّل (شريط سفلي / قائمة جانبية / تبويبات فرعية) بترجّع أول الصفحة ===== */
+(function(){
+  const SEL = '#fs7-bottom button[data-g], #admin-sidebar .tab-btn, #fs7-sub button, #fs7-sub [data-t]';
+  function top(){
+    try{ window.scrollTo(0, 0); }catch(e){}
+    try{ document.documentElement.scrollTop = 0; document.body.scrollTop = 0; }catch(e){}
+    try{ const c = document.querySelector('#admin-section .admin-content'); if(c) c.scrollTop = 0; }catch(e){}
+  }
+  document.addEventListener('click', function(e){
+    const b = e.target.closest && e.target.closest(SEL); if(!b) return;
+    if(b.dataset && b.dataset.g === 'more') return;          // «المزيد» بيفتح القايمة بس
+    top(); setTimeout(top, 60); setTimeout(top, 260);        // بعد ما الصفحة الجديدة تترسم
+  }, true);
+  window.FSTop = { top };
+})();
 
 /* ===== FSSearch — بحث سريع (Ctrl+K أو 🔍): رقم موظف، اسم، اسم تدريب/اختبار/كارت، أو اسم صفحة ===== */
 (function(){
