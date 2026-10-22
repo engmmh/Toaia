@@ -687,7 +687,7 @@ body.v9-dark .v9-dark-float{filter:none}
   body.on-login .login-hero .login-feature-card>div:first-child{font-size:15px!important}
   body.on-login .login-hero .login-feature-card>div[id$="-ar"]{font-size:10.5px!important;margin-top:2px!important}
   body.on-login .login-form-side{flex:0 0 auto;padding:14px 16px 8px!important;justify-content:flex-start;overflow:hidden;background:var(--bg,#f4f6fb)}
-  body.on-login #login-form-card,body.on-login #login-role-card{padding:16px!important;max-width:none!important}
+  body.on-login #login-form-card{padding:16px!important;max-width:none!important}
   body.on-login #login-form-card h2{font-size:15px!important;margin-bottom:10px!important}
   body.on-login #login-form-card .input-field{padding:11px!important;margin-bottom:9px!important}
   body.on-login #login-form-card .btn-primary{padding:12px!important}
@@ -788,9 +788,7 @@ body.v9-login-en .login-hero *{text-align:left!important}
   #worker-cards-grid .safety-card-slide .v17-body{padding:14px 16px 16px}
   .v17-ch{display:flex;justify-content:space-between;align-items:center;padding:10px 12px 0}
   .v17-no{direction:ltr;unicode-bidi:isolate}
-  .v17-no,.v17-seen{background:var(--mute-bg);color:var(--mute);font-size:12px;font-weight:800;border-radius:999px;padding:4px 11px}
-  .v17-seen{background:var(--ok-bg);color:var(--ok);display:none}
-  .v17-card.is-seen .v17-seen{display:inline-block}
+  .v17-no{background:var(--mute-bg);color:var(--mute);font-size:12px;font-weight:800;border-radius:999px;padding:4px 11px}
   .v17-ttl{font-size:17px;font-weight:900;line-height:1.5;margin:0 0 6px}
   .v17-got{width:100%;margin:10px 0 4px;padding:12px;border:0;border-radius:14px;font-size:15px;font-weight:800;color:#fff;background:linear-gradient(135deg,#16a34a,#22c55e);box-shadow:0 6px 16px rgba(22,163,74,.3)}
   .v17-card.is-seen .v17-got{background:#e2e8f0;color:#15803d;box-shadow:none}
@@ -959,14 +957,6 @@ body.v9-dark .lt-bar{background:#0f172a}body.v9-dark .lt-tab.on{background:#1e29
           <button class="btn-primary" onclick="doLogin()" style="width:100%;padding:13px;font-size:16px;">التالي / Next</button>
           <div id="login-error" class="hidden" style="margin-top:12px;background:#fee2e2;color:#991b1b;padding:10px 14px;border-radius:8px;font-size:13px;text-align:center;"></div>
         </div>
-        <!-- شاشة اختيار الدور (تظهر بس لو نفس الحساب موظف ومشرف مع بعض) -->
-        <div class="card hidden" id="login-role-card" style="width:100%;max-width:380px;padding:26px;text-align:center;margin-top:16px;">
-          <h2 style="font-size:15px;font-weight:800;margin-bottom:18px;">اختر صفحتك / Choose your page</h2>
-          <div style="display:flex;flex-direction:column;gap:10px;">
-            <button class="btn-primary" style="padding:14px;font-size:14px;" onclick="chooseLoginRole('admin')">🛡️ مشرف <span style="opacity:.85">/ Supervisor</span></button>
-            <button class="btn-secondary" style="padding:14px;font-size:14px;" onclick="chooseLoginRole('worker')">👷 موظف <span style="opacity:.85">/ Trainee</span></button>
-          </div>
-        </div>
         <div class="login-footer-note">© 2026 شركة آفق الحروف التجارية UFUQ | جميع الحقوق محفوظة<br/><strong>Prepared by: Eng. Mahmoud Hegazi</strong></div>
       </div>
     </div>
@@ -996,7 +986,6 @@ body.v9-dark .lt-bar{background:#0f172a}body.v9-dark .lt-tab.on{background:#1e29
       var h=document.querySelector('#login-form-card h2'); if(h) h.textContent=en?'Login':'تسجيل الدخول / Login';
       var i=$('login-id'); if(i) i.placeholder=en?'Enter your ID number':'أدخل رقم الهوية (ID)';
       var p=$('login-password'); if(p) p.placeholder=en?'Password':'كلمة السر / Password';
-      var rh=document.querySelector('#login-role-card h2'); if(rh) rh.textContent=en?'Choose your page':'اختر صفحتك / Choose your page';
       var ft=document.querySelector('#login-section .login-footer-note');
       if(ft&&ft.firstChild&&ft.firstChild.nodeType===3){ if(ftAr===null) ftAr=ft.firstChild.textContent; ft.firstChild.textContent=en?'© 2026 UFUQ Trading Co. | All rights reserved':ftAr; }
       btn();
@@ -1660,7 +1649,45 @@ window.__tick=(function(){ const T=[]; setInterval(function(){ if(document.hidde
 // ==================== SUPABASE ====================
 const SUPABASE_URL = 'https://aljtbakbfhgmpxslbzaw.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFsanRiYWtiZmhnbXB4c2xiemF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2MTAyODAsImV4cCI6MjEwMzE4NjI4MH0.MCYHzFUNgnSrNIaoS0lyFNMBSG-Wu7YvH4Jz9TY83M4';
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+/* توكن الجلسة (من fs_login) بيتبعت مع كل طلب في هيدر x-fs-token عشان القاعدة تعرف مين الأدمن (phase17) */
+let __fsToken = null;
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { global: { fetch: function(u, o){
+  if(__fsToken){ try{ const hd = new Headers((o && o.headers) || {}); hd.set('x-fs-token', __fsToken); o = Object.assign({}, o, { headers: hd }); }catch(e){} }
+  return fetch(u, o);
+} } });
+/* FSAuth: الدخول من السيرفر (phase17). لو الملف مش متشغّل بيشتغل الدخول القديم زي ما هو. */
+window.FSAuth = (function(){
+  let on = null;
+  const MISSING = /PGRST202|find the function|does not exist|not found/i;
+  return {
+    get token(){ return __fsToken; },
+    get on(){ return on === true; },
+    async ready(){
+      if(on !== null) return on;
+      try{
+        const r = await sb.rpc('fs_whoami');
+        if(!r.error) on = true;
+        else if(MISSING.test((r.error.code || '') + ' ' + (r.error.message || ''))) on = false;
+        else return false;
+      }catch(e){ return false; }
+      return on;
+    },
+    async login(val, pass){
+      try{
+        const r = await sb.rpc('fs_login', { p_val: String(val), p_pass: pass || '' });
+        if(r.error) return { ok: false, reason: 'error', message: r.error.message };
+        const d = r.data || {};
+        if(d.ok && d.token) __fsToken = d.token;
+        return d;
+      }catch(e){ return { ok: false, reason: 'error', message: String(e && e.message || e) }; }
+    },
+    async logout(){
+      const t = __fsToken; __fsToken = null;
+      if(t && on){ try{ await sb.rpc('fs_logout', { p_token: t }); }catch(e){} }
+    },
+    async call(fn, args){ return sb.rpc(fn, args || {}); }
+  };
+})();
 
 /* ===== Warm — كاش قراءة قصير (20 ثانية) للبيانات العامة بس، لشاشة الدخول وصفحة الموظف =====
    الهدف: دخول الموظف أسرع. نفس الاستعلام اللي بيتكرر (أقسام، وظائف، تدريبات، كروت، اختبارات...) بيتنفّذ مرة واحدة،
@@ -1701,9 +1728,14 @@ const Warm = (function(){
     });
     return self;
   }
-  const realFrom = sb.from.bind(sb);
-  sb.from = function(table){
-    const q = realFrom(table);
+  /* سلسلة واحدة لتعديلات sb.from — كل طبقة بتسجّل نفسها بـ fromHook(fn(table,q)) بالترتيب */
+  const __fromHooks = [], __realFrom = sb.from.bind(sb);
+  window.fromHook = function(fn){
+    const idx = __fromHooks.length; __fromHooks.push(fn);
+    return function(table){ let q = __realFrom(table); for(let k = 0; k < idx; k++) q = __fromHooks[k](table, q); return q; };   // نسخة «قبل الطبقة دي»
+  };
+  sb.from = function(table){ let q = __realFrom(table); for(let k = 0; k < __fromHooks.length; k++) q = __fromHooks[k](table, q); return q; };
+  fromHook(function(table, q){
     if(!PUBLIC.has(table)) return q;
     return new Proxy(q, { get(t, p){
       const v = t[p]; if(typeof v !== 'function') return v;
@@ -1713,7 +1745,7 @@ const Warm = (function(){
         return (r && typeof r.then === 'function') ? wrap(table, r, [[p, [].slice.call(arguments)]], p === 'select') : r;
       };
     }});
-  };
+  });
   /* تسخين مسبق: بيتنادى أول ما الرقم يتعرف (شاشة الترحيب) — البيانات العامة اللي دخول الموظف هيحتاجها.
      الاستعلامات هنا لازم تطابق اللي في الدوال (loadWorkerCards/Videos/Quizzes...) عشان تتكاشّى؛ لو اختلفت مفيش ضرر، بس مفيش تسريع. */
   function prefetch(){
@@ -1733,6 +1765,11 @@ let currentLang = 'ar';
 let browserVideoLang = (navigator.language||'').toLowerCase().startsWith('bn') ? 'bn' : null;
 let currentUser = null;
 let adminUser = null;
+/* رسالة واحدة موحّدة لأي ميزة محتاجة ملف SQL (بدل رسائل متفرقة) */
+window.FSNeedSql=function(file){
+  var what={'phase4.sql':'جدول البلاغات','phase6.sql':'تايمر الظهور','phase8.sql':'الاختبارات','phase9.sql':'الترجمة','phase10.sql':'ربط الاختبار بفيديو','phase11.sql':'الاختبارات','phase13.sql':'جديد/اترد عليه','phase15.sql':'الأدوار والحالة والسجل والشهادة الصحية','phase16.sql':'ردود الأدمن','phase17.sql':'الدخول الآمن','phase19.sql':'«من اطلع» على الكروت'}[file]||'الميزة دي';
+  return 'محتاج تشغيل '+file+' مرة واحدة في Supabase (SQL Editor) عشان '+what+' — وبعدها حدّث الصفحة';
+};
 let sections = [];
 let workerViewedIds = new Set();
 let workerChartInstance = null;
@@ -2897,7 +2934,6 @@ async function enterAsWorkerFinal(worker){
 }
 window.chooseLoginRole=async function(role){
   if(window.V9 && V9.beforeRole) role = V9.beforeRole(role);   // الحساب المزدوج (موظف + مشرف) — V9
-  $('login-role-card')?.classList.add('hidden');
   $('login-form-card')?.classList.remove('hidden');
   const worker=pendingLoginWorker, adm=pendingLoginAdmin;
   if(role==='worker'){
@@ -2928,6 +2964,7 @@ async function doLoginFinal(){
       const ids = (a.data || []).map(x => x.worker_id).filter(Boolean);
       if(ids.length){ const w = await sb.from('workers_evaluations').select('id,password').in('id', ids); ready = (w.data || []).some(x => x.password); }
     }catch(e){ ready = false; }
+    if(!ready && await FSAuth.ready()) ready = true;   // الدخول من السيرفر شغّال = الكود الثابت مقفول نهائياً
     if(ready){ err.textContent='الكود ده اتقفل — ادخل برقمك وكلمة السر'; err.classList.remove('hidden'); return; }
     adminUser={isSuper:true,name:'المدير الرئيسي',section_id:null,section_ids:sections.map(s=>s.id)};
     await enterAdmin();
@@ -2935,19 +2972,29 @@ async function doLoginFinal(){
     return;
   }
   const id=parseInt(val);
-  const {data:worker}=await sb.from('workers_evaluations').select('*').eq('id',id).maybeSingle();
+  let worker=null, adminLink=null;
+  if(await FSAuth.ready()){
+    /* الدخول من السيرفر: كلمة السر بتتفحص هناك وما بترجعش للمتصفح */
+    const r=await FSAuth.login(val,pass);
+    if(!r.ok){
+      err.textContent = r.reason==='bad_password' ? 'كلمة السر غير صحيحة / Incorrect password' : r.reason==='suspended' ? 'الحساب موقوف — كلّم مسؤول الجودة / Account suspended' : r.reason==='not_found' ? 'رقم غير مسجل' : 'تعذر الدخول، جرّب تاني';
+      err.classList.remove('hidden'); return;
+    }
+    worker=r.worker; adminLink=r.admin||null;
+  } else {
+  const {data:w0}=await sb.from('workers_evaluations').select('*').eq('id',id).maybeSingle();
+  worker=w0;
   if(!worker){ err.textContent='رقم غير مسجل'; err.classList.remove('hidden'); return; }
   let defaultPass='';
   try{ const {data:setting}=await sb.from('app_settings').select('value').eq('key','default_worker_password').maybeSingle(); defaultPass=setting?.value||''; }catch(e){}
   const expected = worker.password || defaultPass;
   if(expected && pass!==expected){ err.textContent='كلمة السر غير صحيحة / Incorrect password'; err.classList.remove('hidden'); return; }
-  let adminLink=null;
   try{ const {data}=await sb.from('admins').select('*').eq('worker_id',worker.id).maybeSingle(); adminLink=data; }catch(e){}
+  }
   if(['suspended','left'].includes(worker.status) && !(adminLink && (adminLink.is_super || adminLink.role==='super'))){ err.textContent='الحساب موقوف — كلّم مسؤول الجودة / Account suspended'; err.classList.remove('hidden'); return; }
   if(adminLink){
     pendingLoginWorker=worker; pendingLoginAdmin=adminLink;
-    $('login-form-card')?.classList.add('hidden');
-    $('login-role-card')?.classList.remove('hidden');
+    await window.chooseLoginRole('admin');   // الأدمن مالوش صفحة موظف — بيدخل لوحة الإدارة على طول
     return;
   }
   await enterAsWorkerFinal(worker);
@@ -2975,24 +3022,31 @@ window.submitPasswordChange=async function(){
   if(!p1||p1.length<4){ err.textContent=pwText('tooShort'); err.classList.remove('hidden'); return; }
   if(p1!==p2){ err.textContent=pwText('mismatch'); err.classList.remove('hidden'); return; }
   if(!workerId){ err.textContent='تعذر تحديد الحساب'; err.classList.remove('hidden'); return; }
-  const {error}=await sb.from('workers_evaluations').update({password:p1}).eq('id',workerId);
+  let error;
+  const secure = await FSAuth.ready() && FSAuth.token;
+  if(secure){ error=(await sb.rpc('fs_set_password',{p_new:p1})).error; }
+  else { error=(await sb.from('workers_evaluations').update({password:p1}).eq('id',workerId)).error; }
   if(error){ err.textContent='خطأ: '+error.message; err.classList.remove('hidden'); return; }
-  if(currentUser) currentUser.password=p1;
+  if(currentUser){ if(secure) currentUser.has_password=true; else currentUser.password=p1; }
   closePasswordChangeModal();
   showToast(pwText('success'));
-  if(window.__pwSuggested){ window.__pwSuggested = false; await sb.from('workers_evaluations').update({must_change_password:false}).eq('id', workerId); }
+  if(window.__pwSuggested){ window.__pwSuggested = false; if(!secure) await sb.from('workers_evaluations').update({must_change_password:false}).eq('id', workerId); }
 }
 
 /* ---------- كلمة السر الموحّدة الافتراضية ---------- */
 window.loadDefaultPasswordField=async function(){
   const el=$('ad-default-pass'); if(!el) return;
   const {data}=await sb.from('app_settings').select('value').eq('key','default_worker_password').maybeSingle();
-  el.value = data?.value || '';
+  const secure = await FSAuth.ready();
+  el.value = secure ? '' : (data?.value || '');
+  if(secure) el.placeholder = data?.value ? 'معيّنة (مشفّرة) — اكتب كلمة جديدة عشان تغيّرها' : 'مفيش كلمة افتراضية — اكتب واحدة';
 };
 window.saveDefaultPassword=async function(){
   const val=$('ad-default-pass').value.trim(), msg=$('ad-default-pass-msg');
   if(!val){ msg.innerHTML='<span class="u-red">اكتب كلمة سر أول</span>'; return; }
-  const {error}=await sb.from('app_settings').upsert({key:'default_worker_password',value:val});
+  const secure = await FSAuth.ready() && FSAuth.token;
+  const {error}= secure ? await sb.rpc('fs_set_default_password',{p_pw:val}) : await sb.from('app_settings').upsert({key:'default_worker_password',value:val});
+  if(secure && !error) $('ad-default-pass').value='';
   msg.innerHTML = error ? '<span class="u-red">خطأ: '+esc(error.message)+'</span>' : '<span class="u-green">تم الحفظ ✅</span>';
   setTimeout(()=>msg.innerHTML='',3000);
 };
@@ -3182,6 +3236,7 @@ try{(function(){
 
   /* ---------- Logout: no refresh required ---------- */
   window.logout = function(){
+    try{ FSAuth.logout(); }catch(e){}
     document.getElementById('v12-push')?.remove();   // بانر الإشعارات (V12)
     try{destroyAllPlayers();}catch(e){}
     Object.keys(topicTimersV22||{}).forEach(k=>{try{clearInterval(topicTimersV22[k]);}catch(e){}});
@@ -3222,7 +3277,7 @@ try{(function(){
   window.setCommentFilterV26 = function(f){ cmtFilter = f; paintCommentsV26(); };
   window.markCommentV26 = async function(id, done){
     const {error}=await sb.from('content_comments').update({handled_at: done ? new Date().toISOString() : null, handled_by: done ? adminUser.id : null}).eq('id',id);
-    if(error) return showToast(/handled/i.test(error.message||'') ? 'شغّل ملف phase13.sql في Supabase مرة واحدة الأول' : 'تعذر التحديث: '+error.message);
+    if(error) return showToast(/handled/i.test(error.message||'') ? FSNeedSql('phase13.sql') : 'تعذر التحديث: '+error.message);
     await loadAdminComments(); showToast(done ? 'اتعلّم إنه اترد عليه ✅' : 'رجع جديد');
   };
   function paintCommentsV26(){
@@ -4843,8 +4898,8 @@ try{(function(){
   function placeCard(p, units){
     const w = units.reduce((a, u) => a + (wcount[u.id] || 0), 0);
     return '<details class="v28-place" data-pid="' + p.id + '"' + (openPlaces.has(p.id) ? ' open' : '') + '><summary><span class="v28-pn">' + esc(p.name_ar) + '</span>' +
-      (p.code ? '<span class="v28-code">' + esc(p.code) + '</span>' : '') +
-      '<span class="muted v28-pm">' + units.length + ' وحدة • ' + w + ' موظف' + (p.manager_name ? ' • 👤 ' + esc(p.manager_name) : '') + '</span></summary>' +
+      (p.code ? '<span class="v28-code">' + esc(p.code) + '</span>' : '<span class="v28-code" style="background:var(--warn-bg,#fef3c7);color:var(--warn,#92400e)">⚠️ بدون كود</span>') +
+      '<span class="muted v28-pm">' + units.length + ' وحدة • ' + w + ' موظف' + (p.manager_name ? ' • 👤 ' + esc(p.manager_name) : ' • <span style="color:var(--warn,#92400e)">⚠️ بدون مدير</span>') + '</span></summary>' +
       '<div class="v4-units" data-v20="1">' + (units.map(unitBtn).join('') || '<span class="muted u-fs12">مفيش وحدات في المكان ده لسه.</span>') + '</div>' +
       '<div class="v28-pa"><button class="btn-secondary btn-sm" onclick="v4UnitModal(null,' + (p.region_id || 'null') + ',' + p.id + ')">+ وحدة هنا</button> <button class="btn-secondary btn-sm" onclick="v4PlaceModal(' + p.id + ')">✏️ تعديل المكان</button></div></details>';
   }
@@ -5032,7 +5087,7 @@ try{(function(){
     const base = {name:worker.worker_name, code:String(worker.id), worker_id:worker.id, is_super, title:title || null};
     let ins = await sb.from('admins').insert({...base, role, department_id:department_id || null, can_violations:!!can_violations}).select().single();
     if(ins.error && /role|department_id|can_violations/i.test(ins.error.message || '')){
-      if(role === 'dept_manager' || role === 'place_manager') return {error:'الدور ده محتاج تشغيل phase15.sql مرة واحدة في Supabase الأول.'};
+      if(role === 'dept_manager' || role === 'place_manager') return {error:FSNeedSql('phase15.sql')};
       ins = await sb.from('admins').insert(base).select().single();
     }
     if(ins.error && /title/i.test(ins.error.message || '')){ delete base.title; ins = await sb.from('admins').insert(base).select().single(); }
@@ -6440,6 +6495,7 @@ try{(function(){
     });
     box.addEventListener('input', e => { if(e.target.id === 'v7-word') gate(); else reset(); });
     $q('v7-preview').onclick = preview; $q('v7-run').onclick = run; $q('v7-restore').onclick = restore;
+    Promise.resolve(window.FSAuth.ready()).then(function(on){ if(!on) return; var b = $q('v7-backup'); if(b){ b.checked = false; b.disabled = true; var l = b.closest('label'); if(l) l.insertAdjacentHTML('beforeend', ' <small class="muted">(مش متاح: كلمات السر مشفّرة ومش بتتقرا)</small>'); } var rs = $q('v7-restore'); if(rs){ rs.disabled = true; rs.title = 'مش متاح في الوضع المشفّر'; } });
   }
   async function loadMeta(){
     const [r, d, s] = await Promise.all([
@@ -6469,7 +6525,7 @@ try{(function(){
     return true;
   }
   const ids = () => ($q('v7-ids').value.match(/\d+/g) || []).map(Number);
-  const changed = w => !!w.password && w.password !== defaultPass;
+  const changed = w => window.FSAuth.on ? !!w.has_password : (!!w.password && w.password !== defaultPass);
 
   async function preview(){
     const pw = $q('v7-new').value.trim(), force = $q('v7-force').checked;
@@ -6480,7 +6536,7 @@ try{(function(){
     const btn = $q('v7-preview'); btn.disabled = true; btn.textContent = '… جاري الحساب';
     try{
       const s = await sb.from('app_settings').select('value').eq('key', 'default_worker_password').maybeSingle(); defaultPass = (s.data && s.data.value) || '';
-      const cols = 'id,worker_name,section_id,password' + (hasForce ? ',must_change_password' : '');
+      const cols = 'id,worker_name,section_id,' + (window.FSAuth.on ? 'has_password' : 'password') + (hasForce ? ',must_change_password' : '');
       const all = await fetchAll(() => sb.from('workers_evaluations').select(cols).order('id'));
       const scoped = all.filter(inScope);
       const onlyDef = $q('v7-only').checked;
@@ -6522,7 +6578,7 @@ try{(function(){
     if(!last || !last.affected.length) return;
     if(!(typeof adminUser !== 'undefined' && adminUser && adminUser.isSuper)) return showToast('العملية دي للسوبر أدمن فقط');
     const L = $q('v7-log'), b = $q('v7-run'); b.disabled = true;
-    if(last.backup){
+    if(last.backup && !window.FSAuth.on){
       download('password-backup-' + new Date().toISOString().slice(0, 10) + '.json',
         {meta:{at:new Date().toISOString(), count:last.affected.length, note:'كلمات السر القديمة (null = كان على الافتراضية) — حافظ عليه'},
          rows:last.affected.map(w => ({id:w.id, name:w.worker_name, password:w.password ?? null, must_change_password:w.must_change_password ?? false}))});
@@ -6532,7 +6588,9 @@ try{(function(){
     if(hasForce && (last.force || last.pw === '')) payload.must_change_password = last.force;
     let done = 0, failed = 0;
     for(const part of chunk(last.affected.map(w => w.id), 150)){
-      const r = await sb.from('workers_evaluations').update(payload).in('id', part);
+      const r = window.FSAuth.on
+        ? await sb.rpc('fs_admin_set_passwords', {p_ids: part, p_pw: last.pw || '', p_must: (hasForce && (last.force || last.pw === '')) ? !!last.force : null})
+        : await sb.from('workers_evaluations').update(payload).in('id', part);
       if(r.error){ failed += part.length; L.innerHTML = '<span class="u-red">خطأ: ' + esc(r.error.message) + '</span>'; }
       else done += part.length;
       L.textContent = 'جاري التنفيذ… ' + done + ' / ' + last.affected.length;
@@ -7613,10 +7671,8 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   const blocked = () => { try{ showToast(msg()); }catch(e){} return { data: null, error: { message: msg(), code: 'v9_self' }, count: null, status: 403, statusText: 'Forbidden' }; };
   const inAdminDual = () => !!V.dual && typeof adminUser !== 'undefined' && adminUser && adminUser.workerId;
   if(sb && typeof sb.from === 'function' && !sb.__v9guard){
-    const origFrom = sb.from.bind(sb);
     sb.__v9guard = true;
-    sb.from = function(table){
-      const qb = origFrom(table);
+    const origFrom = fromHook(function(table, qb){
       if(!(SELF.indexOf(table) >= 0 || table === 'worker_reports' || table === 'workers_evaluations')) return qb;
       return new Proxy(qb, {
         get(t, p){
@@ -7628,7 +7684,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
           return v.bind(t);
         }
       });
-    };
+    });
   }
   function wrap(b, table, st, origFrom){
     if(!b || typeof b.then !== 'function') return b;
@@ -7931,9 +7987,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
       }
     });
   }
-  const prev = sb.from;
-  sb.from = function(table){
-    const qb = prev.call(sb, table);
+  fromHook(function(table, qb){
     const col = COLS[table];
     if(!col) return qb;
     return new Proxy(qb, {
@@ -7944,7 +7998,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
         return v.bind(t);
       }
     });
-  };
+  });
   /* عند الخروج نعيد تحميل القائمة */
   if(typeof logout === 'function'){ beforeCall('logout', function() {
   try{ window.V9H.reset(); }catch(e){}
@@ -7987,9 +8041,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
   /* ---------- الموظف: العنصر المنتهي مايظهرش (حتى لو لسه is_visible = true) ---------- */
   const expired = r => r && r.visible_until && new Date(r.visible_until).getTime() <= Date.now();
-  const prevFrom = sb.from;
-  sb.from = function(table){
-    const qb = prevFrom.call(sb, table);
+  fromHook(function(table, qb){
     if(table !== 'training_topics' && table !== 'quizzes') return qb;
     const post = b => {
       if(!b || typeof b.then !== 'function') return b;
@@ -8019,7 +8071,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
         return v.bind(t);
       }
     });
-  };
+  });
 
   /* ---------- تحميل بيانات التايمر (للأدمن) ---------- */
   async function loadTimes(type){
@@ -8078,7 +8130,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   async function saveTimes(type, id, patch){
     const r = await sb.from(TB[type]).update(patch).eq('id', id);
     if(r.error){
-      if(/visible_(since|until)/i.test(r.error.message || '')){ colsOk = false; toast('التايمر محتاج تشغيل phase6.sql في Supabase مرة واحدة — اتعمل إظهار عادي بدون مدة'); }
+      if(/visible_(since|until)/i.test(r.error.message || '')){ colsOk = false; toast(FSNeedSql('phase6.sql')+' (اتعمل إظهار عادي بدون مدة)'); }
       else toast('تعذر حفظ المدة: ' + (r.error.message || ''));
       return false;
     }
@@ -8675,7 +8727,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
       msg.textContent = /NEW_ID_EXISTS/.test(m) ? 'الرقم '+nv+' مستخدم لموظف تاني' :
         /OLD_NOT_FOUND/.test(m) ? 'الموظف مش موجود' :
         /INVALID_ID/.test(m) ? 'رقم غير صالح' :
-        /fs_change_worker_id|function|schema cache/i.test(m) ? 'لازم تشغّل ملف phase8.sql في Supabase الأول' : ('تعذر التغيير: '+m);
+        /fs_change_worker_id|function|schema cache/i.test(m) ? FSNeedSql('phase8.sql') : ('تعذر التغيير: '+m);
       return;
     }
     try{ if(adminUser && adminUser.id) await logActivityV22('admin', adminUser.id, 'تغيير رقم موظف من '+oldId+' إلى '+nv, 'worker', nv, { old_id: oldId, new_id: nv }); }catch(e){}
@@ -8727,7 +8779,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
 /* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
 (function(){
-  const VERSION = 'v9.58';
+  const VERSION = 'v9.59';
   const $ = id => document.getElementById(id);
   let running = false;
   async function tx(text, lang){
@@ -8994,7 +9046,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   window.v17Got = function(id, btn){
     try{ localStorage.setItem(key(id), '1'); }catch(e){}
     const s = btn.closest('.safety-card-slide'); if(s) s.classList.add('is-seen');
-    btn.textContent = '✅ ' + t('seen');
+    btn.textContent = '✅ ' + t('seen'); btn.disabled = true;
     progress();
     try{ if(typeof updateWorkerProgressSummary==='function') updateWorkerProgressSummary(); }catch(e){}
     try{ if(currentUser) logActivityV22('worker', currentUser.id, 'اطلاع على بطاقة', 'card', id); }catch(e){}
@@ -9020,11 +9072,11 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
       det.innerHTML = '<summary>💬 '+esc(t('ask'))+'</summary>';
       [cq, inp, btn].forEach(el => { if(el) det.appendChild(el); });
       const got = document.createElement('button'); got.type = 'button'; got.className = 'v17-got';
-      got.textContent = s.classList.contains('is-seen') ? '✅ ' + t('seen') : '✅ ' + t('got');
+      got.textContent = '✅ ' + t('seen'); got.disabled = s.classList.contains('is-seen');
       got.onclick = () => window.v17Got(id, got);
       body.appendChild(got); body.appendChild(det);
       const head = document.createElement('div'); head.className = 'v17-ch';
-      head.innerHTML = '<span class="v17-no">'+(i+1)+' / '+total+'</span><span class="v17-seen">✅ '+esc(t('seen'))+'</span>';
+      head.innerHTML = '<span class="v17-no">'+(i+1)+' / '+total+'</span>';
       card.insertBefore(head, card.firstChild);
     });
     progress();
@@ -9113,7 +9165,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     }
   }
   async function needsPassword(worker){
-    if(worker.password) return true;
+    if(worker.password || worker.has_password) return true;
     try{ const r = await sb.from('app_settings').select('value').eq('key','default_worker_password').maybeSingle(); return !!(r.data && r.data.value); }catch(e){ return false; }
   }
 
@@ -9124,7 +9176,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     if(busy) return; busy = true;
     try{
       let worker = null;
-      try{ const r = await sb.from('workers_evaluations').select('id,worker_name,password,preferred_lang').eq('id', parseInt(val,10)).maybeSingle(); worker = r.data; }catch(e){}
+      try{ const r = await sb.from('workers_evaluations').select('*').eq('id', parseInt(val,10)).maybeSingle(); worker = r.data; }catch(e){}
       if(!worker) return await _dl.apply(this, arguments);       // رقم غير مسجل / أدمن: نفس الرسائل القديمة
       const l = (worker.preferred_lang && WELCOME[worker.preferred_lang]) ? worker.preferred_lang : lang();
       $('login-error').classList.add('hidden');
@@ -9301,15 +9353,13 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
   // تمرير topic_id عند الحفظ (اختبار جديد)
   window.__v18pending = null;
-  const _from = sb.from.bind(sb);
-  sb.from = function(table){
-    const q = _from(table);
+  fromHook(function(table, q){
     if(table !== 'quizzes' || !window.__v18pending) return q;
     const inj = p => { const pend = window.__v18pending; if(pend && p && typeof p === 'object' && !Array.isArray(p)){ window.__v18pending = null; return {...p, topic_id: pend.topic_id}; } return p; };
     const oi = q.insert && q.insert.bind(q); if(oi) q.insert = (p, ...r) => oi(inj(p), ...r);
     return q;
-  };
-  const hint = e => /topic_id/i.test(String(e && e.message || '')) ? 'لازم تشغّل ملف phase10.sql في Supabase الأول' : (e && e.message || e);
+  });
+  const hint = e => /topic_id/i.test(String(e && e.message || '')) ? FSNeedSql('phase10.sql') : (e && e.message || e);
 
   // النموذج القديم (تبويب الاختبارات)
   async function legacyForm(){
@@ -9425,7 +9475,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   /* ---------- الإدارات المستهدفة: زر الاستبعاد ---------- */
   async function toggleEx(id, val){
     const r = await sb.from('target_departments').update({exclude_from_stats: val}).eq('id', id);
-    if(r.error){ showToast(/exclude_from_stats/i.test(r.error.message || '') ? 'لازم تشغّل ملف phase11.sql في Supabase الأول' : r.error.message); return; }
+    if(r.error){ showToast(/exclude_from_stats/i.test(r.error.message || '') ? FSNeedSql('phase11.sql') : r.error.message); return; }
     cache = null; exW = null;
     try{ await loadV23Meta(); }catch(e){}
     showToast(val ? '🔎 الإدارة دي بقت خارج إحصائيات الداشبورد ✅' : 'الإدارة دي رجعت تدخل في الإحصائيات ✅');
@@ -9575,14 +9625,12 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
   /* ---------- حفظ الفرع/البراند مع الوحدة ---------- */
   window.__v20pending = null;
-  const _from = sb.from.bind(sb);
-  sb.from = function(table){
-    const q = _from(table);
+  fromHook(function(table, q){
     if(table !== 'sections' || !window.__v20pending) return q;
     const inj = p => { const pd = window.__v20pending; if(pd && p && typeof p === 'object' && !Array.isArray(p)){ window.__v20pending = null; return Object.assign({}, p, pd); } return p; };
     ['insert', 'update'].forEach(m => { const o = q[m] && q[m].bind(q); if(o) q[m] = (p, ...r) => o(inj(p), ...r); });
     return q;
-  };
+  });
   function unitFields(sec){
     return '<div class="v20-fields"><label class="field-label u-mt8">اسم الفرع (اختياري — بيجمّع وحدات الفرع الواحد)</label><input id="v20-branch" class="input-field" placeholder="مثال: B37 (Munsiyah)" value="' + E(sec && sec.branch_name || '') + '"/>' +
       '<label class="field-label u-mt8">البراند (اختياري)</label><input id="v20-brand" class="input-field" placeholder="مثال: M DEE" value="' + E(sec && sec.brand || '') + '"/></div>';
@@ -10318,7 +10366,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     var bySection={}; per.forEach(function(r){ var sid=r.worker.section_id||'none'; (bySection[sid]=bySection[sid]||[]).push(r); });
     return {weights:wt,perWorker:per,bySection:bySection,totalWorkers:list.length,excluded:before-list.length};
   }
-  window.FSStats={weights:weights,windowDays:windowDays,ctx:ctx,calc:calc,forWorkers:forWorkers,compute:compute};
+  window.FSStats={weights:weights,windowDays:windowDays,ctx:ctx,calc:calc,counts:counts,forWorkers:forWorkers,compute:compute};
   /* خلايا التدريب والاختبارات في جدول الموظفين */
   var col=function(p){return p>=80?'#16a34a':p>=50?'#d97706':'#dc2626';};
   window.fillWorkerPcts=async function(rows){
@@ -10379,15 +10427,14 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   }
   /* مدير الإدارة يشوف موظفين إدارته بس (حسب وظيفة الموظف) */
   (function(){
-    var f = sb.from.bind(sb);
-    sb.from = function(table){
-      var q = f(table), u = cur();
+    fromHook(function(table, q){
+      var u = cur();
       if(table === 'workers_evaluations' && u && !u.isSuper && u.role === 'dept_manager' && R.deptRoleIds && q.select){
         var os = q.select.bind(q);
         q.select = function(){ var b = os.apply(null, arguments); return b.in('job_role_id', R.deptRoleIds.length ? R.deptRoleIds : [-1]); };
       }
       return q;
-    };
+    });
   })();
   function paint(){
     var u = cur(); if(!u) return;
@@ -10412,12 +10459,38 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
       var L = (window.FSRoleLabels || {})[r] || r;
       d.textContent = L + ' • ' + d.textContent.replace(/^.*?•\s*/, '');
     }
+    trimScope();
     var fs_ = document.getElementById('worker-filter-section');
     if(fs_ && r !== 'super' && fs_.options.length > 1 && fs_.options[0].value !== ''){
       var o = document.createElement('option'); o.value = ''; o.textContent = 'كل نطاقي'; fs_.insertBefore(o, fs_.firstChild); fs_.value = '';
     }
     ensureResetBtn();
   }
+  /* غير السوبر: قوايم الوحدات في نماذج النشر/الإضافة تعرض نطاقه بس، ومفيش «الكل» */
+  var SEL = ['nw-section','ed-section','cd-section','vd-section','qz-section','ad-section','os-section'];
+  function scopeSet(){ var u = cur(); if(!u || u.isSuper) return null; return (typeof getAdminScopeIds === 'function' ? getAdminScopeIds() : (u.section_ids || [])).map(Number); }
+  function trimScope(){
+    var ids = scopeSet(); if(!ids) return;
+    SEL.forEach(function(id){
+      var s = document.getElementById(id); if(!s) return;
+      var cur_ = s.value;
+      [].slice.call(s.options).forEach(function(o){ if(!o.value || ids.indexOf(Number(o.value)) < 0) o.remove(); });
+      if(s.options.length && cur_ && ids.indexOf(Number(cur_)) >= 0) s.value = cur_;
+      else if(s.options.length) s.selectedIndex = 0;
+    });
+  }
+  function inScopeSel(id){
+    var ids = scopeSet(); if(!ids) return true;
+    var s = document.getElementById(id); if(!s) return true;
+    if(!s.value || ids.indexOf(Number(s.value)) < 0){ showToast('اختار وحدة من نطاقك — مفيش نشر لـ«الكل» أو لوحدة خارج نطاقك'); return false; }
+    return true;
+  }
+  [['saveCard','cd-section'],['saveQuiz','qz-section'],['saveVideoTopic','vd-section']].forEach(function(p){
+    beforeCall(p[0], function(){ if(!inScopeSel(p[1])) throw new Error('out of scope'); });
+  });
+  ['populateSectionDropdowns','populateV23Dropdowns'].forEach(function(n){ afterCall(n, function(){ try{ trimScope(); }catch(e){} }); });
+  afterCall('adminTab', function(){ setTimeout(function(){ try{ trimScope(); }catch(e){} }, 400); });
+  window.FSTrimScope = trimScope;
   function ensureResetBtn(){
     var p = document.getElementById('wmpanel-data'); if(!p || document.getElementById('ed-resetpw')) return;
     var host = p.querySelector('.btn-primary'); host = host && host.parentElement; if(!host) return;
@@ -10428,8 +10501,11 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     if(!can('resetPw') || !window.currentModalWorkerId && typeof currentModalWorkerId === 'undefined') return;
     var id = typeof currentModalWorkerId !== 'undefined' ? currentModalWorkerId : null; if(!id) return;
     if(!confirm('تصفير كلمة السر؟ الموظف هيحط كلمة جديدة عند أول دخول.')) return;
-    var r = await sb.from('workers_evaluations').update({password:null}).eq('id', id);
+    var r = (await window.FSAuth.ready() && window.FSAuth.token)
+      ? await sb.rpc('fs_admin_set_passwords', {p_ids:[id], p_pw:'', p_must:null})
+      : await sb.from('workers_evaluations').update({password:null}).eq('id', id);
     showToast(r.error ? 'تعذر التصفير' : 'تم تصفير كلمة السر ✅');
+    if(!r.error){ try{ FSLog('تصفير كلمة سر', id); }catch(e){} }
   }
   /* الحذف: السوبر بس يحذف نهائياً؛ غيره يوقّف الموظف */
   var _dw = window.deleteWorker;
@@ -10438,7 +10514,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     if(!can('suspend')){ showToast('مالكش صلاحية'); return; }
     if(!confirm('إيقاف الموظف؟ (مش هيتحذف، السوبر أدمن بس يقدر يحذف)')) return;
     var r = await sb.from('workers_evaluations').update({status:'suspended'}).eq('id', id);
-    if(r.error){ showToast(/status/i.test(r.error.message || '') ? 'شغّل phase15.sql الأول' : 'تعذر الإيقاف'); return; }
+    if(r.error){ showToast(/status/i.test(r.error.message || '') ? FSNeedSql('phase15.sql') : 'تعذر الإيقاف'); return; }
     showToast('تم إيقاف الموظف'); loadWorkers();
   };
   var _lw = loadWorkers;
@@ -10477,9 +10553,8 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   if(_ap) window.FSRole.apply = async function(u, adm){ var r = await _ap.apply(this, arguments); probe(); return r; };
   /* created_by تلقائي عند الإضافة */
   (function(){
-    var f = sb.from.bind(sb);
-    sb.from = function(table){
-      var q = f(table), u = u_();
+    fromHook(function(table, q){
+      var u = u_();
       if(OWN.indexOf(table) >= 0 && own[table] && u && u.workerId && q.insert){
         var oi = q.insert.bind(q);
         q.insert = function(p){
@@ -10489,7 +10564,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
         };
       }
       return q;
-    };
+    });
   })();
   /* الحذف: غير السوبر يحذف اللي هو عمله (أو القديم بدون مالك) بس */
   async function guard(table, id){
@@ -10516,7 +10591,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   beforeCallAsync('saveEditWorker', async function(){
     var s = document.getElementById('ed-status'); if(!s || s.disabled) return;
     var r = await sb.from('workers_evaluations').update({status:s.value}).eq('id', currentModalWorkerId);
-    if(r.error) showToast('شغّل phase15.sql عشان حالة الموظف تتحفظ');
+    if(r.error) showToast(FSNeedSql('phase15.sql'));
     else { try{ window.V19.excludedWorkers(true); }catch(e){} }
   });
   /* شارة الحالة في جدول الموظفين */
@@ -10619,6 +10694,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
       var a = u_(); if(!a) return;
       var r = await sb.from('audit_log').insert({actor_id:a.workerId || a.id || null, actor_name:a.name || null, action:action, target:target == null ? null : String(target), details:details || null});
       logOk = !r.error;
+      if(r.error && u_() && u_().isSuper && !window.__fsLogWarned){ window.__fsLogWarned = true; try{ showToast(FSNeedSql('phase15.sql')); }catch(e){} }
     }catch(e){ logOk = false; }
   };
   async function drawLog(){
@@ -10636,6 +10712,9 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     afterCallAsync('deleteAdmin', function(id){ FSLog('إلغاء صلاحية أدمن', id); });
     afterCallAsync('v4Grant', function(){ var m = $('v4-ag-msg'); if(m && /تم منح/.test(m.textContent)) FSLog('منح صلاحية', m.textContent.replace(/\D+/g, ' ').trim()); });
     afterCallAsync('deleteWorker', function(id){ FSLog('إيقاف/حذف موظف', id); });
+    [['deleteQuiz','حذف اختبار'],['deleteCard','حذف كارت'],['deleteTrainingTopic','حذف تدريب'],['deleteOnsiteSession','حذف جلسة ميدانية'],['deleteViolationLib','حذف من مكتبة المخالفات']].forEach(function(p){
+      afterCallAsync(p[0], function(id){ FSLog(p[1], id); });
+    });
     afterCallAsync('saveEditWorker', function(){ FSLog('تعديل موظف', (typeof currentModalWorkerId !== 'undefined') ? currentModalWorkerId : null); });
   })();
 
@@ -10653,7 +10732,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   beforeCallAsync('saveEditWorker', async function(){
     var i = $('ed-health'); if(!i || i.disabled) return;
     var r = await sb.from('workers_evaluations').update({health_cert_expiry:i.value || null}).eq('id', currentModalWorkerId);
-    if(r.error) showToast('شغّل phase15.sql عشان الشهادة الصحية تتحفظ');
+    if(r.error) showToast(FSNeedSql('phase15.sql'));
   });
   async function drawHealth(){
     var k = $('dashboard-kpis'); if(!k || !u_()) return;
@@ -10805,7 +10884,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
         d.querySelector('button').onclick = async function(){
           var t = $('fs-rp-' + x.id).value.trim(); if(!t) return showToast('اكتب الرد الأول');
           var u = await sb.from('content_comments').update({admin_reply:t, replied_at:new Date().toISOString(), handled_at:new Date().toISOString(), handled_by:adminUser && adminUser.id || null}).eq('id', x.id);
-          if(u.error) return showToast(/admin_reply|replied_at/.test(u.error.message || '') ? 'شغّل phase16.sql الأول' : 'تعذر حفظ الرد');
+          if(u.error) return showToast(/admin_reply|replied_at/.test(u.error.message || '') ? FSNeedSql('phase16.sql') : 'تعذر حفظ الرد');
           showToast('تم إرسال الرد ✅'); try{ FSLog('رد على تعليق', x.id); }catch(e){}
         };
         x.card.appendChild(d);
@@ -10831,6 +10910,173 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     }catch(e){}
   });
 })();
+
+/* ===== 🔐 فحص الأمان (للسوبر أدمن): هل الدخول من السيرفر شغّال؟ وهل القفل اتعمل؟ ===== */
+(function(){
+  function $(id){ return document.getElementById(id); }
+  function row(ok, txt, hint){ return '<div style="padding:5px 0;border-bottom:1px solid var(--border);font-size:13px">' + (ok === null ? '⚪' : ok ? '✅' : '❌') + ' ' + txt + (hint && !ok ? ' <span class="muted u-fs11">— ' + hint + '</span>' : '') + '</div>'; }
+  async function draw(){
+    var tab = $('tab-admins'); if(!tab || typeof adminUser === 'undefined' || !adminUser || !adminUser.isSuper) return;
+    var box = $('fs-sec-card');
+    if(!box){ box = document.createElement('div'); box.id = 'fs-sec-card'; box.className = 'card'; box.innerHTML = '<h3 style="margin:0 0 6px">🔐 فحص الأمان</h3><div id="fs-sec-body" class="muted">جاري الفحص…</div><button type="button" class="btn-secondary btn-sm" id="fs-sec-re" style="margin-top:8px">🔄 افحص تاني</button>'; tab.insertBefore(box, tab.firstChild); box.querySelector('#fs-sec-re').onclick = function(){ draw(); }; }
+    var b = $('fs-sec-body'), on = await FSAuth.ready(), html = '';
+    html += row(on, 'الدخول بيتم من السيرفر (كلمات السر مشفّرة)', 'شغّل phase17.sql في Supabase');
+    if(on){
+      var who = await sb.rpc('fs_whoami'), w = who.data || {};
+      html += row(!!(w.token_seen && w.admin_id), 'الجلسة واصلة لقاعدة البيانات (التوكن شغّال)', 'سجّل خروج وادخل تاني كسوبر أدمن؛ لو فضل كده متقفلش القفل');
+      var st = (await sb.rpc('fs_security_status')).data || {};
+      html += row(Number(st.super_admins) >= 1, 'فيه سوبر أدمن حقيقي (' + (st.super_admins || 0) + ')', 'شغّل: select public.fs_make_super(رقم_موظفك);');
+      html += row(Number(st.plaintext_passwords) === 0, 'كلمات السر المكتوبة عادي: ' + (st.plaintext_passwords || 0), 'بتتمسح لما تشغّل phase17b_lockdown.sql');
+      html += row(!!st.locked, 'القفل (الكتابة بجلسة أدمن بس)', 'لما كل اللي فوق ✅ شغّل phase17b_lockdown.sql');
+    }
+    b.innerHTML = html;
+  }
+  afterCall('adminTab', function(tab){ if(tab === 'admins') setTimeout(function(){ draw().catch(function(){}); }, 600); });
+  window.FSSecurityPanel = {draw:draw};
+})();
+
+/* ===== «تم الاطلاع» على الكروت في قاعدة البيانات + «من اطلع؟» للأدمن (phase19) ===== */
+(function(){
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  var ok = null;      // هل phase19 متشغّل؟
+  function wid(){ try{ return currentUser ? currentUser.id : null; }catch(e){ return null; } }
+  function lk(id){ return 'v17_seen_' + wid() + '_' + id; }
+  /* كل ضغطة «تم الاطلاع» تتسجل في القاعدة */
+  var _g = window.v17Got;
+  if(_g) window.v17Got = function(id, btn){
+    var r = _g.apply(this, arguments);
+    var w = wid(), cid = Number(id);
+    if(w && cid && ok !== false){ Promise.resolve(sb.from('card_views').upsert({worker_id:w, card_id:cid, seen_at:new Date().toISOString()}, {onConflict:'worker_id,card_id'})).then(function(x){ if(x && x.error) ok = false; }).catch(function(){}); }
+    return r;
+  };
+  /* عند تحميل الكروت: ادمج اللي في القاعدة مع اللي على الجهاز (والقديم المحلي يترفع للقاعدة) */
+  async function sync(){
+    var w = wid(); if(!w || ok === false) return;
+    var r = await sb.from('card_views').select('card_id').eq('worker_id', w);
+    if(r.error){ ok = false; return; }
+    ok = true;
+    var db = {}; (r.data || []).forEach(function(x){ db[x.card_id] = 1; });
+    (r.data || []).forEach(function(x){ try{ localStorage.setItem(lk(x.card_id), '1'); }catch(e){} });
+    var local = [];
+    try{ (typeof workerCards !== 'undefined' ? workerCards : []).forEach(function(c){ if(!db[c.id] && localStorage.getItem(lk(c.id)) === '1') local.push({worker_id:w, card_id:c.id}); }); }catch(e){}
+    if(local.length) sb.from('card_views').upsert(local, {onConflict:'worker_id,card_id'}).then(function(){}, function(){});
+    var g = $('worker-cards-grid');
+    if(g){
+      g.querySelectorAll('.safety-card-slide.v17-card').forEach(function(s){
+        var inp = s.querySelector('input[id^="ccmt-"]'); var id = inp ? inp.id.replace('ccmt-', '') : null;
+        if(id && db[id] && !s.classList.contains('is-seen')){ s.classList.add('is-seen'); var b = s.querySelector('.v17-got'); if(b){ b.disabled = true; } }
+      });
+    }
+    try{ if(typeof updateWorkerProgressSummary === 'function') updateWorkerProgressSummary(); }catch(e){}
+  }
+  afterCallAsync('loadWorkerCards', function(){ setTimeout(function(){ sync().catch(function(){}); }, 400); });
+  window.FSCardViews = {sync: sync};
+
+  /* ---------- الأدمن: من اطلع على الكارت؟ ---------- */
+  window.openCardViewersPanel = async function(cardId, title){
+    var ids = []; try{ ids = getAdminScopeIds(); }catch(e){}
+    var wq = sb.from('workers_evaluations').select('id,worker_name,section_id').order('id');
+    if(!(adminUser && adminUser.isSuper) && ids.length) wq = wq.in('section_id', ids);
+    try{ var x = [].concat(Array.from(await window.V19.excludedWorkers())); if(x.length) wq = wq.not('id', 'in', '(' + x.join(',') + ')'); }catch(e){}
+    var res = await Promise.all([wq, sb.from('card_views').select('worker_id,seen_at').eq('card_id', cardId)]);
+    var list = res[0].data || [], vr = res[1], map = {};
+    if(vr.error){ showToast(FSNeedSql('phase19.sql')); return; }
+    (vr.data || []).forEach(function(v){ map[v.worker_id] = v; });
+    var seen = list.filter(function(w){ return map[w.id]; }), not = list.filter(function(w){ return !map[w.id]; });
+    var row = function(w){ var v = map[w.id]; return '<div style="display:flex;justify-content:space-between;align-items:center;background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:7px 10px;margin-bottom:6px"><span class="u-fs12-b">#' + w.id + ' — ' + esc(w.worker_name) + '</span>' + (v ? '<span class="badge badge-green u-fs10">اطّلع ✅ ' + esc(String(v.seen_at || '').slice(0, 10)) + '</span>' : '<span class="badge badge-red u-fs10">لم يطّلع</span>') + '</div>'; };
+    var old = $('video-watchers-modal'); if(old) old.remove();
+    document.body.insertAdjacentHTML('beforeend', '<div class="preview-modal" id="video-watchers-modal"><div class="preview-panel" style="max-width:520px;">' +
+      '<div class="preview-top"><b>👁️ ' + esc(title) + ' — من اطلع</b><button class="btn-secondary btn-sm" onclick="document.getElementById(\'video-watchers-modal\').remove()">إغلاق ✕</button></div>' +
+      '<div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;"><button class="tab-btn active" style="min-height:auto;padding:6px 12px;" onclick="vwTab(this,\'vw-all\')">👥 الجميع (' + list.length + ')</button>' +
+      '<button class="tab-btn" style="min-height:auto;padding:6px 12px;" onclick="vwTab(this,\'vw-done\')">✅ اطّلعوا (' + seen.length + ')</button>' +
+      '<button class="tab-btn" style="min-height:auto;padding:6px 12px;" onclick="vwTab(this,\'vw-not\')">❌ لم يطّلعوا (' + not.length + ')</button></div>' +
+      '<div id="vw-all">' + (list.map(row).join('') || '<div class="muted">لا يوجد موظفين</div>') + '</div>' +
+      '<div id="vw-done" class="hidden">' + (seen.map(row).join('') || '<div class="muted">لا أحد اطّلع بعد</div>') + '</div>' +
+      '<div id="vw-progress" class="hidden"></div>' +
+      '<div id="vw-not" class="hidden">' + (not.map(row).join('') || '<div class="muted">الجميع اطّلعوا</div>') + '</div></div></div>');
+  };
+  afterCallAsync('loadAdminCards', function(){
+    document.querySelectorAll('#admin-cards-list .card-actions-row').forEach(function(r){
+      if(r.querySelector('.fs-cv-btn')) return;
+      var m = r.innerHTML.match(/deleteCard\((\d+)\)/); if(!m) return;
+      var card = r.closest('.topic-card'), t = card && card.querySelector('.u-fs13-b');
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'btn-secondary btn-sm fs-cv-btn'; b.style.cssText = 'padding:6px 10px;font-size:10px;'; b.textContent = '👁️ من اطلع؟';
+      b.onclick = function(){ window.openCardViewersPanel(Number(m[1]), t ? t.textContent : 'كارت'); };
+      r.insertBefore(b, r.firstChild);
+    });
+  });
+})();
+
+/* ===== FSPlan: مصفوفة الالتزام + المتأخرين عن المواعيد + تقرير أسبوعي + QR الدخول ===== */
+(function(){
+  var E=function(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
+  var col=function(p){return p>=80?'#16a34a':p>=50?'#d97706':'#dc2626';};
+  var last=null;
+  async function build(){
+    var d=await window.FSStats.compute(), ids=d.perWorker.map(function(r){return r.worker.id;});
+    var c=await window.FSStats.ctx(ids), now=Date.now(), cut=now-c.days*864e5;
+    var secName={}; (typeof sections!=='undefined'?sections:[]).forEach(function(s){secName[s.id]=s.name_ar;});
+    var places={}, topics={}, late=[];
+    d.perWorker.forEach(function(r){
+      var w=r.worker, sid=w.section_id||0, dept=c.roleDept[w.job_role_id], dn=c.done[w.id]||new Set();
+      c.topics.forEach(function(tp){
+        if(!window.FSStats.counts(tp,w,dept,cut,now)) return;
+        topics[tp.id]=tp;
+        var p=places[sid]=places[sid]||{name:secName[sid]||'— بدون مكان —',cells:{},workers:0};
+        var cell=p.cells[tp.id]=p.cells[tp.id]||{n:0,d:0};
+        cell.n++; var ok=dn.has(tp.id); if(ok) cell.d++;
+        var until=tp.visible_until?+new Date(tp.visible_until):null;
+        if(!ok&&until&&until<=now+3*864e5) late.push({sid:sid,place:p.name,worker:w.worker_name,id:w.id,topic:tp.title_ar||tp.title_en||('#'+tp.id),until:until,overdue:until<now});
+      });
+    });
+    d.perWorker.forEach(function(r){ var sid=r.worker.section_id||0; if(places[sid]) places[sid].workers++; });
+    var tl=Object.keys(topics).map(function(k){return topics[k];}).slice(0,30);
+    return last={places:places,topics:tl,late:late,days:c.days};
+  }
+  function matrixHtml(m){
+    var pk=Object.keys(m.places);
+    if(!pk.length||!m.topics.length) return '<div class="muted">لا توجد تدريبات مطلوبة في فترة الاحتساب.</div>';
+    var h='<div style="overflow:auto"><table class="fs-mx" style="border-collapse:collapse;font-size:12px;min-width:100%"><thead><tr><th style="text-align:right;padding:6px">المكان</th>'+m.topics.map(function(t){return '<th style="padding:6px;max-width:110px">'+E(t.title_ar||t.title_en||t.id)+'</th>';}).join('')+'<th style="padding:6px">المتوسط</th></tr></thead><tbody>';
+    pk.forEach(function(k){
+      var p=m.places[k], sum=0, cnt=0;
+      h+='<tr><td style="padding:6px;font-weight:700;white-space:nowrap">'+E(p.name)+' <span class="muted">('+p.workers+')</span></td>';
+      m.topics.forEach(function(t){
+        var c=p.cells[t.id]; if(!c){ h+='<td style="text-align:center;color:#94a3b8">—</td>'; return; }
+        var pc=Math.round(c.d/c.n*100); sum+=pc; cnt++;
+        h+='<td style="text-align:center;padding:6px;background:'+col(pc)+'22;color:'+col(pc)+';font-weight:800" title="'+c.d+'/'+c.n+'">'+pc+'%</td>';
+      });
+      var av=cnt?Math.round(sum/cnt):100; h+='<td style="text-align:center;font-weight:800;color:'+col(av)+'">'+av+'%</td></tr>';
+    });
+    return h+'</tbody></table></div>';
+  }
+  function lateHtml(m){
+    if(!m.late.length) return '<div class="muted">✅ مفيش حد متأخر ولا قرّب ميعاده.</div>';
+    var g={}; m.late.forEach(function(x){(g[x.place]=g[x.place]||[]).push(x);});
+    return Object.keys(g).map(function(pn){
+      var a=g[pn];
+      return '<div style="margin-bottom:12px"><b>'+E(pn)+'</b> <span class="muted">('+a.length+')</span> <button class="btn-secondary btn-sm" onclick="FSPlan.copyMsg('+JSON.stringify(pn).replace(/"/g,'&quot;')+')">📋 نسخ رسالة للمدير</button><ul style="margin:6px 18px;font-size:13px">'+a.map(function(x){return '<li>'+E(x.worker)+' — '+E(x.topic)+' '+(x.overdue?'<span style="color:#dc2626">(متأخر)</span>':'<span style="color:#d97706">(ينتهي '+new Date(x.until).toLocaleDateString('en-GB')+')</span>');}).join('')+'</ul></div>';
+    }).join('');
+  }
+  function csv(rows){ return '﻿'+rows.map(function(r){return r.map(function(v){return '"'+String(v==null?'':v).replace(/"/g,'""')+'"';}).join(',');}).join('\n'); }
+  function dl(name,text){ var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type:'text/csv;charset=utf-8'})); a.download=name; document.body.appendChild(a); a.click(); a.remove(); }
+  function ensure(){
+    var tab=document.getElementById('tab-compliance'); if(!tab||document.getElementById('fs-plan-card')) return;
+    tab.insertAdjacentHTML('beforeend','<div class="card u-pad16" id="fs-plan-card" style="margin-top:14px"><div class="section-title" style="margin-bottom:6px">🧩 مصفوفة الالتزام والمتأخرين</div><div class="muted" style="font-size:12px;margin-bottom:10px">الأماكن في الصفوف والتدريبات في الأعمدة (نسبة اللي أكملوا من المطلوب منهم). المتأخرين = تدريب ميعاده انتهى أو بيخلص خلال 3 أيام.</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"><button class="btn-primary btn-sm" onclick="FSPlan.load()">🔄 تحديث</button><button class="btn-secondary btn-sm" onclick="FSPlan.exportCsv()">⬇️ مصفوفة CSV</button><button class="btn-secondary btn-sm" onclick="FSPlan.report()">🖨️ تقرير أسبوعي (طباعة / PDF)</button><button class="btn-secondary btn-sm" onclick="FSPlan.qr()">📱 QR الموقع للمصنع</button></div><div id="fs-plan-body" class="muted">اضغط تحديث.</div><div id="fs-plan-late" style="margin-top:14px"></div><div id="fs-plan-qr" style="margin-top:14px"></div></div>');
+  }
+  var FSPlan=window.FSPlan={
+    load:async function(){ ensure(); var b=document.getElementById('fs-plan-body'); b.textContent='⏳ جاري الحساب...'; try{ var m=await build(); b.innerHTML=matrixHtml(m); document.getElementById('fs-plan-late').innerHTML='<div class="section-title" style="font-size:14px;margin-bottom:6px">⏰ المتأخرين عن المواعيد</div>'+lateHtml(m); }catch(e){ b.textContent='تعذّر الحساب: '+(e.message||e); } },
+    exportCsv:async function(){ var m=last||await build(); var rows=[['المكان'].concat(m.topics.map(function(t){return t.title_ar||t.id;}))]; Object.keys(m.places).forEach(function(k){var p=m.places[k]; rows.push([p.name].concat(m.topics.map(function(t){var c=p.cells[t.id]; return c?Math.round(c.d/c.n*100)+'%':'';})));}); dl('compliance-matrix.csv',csv(rows)); },
+    copyMsg:function(place){ var a=(last?last.late:[]).filter(function(x){return x.place===place;}); var txt='السلام عليكم — موظفين '+place+' المتأخرين عن التدريب:\n'+a.map(function(x){return '• '+x.worker+' — '+x.topic+(x.overdue?' (متأخر)':'');}).join('\n')+'\nبرجاء المتابعة.'; try{ navigator.clipboard.writeText(txt); if(window.showToast) showToast('✅ اتنسخت الرسالة'); }catch(e){ prompt('انسخ الرسالة',txt); } },
+    report:async function(){ var m=last||await build(); var w=window.open('','_blank'); if(!w){ if(window.showToast) showToast('اسمح بالنوافذ المنبثقة'); return; } w.document.write('<html dir="rtl"><head><meta charset="utf-8"><title>تقرير التدريب الأسبوعي</title><style>body{font-family:Tahoma,Arial;padding:18px}table{border-collapse:collapse}td,th{border:1px solid #cbd5e1;padding:5px}</style></head><body><h2>تقرير الالتزام بالتدريب — '+new Date().toLocaleDateString('en-GB')+'</h2>'+matrixHtml(m)+'<h3>المتأخرين</h3>'+lateHtml(m).replace(/<button[^>]*>.*?<\/button>/g,'')+'<script>setTimeout(function(){print()},400)<\/script></body></html>'); w.document.close(); },
+    qr:function(){ ensure(); var host=document.getElementById('fs-plan-qr'); var url=location.origin+location.pathname; host.innerHTML='<div id="fs-qr-img" style="display:inline-block;padding:10px;background:#fff"></div><div class="muted" style="font-size:12px">'+E(url)+'</div><button class="btn-secondary btn-sm" onclick="FSPlan.printQr()">🖨️ طباعة بوستر</button>'; function draw(){ new QRCode(document.getElementById('fs-qr-img'),{text:url,width:200,height:200}); } if(window.QRCode) return draw(); var s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'; s.onload=draw; s.onerror=function(){ host.insertAdjacentHTML('afterbegin','<div class="u-red">تعذّر تحميل مكتبة QR (محتاجة إنترنت).</div>'); }; document.head.appendChild(s); },
+    printQr:function(){ var el=document.getElementById('fs-qr-img'); if(!el) return; var w=window.open('','_blank'); if(!w) return; w.document.write('<html dir="rtl"><body style="text-align:center;font-family:Tahoma;padding:40px"><h1>سجّل دخولك للتدريب</h1><p style="font-size:20px">امسح الكود بالموبايل</p>'+el.innerHTML+'<script>setTimeout(function(){print()},400)<\/script></body></html>'); w.document.close(); }
+  };
+  document.addEventListener('click',function(e){ var b=e.target.closest&&e.target.closest('[onclick*="adminTab(\'compliance\')"],[data-tab="compliance"]'); if(b) setTimeout(ensure,100); });
+  new MutationObserver(function(){ ensure(); }).observe(document.body,{childList:true,subtree:true});
+  ensure();
+})();
+
 </script>
 </body>
 </html>
