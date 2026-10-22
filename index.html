@@ -314,7 +314,7 @@ button,.tab-btn,.os-chip{-webkit-tap-highlight-color:transparent;touch-action:ma
 @media (max-width:640px){.v4-stats{grid-template-columns:repeat(2,1fr)}.v4-addrule{grid-template-columns:1fr 1fr}.v4-addrule .sc-add{grid-column:1/-1}}
 
 /* ===== V4: التنقل + مسح البيانات + الداشبورد التفاعلية ===== */
-#dashboard-kpis{display:none!important}#fs-late-banner,#fs-health-card,#dash-extra,#v22-brandbar,#fs-place-rank{display:none!important}#fsd-legacy>summary{margin-bottom:8px}
+#dashboard-kpis{display:none!important}#tab-compliance[data-v="reports"]>.card:first-child{display:none}#tab-compliance[data-v="settings"]>.card:not(:first-child){display:none}#fs-late-banner,#fs-health-card,#dash-extra,#v22-brandbar,#fs-place-rank{display:none!important}#fsd-legacy>summary{margin-bottom:8px}
 .v4-subnav{display:flex;gap:6px;flex-wrap:wrap;background:#fff;border:1px solid var(--border);border-radius:14px;padding:6px;margin-bottom:14px;box-shadow:var(--shadow);position:sticky;top:0;z-index:5}
 .v4-sub{font-family:inherit;font-size:12.5px;font-weight:800;border:0;background:transparent;color:var(--muted);padding:9px 14px;border-radius:10px;cursor:pointer;transition:all .12s;flex:1;min-width:110px}
 .v4-sub:hover{background:#f1f5f9}
@@ -2995,10 +2995,12 @@ async function enterAsWorkerFinal(worker){
   const ws=$('worker-section'); ws.style.visibility='hidden'; ws.classList.remove('hidden'); ws.style.display='block';
   const lb=document.querySelector('#login-form-card .btn-primary'); if(lb){ lb.disabled=true; lb.innerHTML='…'; }
   try{
+    try{ window.FSBoot && FSBoot.begin('worker'); }catch(e){}
     await loadBranding(); await loadSections();
     if($('worker-name-display')) $('worker-name-display').textContent=worker.worker_name;
     updateWorkerHeader();
     await Promise.race([Promise.resolve(loadWorkerData()).catch(()=>{}), new Promise(r=>setTimeout(r,6000))]);   // لو النت بطيء جدًا ندخّله بعد 6 ثواني
+    try{ if(window.FSBoot) await FSBoot.settle(); }catch(e){}   // الإضافات المتأخرة (شهادة/تزامن/تحقق) تخلص وهي مخفية
   } finally {
     if(lb){ lb.disabled=false; if(window.FSLogin) window.FSLogin.btn(); }
   }
@@ -8857,7 +8859,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
 /* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
 (function(){
-  const VERSION = 'v9.72';
+  const VERSION = 'v9.73';
   const $ = id => document.getElementById(id);
   let running = false;
   async function tx(text, lang){
@@ -10129,12 +10131,12 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   const $n = id => document.getElementById(id);
   const G = [
     {k:'home',     ic:'🏠', ar:'الرئيسية', en:'Home',     subs:[['dashboard','لوحة التحكم']]},
-    {k:'reports',  ic:'📊', ar:'التقارير', en:'Reports',  subs:[['compliance','الامتثال والأسبوعي']]},
+    {k:'reports',  ic:'📊', ar:'التقارير', en:'Reports',  subs:[['compliance','نتائج الامتثال والأسبوعي']]},
     {k:'content',  ic:'🎓', ar:'المحتوى',  en:'Content',  subs:[['library','📚 الكل'],['videos','🎬 فيديوهات'],['cards','🖼️ كروت'],['quizzes','📝 اختبارات']]},
     {k:'field',    ic:'🦺', ar:'الميدان',  en:'Field',    subs:[['onsite','التدريبات الميدانية'],['vio-lib','المخالفات']]},
     {k:'inbox',    ic:'📥', ar:'الوارد',   en:'Inbox',    subs:[['comments','💬 التعليقات'],['reports','📣 بلاغات الموظفين']]},
-    {k:'people',   ic:'👥', ar:'الناس',    en:'People',   subs:[['workers','الموظفين'],['admins','الأدمن والأدوار'],['passwords','كلمات السر']]},
-    {k:'settings', ic:'⚙️', ar:'الإعدادات', en:'Settings', subs:[['org','الهيكل التنظيمي'],['branding','الهوية'],['compliance','المعادلة'],['purge','⚠️ منطقة الخطر']], danger:'purge'}
+    {k:'people',   ic:'👥', ar:'الناس',    en:'People',   subs:[['workers','الموظفين'],['admins','الأدمن والأدوار']]},
+    {k:'settings', ic:'⚙️', ar:'الإعدادات', en:'Settings', subs:[['org','الهيكل التنظيمي'],['branding','الهوية'],['passwords','🔑 كلمة السر الافتراضية'],['compliance','ضبط المعادلة'],['purge','⚠️ منطقة الخطر']], danger:'purge'}
   ];
   let curG = 'home', curTab = 'dashboard', busy = false;
   const oldBtn = k => $n('tabbtn-' + k);
@@ -10179,6 +10181,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   }
   afterCall('adminTab', function(tab){
     try{
+      if(tab === 'compliance'){ const tc = $n('tab-compliance'); if(tc) tc.dataset.v = (curG === 'settings') ? 'settings' : 'reports'; }
       if(tab === 'content'){ if(curG !== 'content'){ curG = 'content'; curTab = 'videos'; } }   // صفحة المحتوى الوسيطة (V6) بتعرض الفيديو/الكارت/الاختبار
       else { curG = groupOf(tab); curTab = tab; }
       build(); setTimeout(build, 0); setTimeout(() => { const c = $n('admin-crumb'), g = G.find(x => x.k === curG), s = g && g.subs.find(x => x[0] === curTab); if(c && g) c.textContent = g.k === 'home' ? g.ar : (g.ar + (s && g.subs.length > 1 ? ' › ' + s[1].replace(/^[^\u0600-\u06FFA-Za-z]+/, '') : '')); }, 60);
@@ -10286,7 +10289,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   const E = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   const inAdmin = () => !!(typeof adminUser !== 'undefined' && adminUser);
   let items = [], sel = 0, seq = 0, tmr = null;
-  const PAGES = [['الرئيسية / لوحة التحكم','home','dashboard'],['التقارير والامتثال','reports','compliance'],['الفيديوهات','content','videos'],['كروت السلامة','content','cards'],['الاختبارات','content','quizzes'],['التدريبات الميدانية','field','onsite'],['المخالفات','field','vio-lib'],['التعليقات','inbox','comments'],['بلاغات الموظفين','inbox','reports'],['الموظفين','people','workers'],['الأدمن والأدوار','people','admins'],['كلمات السر','people','passwords'],['الهيكل التنظيمي','settings','org'],['الهوية','settings','branding'],['منطقة الخطر / مسح البيانات','settings','purge']];
+  const PAGES = [['الرئيسية / لوحة التحكم','home','dashboard'],['التقارير والامتثال','reports','compliance'],['الفيديوهات','content','videos'],['كروت السلامة','content','cards'],['الاختبارات','content','quizzes'],['التدريبات الميدانية','field','onsite'],['المخالفات','field','vio-lib'],['التعليقات','inbox','comments'],['بلاغات الموظفين','inbox','reports'],['الموظفين','people','workers'],['الأدمن والأدوار','people','admins'],['كلمة السر الافتراضية','settings','passwords'],['ضبط معادلة الالتزام','settings','compliance'],['الهيكل التنظيمي','settings','org'],['الهوية','settings','branding'],['منطقة الخطر / مسح البيانات','settings','purge']];
   function ui(){
     let o = $s('fs7-search');
     if(!o){
@@ -12531,8 +12534,10 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 (function(){
   const $b = id => document.getElementById(id);
   let booting = false, busy = 0, pend = 0, quiet = null, cap = null, origST = null, origCT = null; const ids = new Set();
+  let waiters = [];
   function reveal(){
     clearTimeout(quiet); clearTimeout(cap); quiet = cap = null; booting = false;
+    const w = waiters; waiters = []; w.forEach(f => { try{ f(); }catch(e){} });
     if(origST){ window.setTimeout = origST; window.clearTimeout = origCT; origST = origCT = null; }
     const A = $b('admin-section'); if(A) A.classList.remove('fs-boot');
   }
@@ -12554,16 +12559,16 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     const realRpc = sb.rpc && sb.rpc.bind(sb);
     if(realRpc) sb.rpc = function(){ return track(realRpc.apply(null, arguments)); };
   }catch(e){}
-  beforeCall('enterAdmin', function(){
+  function begin(admin, capMs){
     try{
-      (window.__fsmarks = window.__fsmarks || []).push(['enterAdmin start', Math.round(performance.now())]);
-      const A = $b('admin-section'); if(!A) return;
-      if(!$b('fs-adm-skel')){
+      (window.__fsmarks = window.__fsmarks || []).push(['enter' + (admin ? 'Admin' : 'Worker') + ' start', Math.round(performance.now())]);
+      const A = admin ? $b('admin-section') : null; if(admin && !A) return;
+      if(admin && !$b('fs-adm-skel')){
         const s = document.createElement('div'); s.id = 'fs-adm-skel'; s.setAttribute('aria-hidden','true');
         s.innerHTML = '<div class="fs-sk" style="height:56px"></div><div class="fs-sk" style="height:120px"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div class="fs-sk" style="height:84px"></div><div class="fs-sk" style="height:84px"></div></div><div class="fs-sk" style="height:200px"></div>';
         A.appendChild(s);
       }
-      A.classList.add('fs-boot'); booting = true; busy = 0; pend = 0;
+      if(A) A.classList.add('fs-boot'); booting = true; busy = 0; pend = 0;
       if(!origST){
         origST = window.setTimeout; origCT = window.clearTimeout; ids.clear();
         const o = origST, oc = origCT;
@@ -12578,13 +12583,16 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
         };
         window.clearTimeout = function(id){ if(ids.delete(id)){ pend--; check(); } return oc.call(window, id); };
       }
-      clearTimeout(cap); cap = o_cap(6000);
+      clearTimeout(cap); cap = o_cap(capMs || 6000);
     }catch(e){}
-  }, true);
+  }
+  beforeCall('enterAdmin', function(){ begin(true); }, true);
   const o_cap = ms => (origST || window.setTimeout).call(window, reveal, ms);
   afterCallAsync('enterAdmin', async function(){ try{ (window.__fsmarks = window.__fsmarks || []).push(['enterAdmin done', Math.round(performance.now())]); check(); }catch(e){ reveal(); } }, true);
   if(window.__FS_PAR !== false) parallelPost('enterAdmin');
-  window.FSBoot = { reveal, state: () => ({ booting, busy, pend }) };
+  /* صفحة الموظف: نفس الفكرة — بنستنى الطلبات والمؤقتات القصيرة تخلص وهي مخفية، وبعدين تتكشف مرة واحدة */
+  function settle(){ return new Promise(res => { if(!booting){ res(); return; } waiters.push(res); check(); }); }
+  window.FSBoot = { reveal, begin: m => begin(m === 'admin', m === 'admin' ? 6000 : 2500), settle, state: () => ({ booting, busy, pend }) };
 })();
 </script>
 </body>
