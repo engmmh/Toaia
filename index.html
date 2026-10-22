@@ -2336,7 +2336,6 @@ async function uploadSafetyCardImage(file){
   const {data}=sb.storage.from('safety-cards').getPublicUrl(path);
   return data.publicUrl;
 }
-function dataUrlToBlob(dataUrl){ const parts=dataUrl.split(','); const mime=(parts[0].match(/:(.*?);/)||[])[1]||'image/jpeg'; const bin=atob(parts[1]||''); const arr=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i); return new Blob([arr],{type:mime}); }
 async function toggleCardVisibility(id){ const { data }=await sb.from('safety_cards').select('is_visible').eq('id',id).single(); if(!data)return; await sb.from('safety_cards').update({is_visible:!data.is_visible}).eq('id',id); await loadAdminCards(); showToast('تم التحديث'); }
 async function deleteCard(id){ if(!confirm('حذف البطاقة؟'))return; await sb.from('safety_cards').delete().eq('id',id); loadAdminCards(); loadWorkerCards(); showToast('تم الحذف'); }
 
@@ -8785,7 +8784,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
 /* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
 (function(){
-  const VERSION = 'v9.65';
+  const VERSION = 'v9.66';
   const $ = id => document.getElementById(id);
   let running = false;
   async function tx(text, lang){
