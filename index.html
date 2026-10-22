@@ -4,6 +4,10 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title id="page-title">منصة سلامة الغذاء | V2.3</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
+<link rel="preconnect" href="https://aljtbakbfhgmpxslbzaw.supabase.co" crossorigin/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <link rel="manifest" href="manifest.json"/>
@@ -755,6 +759,12 @@ body.v9-login-en .login-hero *{text-align:left!important}
 .v11-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}.v11-tabs button{border:1px solid #cbd5e1;background:#fff;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer}.v11-tabs button.on{background:#176b43;color:#fff;border-color:#176b43}
 .v11-r{display:flex;justify-content:space-between;gap:8px;align-items:center;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:7px 10px;margin-bottom:5px;font-size:12px}.v11-r small{color:#64748b}.v11-r.ok b{color:#166534}.v11-r.no b{color:#b91c1c}
 /* — st — */
+#admin-section.fs-boot > *:not(#fs-adm-skel){visibility:hidden}
+body:has(#admin-section.fs-boot) footer{visibility:hidden}
+#fs-adm-skel{display:none}
+#admin-section.fs-boot #fs-adm-skel{display:block;position:fixed;inset:0;z-index:40;background:var(--bg,#f1f5f9);padding:64px 14px 0;overflow:hidden}
+.fs-sk{background:linear-gradient(90deg,#e2e8f0,#f1f5f9,#e2e8f0);background-size:200% 100%;animation:fssk 1.3s linear infinite;border-radius:14px;margin-bottom:12px}
+@keyframes fssk{0%{background-position:200% 0}100%{background-position:-200% 0}}
 .v12-push{margin:8px 12px;padding:7px 8px 7px 10px;border-radius:12px;background:var(--ok-bg);border:1px solid #bbf7d0;font-size:12px;color:#0f172a;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .v12-push .v12-x{margin-inline-start:auto;border:0;background:transparent;color:var(--muted);font-size:16px;line-height:1;cursor:pointer;padding:6px 8px;border-radius:8px}
 .v12-push .v12-x:hover{background:rgba(15,23,42,.08)}
@@ -1639,7 +1649,7 @@ body.v9-dark .lt-bar{background:#0f172a}body.v9-dark .lt-tab.on{background:#1e29
 
 
 <!-- YouTube IFrame API loader -->
-<script src="https://www.youtube.com/iframe_api"></script>
+
 
 <script>
 /* v9.24: مؤقت واحد مشترك بدل عدة مؤقتات — بيقف تلقائياً لما الصفحة تكون في الخلفية (توفير بطارية) */
@@ -1693,22 +1703,26 @@ window.FSAuth = (function(){
    ومعاه تسخين مسبق وقت شاشة الترحيب. بيانات الموظف الشخصية (تقدمه، مخالفاته، نتايجه، كلمة سره) عمرها ما بتتكاشّى ولا بتتحمّل قبل كلمة السر.
    أي كتابة (insert/update/upsert/delete) على جدول بتمسح كاش الجدول ده فوراً. */
 const Warm = (function(){
-  const cfg = { ttl: 20000 };   // مدة الكاش بالمللي ثانية (0 = من غير كاش)
+  const cfg = { ttl: 20000, admTtl: 5000 };   // مدة الكاش بالمللي ثانية (0 = من غير كاش)
   const PUBLIC = new Set(['app_settings','sections','regions','job_roles','target_departments','content_audience','training_topics','training_videos','safety_cards','quizzes','quiz_questions','quiz_options']);
+  const ADMINX = new Set(['workers_evaluations','training_progress','quiz_attempts','onsite_training_participants','worker_violations','places','admins','admin_scopes','admin_sections','content_comments','worker_reports']);   // للأدمن بس، وبمدة 5 ثواني: بيمنع تكرار نفس الاستعلام أثناء بناء اللوحة
   const WRITES = new Set(['insert','update','upsert','delete']);
   const store = new Map();
   const clone = r => (r && r.data != null) ? Object.assign({}, r, { data: JSON.parse(JSON.stringify(r.data)) }) : r;
-  const inval = table => { for(const k of [...store.keys()]) if(k.startsWith(table + '|')) store.delete(k); };
+  let epoch = 0;   // بيزيد مع أي كتابة/مسح: الحسابات الثقيلة بتستخدمه تعرف إن البيانات اتغيرت
+  const inval = table => { epoch++; for(const k of [...store.keys()]) if(k.startsWith(table + '|')) store.delete(k); };
   function wrap(table, real, chain0, cacheable0){
     const chain = chain0.slice(); let cacheable = cacheable0;
     const self = new Proxy(real, {
       get(t, p){
         if(p === 'then') return function(res, rej){
           if(!cacheable) return Promise.resolve(real).then(r => { if(chain.some(c => WRITES.has(c[0]))) inval(table); return r; }).then(res, rej);
-          // لوحة الأدمن دايماً طازة: الكاش للدخول وصفحة الموظف بس
-          if(typeof adminUser !== 'undefined' && adminUser) return Promise.resolve(real).then(res, rej);
+          // لوحة الأدمن: كاش 5 ثواني بس (لمنع التكرار أثناء البناء) — وأي كتابة أو rpc بتمسحه
+          const adm = (typeof adminUser !== 'undefined' && adminUser);
+          if(!adm && !PUBLIC.has(table)) return Promise.resolve(real).then(res, rej);
+          const ttl = adm ? (cfg.ttl === 0 ? 0 : cfg.admTtl) : cfg.ttl;
           const k = table + '|' + JSON.stringify(chain), hit = store.get(k);
-          if(hit && Date.now() - hit.t < cfg.ttl) return hit.p.then(clone).then(res, rej);
+          if(hit && Date.now() - hit.t < ttl) return hit.p.then(clone).then(res, rej);
           const ent = { t: Date.now(), p: Promise.resolve(real).then(r => { if(r && r.error) store.delete(k); return clone(r); }, e => { store.delete(k); throw e; }) };
           store.set(k, ent);
           return ent.p.then(clone).then(res, rej);
@@ -1735,7 +1749,7 @@ const Warm = (function(){
   };
   sb.from = function(table){ let q = __realFrom(table); for(let k = 0; k < __fromHooks.length; k++) q = __fromHooks[k](table, q); return q; };
   fromHook(function(table, q){
-    if(!PUBLIC.has(table)) return q;
+    if(!PUBLIC.has(table) && !ADMINX.has(table)) return q;
     return new Proxy(q, { get(t, p){
       const v = t[p]; if(typeof v !== 'function') return v;
       return function(){
@@ -1756,7 +1770,8 @@ const Warm = (function(){
     go(() => sb.from('job_roles').select('id,target_department_id').order('id').range(0, 999));
     go(() => sb.from('target_departments').select('*'));
   }
-  return { cfg, clear(){ store.clear(); }, keys(){ return [...store.keys()]; }, prefetch };
+  try{ const rpc0 = sb.rpc && sb.rpc.bind(sb); if(rpc0) sb.rpc = function(){ epoch++; store.clear(); return rpc0.apply(null, arguments); }; }catch(e){}
+  return { cfg, epoch(){ return epoch; }, clear(){ epoch++; store.clear(); }, keys(){ return [...store.keys()]; }, prefetch };
 })();
 
 // ==================== STATE ====================
@@ -1812,11 +1827,12 @@ function __layer(name, isAsync, fresh){
   if(typeof base !== 'function') console.error('hook: الدالة مش موجودة', name);
   r = { pre: [], post: [], fin: [], isAsync, base };
   r.W = isAsync
-    ? async function(){ for(const h of r.pre) await h.apply(this, arguments); let v; try{ v = await base.apply(this, arguments); for(const h of r.post) await h.apply(this, arguments); } finally { for(const h of r.fin) await h.apply(this, arguments); } return v; }
+    ? async function(){ for(const h of r.pre) await h.apply(this, arguments); let v; try{ v = await base.apply(this, arguments); if(r.par){ const self = this, args = arguments; await Promise.all(r.post.map(h => Promise.resolve().then(() => h.apply(self, args)))); } else for(const h of r.post) await h.apply(this, arguments); } finally { for(const h of r.fin) await h.apply(this, arguments); } return v; }
     : function(){ r.pre.forEach(h => h.apply(this, arguments)); const v = base.apply(this, arguments); r.post.forEach(h => h.apply(this, arguments)); return v; };
   window[name] = r.W; __hooks[name] = r;
   return r;
 }
+function parallelPost(name){ __layer(name, true, false).par = true; }   // خطوات ما بعد الدالة تشتغل بالتوازي بدل واحدة ورا التانية
 function afterCall(name, fn, fresh){ __layer(name, false, fresh).post.push(fn); }
 function afterCallAsync(name, fn, fresh){ __layer(name, true, fresh).post.push(fn); }
 function beforeCall(name, fn, fresh){ __layer(name, false, fresh).pre.unshift(fn); }
@@ -1956,8 +1972,8 @@ const WORKER_UI_I18N = {
 };
 function wt(key){ const d=WORKER_UI_I18N[currentLang]||WORKER_UI_I18N.ar; return d[key]!=null?d[key]:WORKER_UI_I18N.ar[key]; }
 Object.assign(WORKER_UI_I18N.ar,{replayBtn:'إعادة المشاهدة',sendBtn:'إرسال',installApp:'تثبيت التطبيق',cardsHint:'اطّلع على كل بطاقة واضغط «تم الاطلاع» بعد ما تقرأها.'});
-Object.assign(WORKER_UI_I18N.en,{replayBtn:'Watch again',sendBtn:'Send',installApp:'Install app',cardsHint:'Read each card, then tap “Got it” when you are done.'});
-Object.assign(WORKER_UI_I18N.bn,{replayBtn:'আবার দেখুন',sendBtn:'পাঠান',installApp:'অ্যাপ ইনস্টল করুন',cardsHint:'প্রতিটি কার্ড পড়ুন, তারপর “দেখেছি” চাপুন।'});
+Object.assign(WORKER_UI_I18N.en,{replayBtn:'Watch again',sendBtn:'Send',installApp:'Install app',cardsHint:'Read each card, then tap “Seen” when you are done.'});
+Object.assign(WORKER_UI_I18N.bn,{replayBtn:'আবার দেখুন',sendBtn:'পাঠান',installApp:'অ্যাপ ইনস্টল করুন',cardsHint:'প্রতিটি কার্ড পড়ুন, তারপর “দেখা হয়েছে” চাপুন।'});
 Object.assign(WORKER_UI_I18N.ne,{replayBtn:'फेरि हेर्नुहोस्',sendBtn:'पठाउनुहोस्',installApp:'एप इन्स्टल गर्नुहोस्',cardsHint:'प्रत्येक कार्ड पढ्नुहोस्, अनि “हेरियो” थिच्नुहोस्।'});
 Object.assign(WORKER_UI_I18N.hi,{replayBtn:'फिर से देखें',sendBtn:'भेजें',installApp:'ऐप इंस्टॉल करें',cardsHint:'हर कार्ड पढ़ें, फिर “देख लिया” दबाएँ।'});
 async function destroyAllPlayers(){
@@ -1992,7 +2008,13 @@ async function loadBranding(){
     $('brand-logo-preview').innerHTML='<img src="'+logo+'" style="width:100%;height:100%;object-fit:cover;"/>';
   }
   if($('brand-name')) $('brand-name').value=name;
+  try{ localStorage.setItem('fs_brand_cache', JSON.stringify({name:name, logo:logo||''})); }catch(e){}
 }
+/* الشعار والاسم من آخر زيارة: بيظهروا من أول لحظة بدل ما الأيقونة 🛡️ تتبدّل بالصورة */
+(function(){ try{ const c=JSON.parse(localStorage.getItem('fs_brand_cache')||'null'); if(!c) return;
+  if(c.name && $('login-app-name')) $('login-app-name').textContent=c.name;
+  if(c.logo && $('login-img') && $('login-icon')){ $('login-icon').classList.add('hidden'); $('login-img').src=c.logo; $('login-img').classList.remove('hidden'); if($('w-icon')&&$('w-img')){ $('w-icon').classList.add('hidden'); $('w-img').src=c.logo; $('w-img').classList.remove('hidden'); } }
+}catch(e){} })();
 function previewLogo(){
   const f=$('brand-logo-input').files[0]; if(!f) return;
   const r=new FileReader(); r.onload=e=>{ $('brand-logo-preview').innerHTML='<img src="'+e.target.result+'" style="width:100%;height:100%;object-fit:cover;"/>'; }; r.readAsDataURL(f);
@@ -2258,6 +2280,7 @@ function selectTopicVideo(topicId,lang){
   if(typeof topicTimersV22!=='undefined' && topicTimersV22[topicId]){ clearInterval(topicTimersV22[topicId]); delete topicTimersV22[topicId]; }
   renderWorkerVideos();
 }
+window.fsLoadYT=function(){ if(window.__ytLoading||(window.YT&&window.YT.Player&&ytAPIReady)) return; window.__ytLoading=true; try{ const s=document.createElement('script'); s.src='https://www.youtube.com/iframe_api'; s.async=true; s.onerror=function(){ window.__ytLoading=false; }; document.head.appendChild(s); }catch(e){} };   // مكتبة يوتيوب بتتحمّل أول ما حد يفتح فيديو (مش في كل فتحة)
 window.onYouTubeIframeAPIReady=function(){ ytAPIReady=true; (pendingPlayers||[]).forEach(p=>{if(p.customCreate)p.customCreate();}); pendingPlayers=[]; };
 
 // ==================== VIDEOS (ADMIN) ====================
@@ -3602,7 +3625,7 @@ try{(function(){
         const note=$('topic-note-'+topicId);if(note)note.textContent='اللغة المختارة: '+videoLanguageLabel(version.lang);
       }catch(e){console.error(e);showToast('تعذر تشغيل الفيديو');}
     };
-    if(window.YT&&ytAPIReady)create();else pendingPlayers.push({customCreate:create});
+    if(window.YT&&ytAPIReady)create();else{ pendingPlayers.push({customCreate:create}); window.fsLoadYT(); }
   };
 
   /* loadWorkerVideos must use the authoritative renderer above. */
@@ -8319,6 +8342,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   const VAPID_DEFAULT = 'BKcYRfScla5xRIdKvpyEzhEA7YepnC4JYhqfalpxztPi82mYTSxjNOX09o4NRDlgqAyygi_b8tj6RpFm6bF8UlM';
   const TX = {
     title: { ar:'🔔 الإشعارات', en:'🔔 Notifications', bn:'🔔 নোটিফিকেশন', ne:'🔔 सूचनाहरू', hi:'🔔 सूचनाएँ' },
+    descA: { ar:'فعّل الإشعارات عشان يوصلك ملخص التقرير الأسبوعي وتنبيهات التأخير على جهازك حتى لو الموقع مقفول', en:'Turn on to get the weekly report digest and delay alerts on this device' },
     desc:  { ar:'فعّلها عشان توصلك التدريبات والاختبارات الجديدة حتى لو الموقع مقفول', en:'Turn on to get new trainings and quizzes even when the site is closed', bn:'নতুন প্রশিক্ষণ ও পরীক্ষার খবর পেতে চালু করুন, সাইট বন্ধ থাকলেও আসবে', ne:'नयाँ तालिम र परीक्षाको सूचना पाउन खोल्नुहोस्, साइट बन्द भए पनि आउँछ', hi:'नई ट्रेनिंग और टेस्ट की सूचना पाने के लिए चालू करें, साइट बंद होने पर भी आएगी' },
     on:    { ar:'تفعيل الإشعارات', en:'Turn on notifications', bn:'নোটিফিকেশন চালু করুন', ne:'सूचना खोल्नुहोस्', hi:'सूचनाएँ चालू करें' },
     active:{ ar:'الإشعارات شغالة ✅', en:'Notifications are on ✅', bn:'নোটিফিকেশন চালু আছে ✅', ne:'सूचना चालु छ ✅', hi:'सूचनाएँ चालू हैं ✅' },
@@ -8331,7 +8355,11 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   const t = k => TX[k][lang()];
   const supported = () => ('serviceWorker' in navigator) && ('PushManager' in window) && ('Notification' in window);
   const u8 = b64 => { const p = '='.repeat((4 - b64.length % 4) % 4), s = (b64 + p).replace(/-/g, '+').replace(/_/g, '/'), r = atob(s); return Uint8Array.from([...r].map(c => c.charCodeAt(0))); };
-  const workerId = () => { try{ return (typeof currentUser !== 'undefined' && currentUser) ? currentUser.id : null; }catch(e){ return null; } };
+  const adminShown = () => { const s = $q('admin-section'); return !!(s && s.style.display !== 'none' && !s.classList.contains('hidden')); };
+  const workerId = () => { try{
+    if(adminShown()) return (typeof adminUser !== 'undefined' && adminUser && adminUser.workerId) ? adminUser.workerId : null;   // المدير بيفعّل إشعارات جهازه (ملخص التقرير وتنبيهاته)
+    return (typeof currentUser !== 'undefined' && currentUser) ? currentUser.id : (typeof adminUser !== 'undefined' && adminUser && adminUser.workerId) || null;
+  }catch(e){ return null; } };
   let vapid = null, busy = false, msg = '';
 
   async function getKey(){
@@ -8374,11 +8402,15 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     const wid = workerId();
     let host = $q('v12-push');
     if(!wid){ if(host) host.remove(); return; }
+    if(host && adminShown() !== !!host.closest('#admin-section')){ host.remove(); host = null; }
     if(!host){
       host = document.createElement('div'); host.id = 'v12-push'; host.className = 'v12-push';
+      if(adminShown()){ const td = $q('tab-dashboard'); if(!td) return; td.insertBefore(host, td.firstChild); }
+      else {
       const anchor = $q('v9-banner') || $q('worker-name-display');
       if(anchor && anchor.parentElement && $q('v9-banner')) anchor.insertAdjacentElement('afterend', host);
       else { const ws = $q('worker-section'); if(!ws) return; ws.insertBefore(host, ws.firstChild); }
+      }
     }
     if(dismissed()){ host.remove(); return; }
     const X = '<button type="button" class="v12-x" id="v12-x" aria-label="✕">✕</button>';
@@ -8388,7 +8420,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     if(perm === 'denied'){ host.className = 'v12-push note'; host.innerHTML = '<span class="v12-d">' + E(t('denied')) + '</span>' + X; wireX(); return; }
     if(sub){ host.remove(); return; }   // اتفعّلت: الشريط يختفي
     host.className = 'v12-push';
-    host.innerHTML = '<span class="v12-d">' + E(t('desc')) + '</span><button type="button" class="btn-primary v12-btn" id="v12-on"' + (busy ? ' disabled' : '') + '>' + E(t('on')) + '</button>' + X + (msg ? '<div class="v12-msg" style="flex-basis:100%">' + E(msg) + '</div>' : '');
+    host.innerHTML = '<span class="v12-d">' + E(adminShown() ? (TX.descA[lang()] || TX.descA.ar) : t('desc')) + '</span><button type="button" class="btn-primary v12-btn" id="v12-on"' + (busy ? ' disabled' : '') + '>' + E(t('on')) + '</button>' + X + (msg ? '<div class="v12-msg" style="flex-basis:100%">' + E(msg) + '</div>' : '');
     $q('v12-on').onclick = enable; wireX();
   }
 
@@ -8404,6 +8436,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   setTimeout(() => { resync(); draw(); }, 50);
 }, true);
   }
+  afterCallAsync('enterAdmin', async function() { try{ await resync(); await draw(); }catch(e){} }, true);
   afterCall('adminTab', function(tab) {
   if(tab === 'passwords') setTimeout(adminCard, 400);
 });
@@ -8768,7 +8801,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
 /* ===== V16b — ترجمة تلقائية للجلسات القديمة اللي مالهاش ترجمة + رقم النسخة ===== */
 (function(){
-  const VERSION = 'v9.63';
+  const VERSION = 'v9.64';
   const $ = id => document.getElementById(id);
   let running = false;
   async function tx(text, lang){
@@ -8943,7 +8976,6 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   const esc = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const lang = () => { try{ return currentLang || 'ar'; }catch(e){ return 'ar'; } };
   const T = {
-    got:   {ar:'فهمت',en:'Got it',bn:'বুঝেছি',ne:'बुझेँ',hi:'समझ गया'},
     seen:  {ar:'تم الاطلاع',en:'Seen',bn:'দেখা হয়েছে',ne:'हेरियो',hi:'देख लिया'},
     prog:  {ar:'اطلعت على {a} من {b}',en:'You viewed {a} of {b}',bn:'আপনি {b}টির মধ্যে {a}টি দেখেছেন',ne:'तपाईंले {b} मध्ये {a} हेर्नुभयो',hi:'आपने {b} में से {a} देखे'},
     ask:   {ar:'سؤال أو تعليق',en:'Question or comment',bn:'প্রশ্ন বা মন্তব্য',ne:'प्रश्न वा टिप्पणी',hi:'प्रश्न या टिप्पणी'}
@@ -9436,28 +9468,34 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     return out;
   }
   /* كل موظف يتحسب "خارج الإحصائيات والترتيب": (1) أي أدمن (جدول الأدمن)  (2) أدمن تلقائي (إدارة إدارية) (3) موظف إدارة معلّمة "خارج الإحصائيات" (الجودة) */
-  let exW = null, exWAt = 0;
-  async function excludedWorkers(force){
-    if(!force && exW && Date.now() - exWAt < 30000) return exW;
-    const s = new Set();
-    try{
-      const [dep, adm, roles] = await Promise.all([
-        sb.from('target_departments').select('*'),
-        sb.from('admins').select('worker_id'),
-        pagedAll('job_roles', 'id,target_department_id').catch(() => [])
-      ]);
-      const ws = await pagedAll('workers_evaluations', 'id,job_role_id');
-      const statsDept = new Set();
-      ((dep && dep.data) || []).forEach(d => { if(d.exclude_from_stats) statsDept.add(Number(d.id)); });
-      const admIds = new Set(((adm && adm.data) || []).map(a => a.worker_id).filter(x => x != null).map(Number));
-      const roleDept = {}; roles.forEach(r => roleDept[r.id] = Number(r.target_department_id));
-      ws.forEach(w => {
-        const d = roleDept[w.job_role_id];
-        if(admIds.has(Number(w.id)) || statsDept.has(d)) s.add(Number(w.id));
-      });
-    }catch(e){ console.error('v19 excludedWorkers', e); }
-    try{ const st = await sb.from('workers_evaluations').select('id').in('status', ['suspended', 'left', 'leave']); if(!st.error) (st.data || []).forEach(x => s.add(Number(x.id))); }catch(e){}
-    exW = s; exWAt = Date.now(); return s;
+  let exW = null, exWAt = 0, exP = null;
+  function excludedWorkers(force){
+    if(!force && exW && Date.now() - exWAt < 30000) return Promise.resolve(exW);
+    if(!force && exP) return exP;   // نفس الحساب بيتطلب من أكتر من مكان في نفس اللحظة: نشاركه
+    const run = (async function(){
+      const s = new Set();
+      try{
+        const [dep, adm, roles, ws, st] = await Promise.all([
+          sb.from('target_departments').select('*'),
+          sb.from('admins').select('worker_id'),
+          pagedAll('job_roles', 'id,target_department_id').catch(() => []),
+          pagedAll('workers_evaluations', 'id,job_role_id'),
+          Promise.resolve(sb.from('workers_evaluations').select('id').in('status', ['suspended', 'left', 'leave'])).catch(() => null)
+        ]);
+        const statsDept = new Set();
+        ((dep && dep.data) || []).forEach(d => { if(d.exclude_from_stats) statsDept.add(Number(d.id)); });
+        const admIds = new Set(((adm && adm.data) || []).map(a => a.worker_id).filter(x => x != null).map(Number));
+        const roleDept = {}; roles.forEach(r => roleDept[r.id] = Number(r.target_department_id));
+        ws.forEach(w => {
+          const d = roleDept[w.job_role_id];
+          if(admIds.has(Number(w.id)) || statsDept.has(d)) s.add(Number(w.id));
+        });
+        if(st && !st.error) (st.data || []).forEach(x => s.add(Number(x.id)));
+      }catch(e){ console.error('v19 excludedWorkers', e); }
+      exW = s; exWAt = Date.now(); return s;
+    })();
+    exP = run; run.then(() => { if(exP === run) exP = null; }, () => { if(exP === run) exP = null; });
+    return run;
   }
   window.V19 = { excluded, excludedWorkers, has: () => hasCol };
 
@@ -9872,9 +9910,15 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
   async function paintBranches(){
     const kpis = $('dashboard-kpis'); if(!kpis) return;
-    let secs = [];
-    try{ secs = (await sb.from('sections').select('id,name_ar,branch_name,brand,department_id,region_id,place_id')).data || []; }catch(e){ return; }
-    let pls = []; try{ const pr = await sb.from('places').select('id,name_ar,kind,region_id'); pls = pr.error ? [] : (pr.data || []); }catch(e){}
+    let secs = [], pls = [], regs = [], deps = [];
+    try{
+      const [sr, pr, rr, dr] = await Promise.all([   // 4 استعلامات مستقلة: بالتوازي بدل واحد ورا التاني
+        sb.from('sections').select('id,name_ar,branch_name,brand,department_id,region_id,place_id'),
+        Promise.resolve(sb.from('places').select('id,name_ar,kind,region_id')).catch(() => null),
+        Promise.resolve(sb.from('regions').select('id,name_ar')).catch(() => null),
+        Promise.resolve(sb.from('target_departments').select('id,name_ar')).catch(() => null)]);
+      secs = sr.data || []; pls = (pr && !pr.error) ? (pr.data || []) : []; regs = (rr && rr.data) || []; deps = (dr && dr.data) || [];
+    }catch(e){ return; }
     const pm = {}; pls.forEach(p => pm[p.id] = p);
     const hid = window.__v20hid || new Set();
     let list = secs.filter(s => !hid.has(String(s.id)));
@@ -9888,8 +9932,6 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
       bar.onclick = e => { const b = e.target.closest('button[data-b]'); if(!b) return; window.__v22brand = b.dataset.b; window.loadAdminDashboard(); };
     }
     // المستويات: (الإدارة - المنطقة) ← الفرع ← الوحدة/البراند
-    let regs = [], deps = [];
-    try{ regs = (await sb.from('regions').select('id,name_ar')).data || []; deps = (await sb.from('target_departments').select('id,name_ar')).data || []; }catch(e){}
     const rn = {}; regs.forEach(r => rn[r.id] = r.name_ar); const dn = {}; deps.forEach(d => dn[d.id] = d.name_ar);
     const rows = window._dashPerWorker || [];
     const by = {};
@@ -10357,7 +10399,20 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     var bySection={}; per.forEach(function(r){ var sid=r.worker.section_id||'none'; (bySection[sid]=bySection[sid]||[]).push(r); });
     return {weights:wt,perWorker:per,bySection:bySection,totalWorkers:list.length,excluded:before-list.length};
   }
-  window.FSStats={weights:weights,windowDays:windowDays,ctx:ctx,calc:calc,counts:counts,forWorkers:forWorkers,compute:compute};
+  /* نفس الحساب بيتطلب 3-4 مرات وقت فتح اللوحة (تنبيه التأخير + الملخص + ...): بنشاركه لو مفيش كتابة حصلت ولا عدّى 4 ثواني */
+  function memo(fn, keyOf){
+    var m={};
+    return function(){
+      var k=keyOf?keyOf.apply(null,arguments):'', e=(typeof Warm!=='undefined'&&Warm.epoch)?Warm.epoch():0, h=m[k];
+      if(typeof adminUser==='undefined'||!adminUser||(typeof Warm!=='undefined'&&Warm.cfg.ttl===0)) return fn.apply(null,arguments);
+      if(h&&h.e===e&&Date.now()-h.t<4000) return h.p;
+      var p=fn.apply(null,arguments); m[k]={t:Date.now(),e:e,p:p}; p.catch(function(){ if(m[k]&&m[k].p===p) delete m[k]; });
+      return p;
+    };
+  }
+  var computeM=memo(compute,function(){ return String(adminUser&&adminUser.id)+'|'+(getAdminScopeIds()||[]).join(','); });
+  var ctxM=memo(ctx,function(ids){ return String(adminUser&&adminUser.id)+'|'+(ids||[]).join(','); });
+  window.FSStats={weights:weights,windowDays:windowDays,ctx:ctxM,calc:calc,counts:counts,forWorkers:forWorkers,compute:computeM};
   /* خلايا التدريب والاختبارات في جدول الموظفين */
   var col=function(p){return p>=80?'#16a34a':p>=50?'#d97706':'#dc2626';};
   window.fillWorkerPcts=async function(rows){
@@ -11168,6 +11223,67 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   ensureWk();
 })();
 
+
+/* FSBoot — لوحة الأدمن تتكشف مرة واحدة بعد ما تتبني بالكامل (بدل ما الصفحة تتبني قدام المستخدم على 4 ثواني).
+   بيعدّ الطلبات الجارية + المؤقتات القصيرة (≤1.5 ث) أثناء التحميل، ولما يخلصوا كلهم يستنى لحظة ويكشف. وفيه سقف أمان 6 ثواني. */
+(function(){
+  const $b = id => document.getElementById(id);
+  let booting = false, busy = 0, pend = 0, quiet = null, cap = null, origST = null, origCT = null; const ids = new Set();
+  function reveal(){
+    clearTimeout(quiet); clearTimeout(cap); quiet = cap = null; booting = false;
+    if(origST){ window.setTimeout = origST; window.clearTimeout = origCT; origST = origCT = null; }
+    const A = $b('admin-section'); if(A) A.classList.remove('fs-boot');
+  }
+  function check(){
+    if(!booting) return; clearTimeout(quiet);
+    if(busy <= 0 && pend <= 0) quiet = (origST || window.setTimeout).call(window, function(){ if(booting && busy <= 0 && pend <= 0) reveal(); }, 200);
+  }
+  function track(b){
+    if(!booting || !b || typeof b.then !== 'function') return b;
+    return new Proxy(b, { get(t, p){
+      const v = t[p]; if(typeof v !== 'function') return v;
+      if(p === 'then') return function(a, c){ if(!booting) return v.call(t, a, c); busy++; let done = false; const fin = () => { if(!done){ done = true; busy--; check(); } };
+        return v.call(t, function(x){ fin(); return a ? a(x) : x; }, function(e){ fin(); if(c) return c(e); throw e; }); };
+      return function(){ const r = v.apply(t, arguments); return (r === t || (r && typeof r.then === 'function')) ? track(r) : r; };
+    }});
+  }
+  try{
+    if(typeof fromHook === 'function') fromHook(function(table, q){ return booting ? track(q) : q; });
+    const realRpc = sb.rpc && sb.rpc.bind(sb);
+    if(realRpc) sb.rpc = function(){ return track(realRpc.apply(null, arguments)); };
+  }catch(e){}
+  beforeCall('enterAdmin', function(){
+    try{
+      (window.__fsmarks = window.__fsmarks || []).push(['enterAdmin start', Math.round(performance.now())]);
+      const A = $b('admin-section'); if(!A) return;
+      if(!$b('fs-adm-skel')){
+        const s = document.createElement('div'); s.id = 'fs-adm-skel'; s.setAttribute('aria-hidden','true');
+        s.innerHTML = '<div class="fs-sk" style="height:56px"></div><div class="fs-sk" style="height:120px"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div class="fs-sk" style="height:84px"></div><div class="fs-sk" style="height:84px"></div></div><div class="fs-sk" style="height:200px"></div>';
+        A.appendChild(s);
+      }
+      A.classList.add('fs-boot'); booting = true; busy = 0; pend = 0;
+      if(!origST){
+        origST = window.setTimeout; origCT = window.clearTimeout; ids.clear();
+        const o = origST, oc = origCT;
+        window.setTimeout = function(f, ms){
+          if(booting && typeof f === 'function' && !(ms > 1500)){
+            const rest = [].slice.call(arguments, 2); let id;
+            if(window.__FS_DBG) (window.__tm = window.__tm || []).push([Math.round(performance.now()), ms, (new Error().stack || '').split('\n').slice(2, 4).join(' < ').replace(/https?:\/\/app.test\/?:?/g, '')]);
+            id = o.call(window, function(){ if(ids.delete(id)){ pend--; try{ return f.apply(this, rest); } finally { check(); } } return f.apply(this, rest); }, ms);
+            ids.add(id); pend++; return id;
+          }
+          return o.apply(window, arguments);
+        };
+        window.clearTimeout = function(id){ if(ids.delete(id)){ pend--; check(); } return oc.call(window, id); };
+      }
+      clearTimeout(cap); cap = o_cap(6000);
+    }catch(e){}
+  }, true);
+  const o_cap = ms => (origST || window.setTimeout).call(window, reveal, ms);
+  afterCallAsync('enterAdmin', async function(){ try{ (window.__fsmarks = window.__fsmarks || []).push(['enterAdmin done', Math.round(performance.now())]); check(); }catch(e){ reveal(); } }, true);
+  if(window.__FS_PAR !== false) parallelPost('enterAdmin');
+  window.FSBoot = { reveal, state: () => ({ booting, busy, pend }) };
+})();
 </script>
 </body>
 </html>
