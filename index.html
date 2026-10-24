@@ -2002,11 +2002,11 @@ async function insertWithOptionalSort(table, payload, sortVal){
   return res;
 }
 const VIOLATION_I18N = {
-  ar:{closed:'مغلقة',open:'مفتوحة',waived:'لم تُطبَّق',enforced:'تم تنفيذ الخصم',yourReply:'ردك: ',replyPlaceholder:'اكتب ردك على المخالفة خلال 24 ساعة...',send:'إرسال الرد',replyExpired:'انتهت مهلة الرد (24 ساعة)',points:'نقطة',empty:'لا توجد مخالفات — أحسنت! 🎉'},
-  en:{closed:'Closed',open:'Open',waived:'Not applied',enforced:'Deduction applied',yourReply:'Your reply: ',replyPlaceholder:'Write your reply within 24 hours...',send:'Send reply',replyExpired:'Reply window expired (24h)',points:'pts',empty:'No violations — well done! 🎉'},
-  bn:{closed:'বন্ধ',open:'খোলা',waived:'প্রয়োগ হয়নি',enforced:'কর্তন প্রয়োগ হয়েছে',yourReply:'আপনার উত্তর: ',replyPlaceholder:'২৪ ঘণ্টার মধ্যে উত্তর লিখুন...',send:'উত্তর পাঠান',replyExpired:'উত্তরের সময় শেষ (২৪ ঘণ্টা)',points:'পয়েন্ট',empty:'কোনো লঙ্ঘন নেই — চমৎকার! 🎉'},
-  ne:{closed:'बन्द',open:'खुला',waived:'लागू भएन',enforced:'कटौती लागू भयो',yourReply:'तपाईंको जवाफ: ',replyPlaceholder:'२४ घण्टाभित्र जवाफ लेख्नुहोस्...',send:'जवाफ पठाउनुहोस्',replyExpired:'जवाफको समय सकियो (२४ घण्टा)',points:'अंक',empty:'कुनै उल्लङ्घन छैन — राम्रो! 🎉'},
-  hi:{closed:'बंद',open:'खुला',waived:'लागू नहीं हुआ',enforced:'कटौती लागू हुई',yourReply:'आपका जवाब: ',replyPlaceholder:'24 घंटे के भीतर जवाब लिखें...',send:'जवाब भेजें',replyExpired:'जवाब देने की समय सीमा समाप्त (24 घंटे)',points:'अंक',empty:'कोई उल्लंघन नहीं — बहुत बढ़िया! 🎉'}
+  ar:{warnDoc:'📄 الإنذار الرسمي',closed:'مغلقة',open:'مفتوحة',waived:'لم تُطبَّق',enforced:'تم تنفيذ الخصم',yourReply:'ردك: ',replyPlaceholder:'اكتب ردك على المخالفة خلال 24 ساعة...',send:'إرسال الرد',replyExpired:'انتهت مهلة الرد (24 ساعة)',points:'نقطة',empty:'لا توجد مخالفات — أحسنت! 🎉'},
+  en:{warnDoc:'📄 Official warning',closed:'Closed',open:'Open',waived:'Not applied',enforced:'Deduction applied',yourReply:'Your reply: ',replyPlaceholder:'Write your reply within 24 hours...',send:'Send reply',replyExpired:'Reply window expired (24h)',points:'pts',empty:'No violations — well done! 🎉'},
+  bn:{warnDoc:'📄 অফিসিয়াল সতর্কবার্তা',closed:'বন্ধ',open:'খোলা',waived:'প্রয়োগ হয়নি',enforced:'কর্তন প্রয়োগ হয়েছে',yourReply:'আপনার উত্তর: ',replyPlaceholder:'২৪ ঘণ্টার মধ্যে উত্তর লিখুন...',send:'উত্তর পাঠান',replyExpired:'উত্তরের সময় শেষ (২৪ ঘণ্টা)',points:'পয়েন্ট',empty:'কোনো লঙ্ঘন নেই — চমৎকার! 🎉'},
+  ne:{warnDoc:'📄 आधिकारिक चेतावनी',closed:'बन्द',open:'खुला',waived:'लागू भएन',enforced:'कटौती लागू भयो',yourReply:'तपाईंको जवाफ: ',replyPlaceholder:'२४ घण्टाभित्र जवाफ लेख्नुहोस्...',send:'जवाफ पठाउनुहोस्',replyExpired:'जवाफको समय सकियो (२४ घण्टा)',points:'अंक',empty:'कुनै उल्लङ्घन छैन — राम्रो! 🎉'},
+  hi:{warnDoc:'📄 आधिकारिक चेतावनी',closed:'बंद',open:'खुला',waived:'लागू नहीं हुआ',enforced:'कटौती लागू हुई',yourReply:'आपका जवाब: ',replyPlaceholder:'24 घंटे के भीतर जवाब लिखें...',send:'जवाब भेजें',replyExpired:'जवाब देने की समय सीमा समाप्त (24 घंटे)',points:'अंक',empty:'कोई उल्लंघन नहीं — बहुत बढ़िया! 🎉'}
 };
 function vioText(key){ const d=VIOLATION_I18N[currentLang]||VIOLATION_I18N.ar; return d[key]!=null?d[key]:VIOLATION_I18N.ar[key]; }
 const PW_MODAL_I18N = {
@@ -2241,7 +2241,9 @@ async function loadWorkerViolationsAdmin(workerId){
     }
     return '<div style="background:#fff;border:1px solid #fecaca;border-radius:8px;padding:8px 10px;">'+
       '<div style="display:flex;justify-content:space-between;align-items:center;"><span class="u-fs12-b">⚠️ '+esc(v.violation_title)+'</span><span style="font-size:12px;font-weight:800;color:#991b1b;">-'+v.deduction_points+'</span></div>'+
-      '<div class="muted u-fs10">'+fmtDate(v.created_at)+' '+statusBadge+'</div>'+replyHtml+actions+'</div>';
+      '<div class="muted u-fs10">'+fmtDate(v.created_at)+' '+statusBadge+'</div>'+
+      '<button class="btn-sm btn-secondary" style="font-size:10px;padding:5px 8px;margin-top:6px;" onclick="FSWarning.open('+v.id+')">🖨️ الإنذار'+(v.doc_no?' · '+esc(v.doc_no):'')+'</button>'+
+      replyHtml+actions+'</div>';
   }).join('') || '<div class="muted u-empty">'+(f==='all'?'لا توجد مخالفات':'لا توجد مخالفات مطابقة للفلتر')+'</div>';
   rows.forEach(v=>{ if(v.worker_reply && typeof attachInlineTranslation==='function') attachInlineTranslation(v.worker_reply,'vrep-tr-'+v.id); });
 }
@@ -2292,16 +2294,165 @@ async function recordViolation(){
     if(!w) return;
     const newKpi=Math.max(0,(w.kpi_score??100)-deduct);
     const newCount=(w.violations_count||0)+1;
-    const {error:insErr} = await sb.from('worker_violations').insert({ worker_id:currentModalWorkerId, violation_title:title, title_en, title_bn, title_ne, title_hi, deduction_points:deduct });
-    if(insErr){ showToast('⚠️ فشل تسجيل المخالفة: '+insErr.message); return; }
+    const issuer = await FSWarning.issuer();
+    const row = { worker_id:currentModalWorkerId, violation_title:title, title_en, title_bn, title_ne, title_hi, deduction_points:deduct,
+      issue_date:FSWarning.today(), issued_by_name:issuer.name, issued_by_dept:issuer.dept, warning_type:issuer.type, place_name:FSWarning.placeName(w.section_id) };
+    const {data:ins, error:insErr} = await sb.from('worker_violations').insert(row).select('id').single();
+    if(insErr){ showToast(/column|issue_date|warning_type/i.test(insErr.message) ? '⚠️ لازم يتشغّل ملف fs_warning.sql في Supabase الأول' : '⚠️ فشل تسجيل المخالفة: '+insErr.message); return; }
     await sb.from('workers_evaluations').update({ kpi_score:newKpi, violations_count:newCount }).eq('id',currentModalWorkerId);
     $('vio-custom').value=''; $('vio-pick').value=''; ['vio-custom-en','vio-custom-bn','vio-custom-ne','vio-custom-hi'].forEach(i=>{ if($(i)) $(i).value=''; });
     loadWorkerViolationsAdmin(currentModalWorkerId); loadWorkers();
     showToast('✅ تم تسجيل المخالفة وخصم '+deduct+' نقطة فورًا');
+    if(ins && ins.id) FSWarning.open(ins.id);
   } finally {
     if(btn){ btn.dataset.busy='0'; btn.disabled=false; btn.style.opacity='1'; }
   }
 }
+
+
+// ==================== OFFICIAL WARNING (نموذج الإنذار الرسمي) ====================
+// One place for everything about the printable warning: the issuer snapshot taken
+// when a violation is recorded, the A4 form (same layout as the company's paper
+// form), and printing. The form is built from the violation row on demand, so
+// nothing is stored as a file and a reprint always matches the original.
+const FSWarning = (() => {
+  const TYPES = [
+    ['hr',         'Human Resources Department Warning', 'انذار ادارة الموارد البشرية'],
+    ['production', 'Production Department Warning',      'انذار ادارة الانتاج'],
+    ['quality',    'Quality Management Warning',         'انذار ادارة الجودة'],
+    ['operations', 'Operations Department Warning',      'انذار إدارة التشغيل'],
+    ['finance',    'Financial Management Warning',       'انذار الإدارة المالية'],
+    ['other',      'Another warning',                    'انذار اخر']
+  ];
+  const HR_ROWS = [
+    ['Warning', 'انذار'], ['deduction from the salary', 'خصم من نسبة الراتب'],
+    ['Final warning of Termination', 'انذار نهائي بالفصل'], ['Stopping salary', 'إيقاف راتب'],
+    ['Deduct a specific amount', 'خصم مبلغ محدد']
+  ];
+  const LANG_FIELD = { bn:'title_bn', ne:'title_ne', hi:'title_hi' };
+
+  // Today's date in Riyadh, date only (YYYY-MM-DD).
+  const today = () => new Intl.DateTimeFormat('en-CA', { timeZone:'Asia/Riyadh' }).format(new Date());
+  const showDate = d => { const p = String(d || '').slice(0, 10).split('-'); return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : ''; };
+
+  // Which checkbox the issuing admin's department maps to.
+  function typeOf(deptName){
+    const n = String(deptName || '');
+    if(/جود/.test(n)) return 'quality';
+    if(/[اإ]نتاج/.test(n)) return 'production';
+    if(/تشغيل/.test(n)) return 'operations';
+    if(/موارد|بشري/.test(n)) return 'hr';
+    if(/مال/.test(n)) return 'finance';
+    return 'other';
+  }
+
+  function placeName(sectionId){
+    const s = (typeof sections !== 'undefined' ? sections : []).find(x => Number(x.id) === Number(sectionId));
+    return s ? s.name_ar : '';
+  }
+
+  // The admin issuing the warning: name + department (from their own employee record).
+  async function issuer(){
+    const u = (typeof adminUser !== 'undefined' && adminUser) || {};
+    let dept = '';
+    try{
+      if(u.workerId){
+        const { data:aw } = await sb.from('workers_evaluations').select('job_role_id').eq('id', u.workerId).maybeSingle();
+        const { data:jr } = aw && aw.job_role_id ? await sb.from('job_roles').select('target_department_id').eq('id', aw.job_role_id).maybeSingle() : { data:null };
+        const { data:d } = jr && jr.target_department_id ? await sb.from('target_departments').select('name_ar').eq('id', jr.target_department_id).maybeSingle() : { data:null };
+        dept = (d && d.name_ar) || '';
+      }
+    }catch(e){ dept = ''; }
+    return { name:u.name || '', dept:dept, type:typeOf(dept) };
+  }
+
+  function formHtml(v, w){
+    const e = s => esc(s == null ? '' : String(s));
+    const box = on => '<span class="fsw-box">' + (on ? '✓' : '') + '</span>';
+    const date = showDate(v.issue_date || v.created_at);
+    const langTitle = w && LANG_FIELD[w.preferred_lang] ? v[LANG_FIELD[w.preferred_lang]] : '';
+    const types = TYPES.map(t => '<div class="fsw-chk"><span class="fsw-en">' + t[1] + '</span>' + box(v.warning_type === t[0]) + '<span class="fsw-ar">' + t[2] + '</span></div>').join('');
+    const hr = HR_ROWS.map(t => '<div class="fsw-chk sm"><span class="fsw-en">' + t[0] + '</span>' + box(false) + '<span class="fsw-ar">' + t[1] + '</span></div>').join('');
+    const row = (en, ar, val) => '<div class="fsw-row"><span class="fsw-en">' + en + '</span><b class="fsw-val">' + e(val) + '</b><span class="fsw-ar">' + ar + '</span></div>';
+    return '<div class="fsw-page">' +
+      '<img class="fsw-wm" src="logo-ufuq.svg" alt="">' +
+      '<div class="fsw-top"><div class="fsw-co en">UFUQ AL-HOROUF<br>COMMERCIAL<small>C.R: 1131298835</small></div>' +
+        '<img class="fsw-logo" src="logo-ufuq.svg" alt="UFUQ">' +
+        '<div class="fsw-co ar">شركة أفق<br>الحروف التجارية<small>س.ت 1131298835</small></div></div>' +
+      '<div class="fsw-ref"><div class="fsw-en"><div>Doc No <b>' + e(v.doc_no || '—') + '</b></div><div>Date <b>' + e(date) + '</b></div></div>' +
+        '<div class="fsw-title">OFFICIALLY WARNING<br>إنـــذار رسمي</div>' +
+        '<div class="fsw-ar">Ufuq Al Harouf Commercial<br>شـركة أفـق الحروف التجارية</div></div>' +
+      '<div class="fsw-bar"><span>FUNCTIONAL INFORMATION:</span><span>المعلومات الوظيفية:</span></div>' +
+      row('the date', 'التاريخ', date) +
+      row('FULL NAME', 'الاسم بالكامل', w ? w.worker_name : '') +
+      row('JOB ID NO', 'الرقم الوظيفي', v.worker_id) +
+      row('The Branch', 'الفرع', v.place_name || (w ? placeName(w.section_id) : '')) +
+      '<div class="fsw-bar"><span>Nature of Warning</span><span>نوع الانذار</span></div>' +
+      '<div class="fsw-chks">' + types + '</div>' +
+      '<div class="fsw-bar"><span>Warning Related to</span><span>تفاصيل الانذار</span></div>' +
+      '<div class="fsw-details"><div class="ar">' + e(v.violation_title) + '</div>' +
+        (v.title_en ? '<div class="en">' + e(v.title_en) + '</div>' : '') +
+        (langTitle ? '<div class="en">' + e(langTitle) + '</div>' : '') + '</div>' +
+      '<div class="fsw-sign"><div><div>توقيع الموظف بالعلم</div><div class="fsw-en">The employee\'s knowing signature</div><div class="fsw-issuer"></div><div class="fsw-line"></div></div>' +
+        '<div><div>توقيع مراقب الجودة</div><div class="fsw-en">Quality Controller\'s Signature</div><div class="fsw-issuer">' + e(v.issued_by_name) + '</div><div class="fsw-line"></div></div></div>' +
+      '<div class="fsw-official">يعتبر هذا الإنذار رسميا عند تسجيله بمنصة جسر</div>' +
+      '<div class="fsw-bar"><span>For HR Department use only</span><span>لاستخدام ادارة الموارد البشرية فقط</span></div>' +
+      '<div class="fsw-hr"><div class="fsw-hrnote"><div>التفاصيل: ...............................................</div><div>...........................................................</div><div class="fsw-approve">يعتمد ,,,</div></div>' +
+        '<div class="fsw-chks">' + hr + '<div class="fsw-chk sm"><span class="fsw-en">(....................)</span><span></span><span class="fsw-ar">(....................)</span></div></div></div>' +
+      '<div class="fsw-foot"><span>✉ info@ufuq.co</span><span class="mid">OUR BRANDS<small>M DEE - HINT - MLT - KIB</small></span><span>📍 Al-Qassim , Buraidah</span></div>' +
+    '</div>';
+  }
+
+  const CSS =
+    '#fs-warn-ov{position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.6);overflow:auto;padding:16px 8px}' +
+    '.fsw-actions{position:sticky;top:0;z-index:2;display:flex;gap:8px;justify-content:center;margin:0 auto 12px;max-width:210mm}' +
+    '.fsw-page{position:relative;overflow:hidden;width:210mm;min-height:297mm;margin:0 auto;background:#fff;color:#222;font-family:Cairo,Tahoma,sans-serif;font-size:12.5px;padding:12mm 12mm 0;box-sizing:border-box;display:flex;flex-direction:column;direction:ltr;text-align:left}' +
+    '.fsw-wm{position:absolute;top:34%;left:50%;width:62mm;transform:translateX(-50%);opacity:.06;pointer-events:none}' +
+    '.fsw-top{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #bbb;padding-bottom:8px}' +
+    '.fsw-co{font-weight:800;font-size:15px;line-height:1.35;width:38%}.fsw-co.ar{direction:rtl;text-align:right;font-size:17px}' +
+    '.fsw-co small{display:block;font-size:12px;font-weight:700;margin-top:10px}.fsw-logo{height:22mm}' +
+    '.fsw-ref{display:flex;justify-content:space-between;align-items:center;margin:16px 0 18px;line-height:1.9}' +
+    '.fsw-ref b{margin-inline-start:24px}.fsw-title{color:#c0262d;text-align:center;font-weight:700;letter-spacing:.3px}' +
+    '.fsw-en{text-align:left}.fsw-ar{direction:rtl;text-align:right}' +
+    '.fsw-bar{display:flex;justify-content:space-between;background:#dcdcdc;padding:3px 8px;font-weight:700;margin-top:6px}.fsw-bar span:last-child{direction:rtl}' +
+        '.fsw-row{display:grid;grid-template-columns:1fr 2fr 1fr;align-items:center;padding:4px 8px}.fsw-row:nth-of-type(even){background:#f4f4f4}' +
+    '.fsw-val{text-align:center;font-size:13.5px}' +
+    '.fsw-chks{padding:4px 0 6px}.fsw-chk{display:grid;grid-template-columns:1fr 28px 1fr;align-items:center;padding:2px 60px}' +
+    '.fsw-chk.sm{padding:2px 0;font-size:12px}' +
+    '.fsw-box{display:inline-flex;width:13px;height:13px;border:1.4px solid #333;align-items:center;justify-content:center;font-size:12px;font-weight:900;line-height:1;margin:auto}' +
+    '.fsw-details{min-height:42mm;padding:10px 12px;line-height:1.8}.fsw-details .ar{direction:rtl;text-align:right;font-weight:700;font-size:14px}.fsw-details .en{color:#444}' +
+    '.fsw-sign{display:flex;justify-content:space-between;border-top:1px dashed #555;padding-top:10px;margin-top:6px;text-align:center}' +
+    '.fsw-sign>div{width:45%}.fsw-sign>div>div:first-child{direction:rtl}.fsw-sign .fsw-en{text-align:center}.fsw-issuer{font-weight:700;margin-top:6px;min-height:20px}.fsw-line{border-bottom:1px solid #999;height:26px;margin:0 20px}' +
+    '.fsw-official{color:#c0262d;text-align:center;font-weight:700;margin:18px 0 4px}' +
+    '.fsw-hr{display:grid;grid-template-columns:1fr 1.4fr;gap:12px;align-items:start}' +
+    '.fsw-hrnote{direction:rtl;text-align:right;line-height:2.2;color:#444;font-size:12px}.fsw-approve{margin-top:10px;text-align:center}' +
+    '.fsw-foot{margin:auto -12mm 0;background:#3c3c3c;color:#fff;display:flex;justify-content:space-between;align-items:center;padding:10px 16mm;font-size:12px}' +
+    '.fsw-foot .mid{text-align:center;font-weight:700}.fsw-foot small{display:block;font-size:10px;font-weight:600}' +
+    '@page{size:A4;margin:0}' +
+    '@media print{body>*:not(#fs-warn-ov){display:none!important}#fs-warn-ov{position:static;background:none;padding:0;overflow:visible}' +
+    '.fsw-actions{display:none!important}.fsw-page{margin:0;width:210mm;height:297mm;min-height:0}' +
+    '*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}';
+
+  function close(){ const o = document.getElementById('fs-warn-ov'); if(o) o.remove(); }
+
+  async function open(violationId){
+    const { data:v, error } = await sb.from('worker_violations').select('*').eq('id', violationId).maybeSingle();
+    if(error || !v) return showToast('تعذر تحميل الإنذار');
+    const { data:w } = await sb.from('workers_evaluations').select('id,worker_name,section_id,preferred_lang').eq('id', v.worker_id).maybeSingle();
+    if(!document.getElementById('fs-warn-css')){ const st = document.createElement('style'); st.id = 'fs-warn-css'; st.textContent = CSS; document.head.appendChild(st); }
+    close();
+    const ov = document.createElement('div'); ov.id = 'fs-warn-ov';
+    ov.innerHTML = '<div class="fsw-actions"><button class="btn-primary" data-w="print">🖨️ طباعة / حفظ PDF</button><button class="btn-secondary" data-w="close">إغلاق</button></div>' + formHtml(v, w);
+    ov.addEventListener('click', ev => {
+      const b = ev.target.closest('[data-w]');
+      if(b && b.dataset.w === 'print') window.print();
+      else if((b && b.dataset.w === 'close') || ev.target === ov) close();
+    });
+    document.body.appendChild(ov);
+  }
+
+  return { open, close, issuer, today, placeName, formHtml };
+})();
 
 // ==================== WORKER VIDEO CHART ====================
 
@@ -2529,7 +2680,8 @@ async function loadWorkerViolationsView(){
         replyBox='<div class="muted" style="font-size:11px;margin-top:6px;">'+esc(vioText('replyExpired'))+'</div>';
       }
     }
-    return '<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:10px;"><div style="display:flex;justify-content:space-between;align-items:center;"><span class="u-fs13-b">⚠️ '+esc(title)+'</span><span style="font-weight:800;color:#991b1b;font-size:13px;">-'+v.deduction_points+' '+esc(vioText('points'))+'</span></div><div class="muted u-fs10">'+fmtDate(v.created_at)+' '+statusBadge+'</div>'+replyBox+'</div>';
+    return '<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:10px;"><div style="display:flex;justify-content:space-between;align-items:center;"><span class="u-fs13-b">⚠️ '+esc(title)+'</span><span style="font-weight:800;color:#991b1b;font-size:13px;">-'+v.deduction_points+' '+esc(vioText('points'))+'</span></div><div class="muted u-fs10">'+fmtDate(v.created_at)+' '+statusBadge+'</div>'+
+      '<button class="btn-secondary btn-sm" style="margin-top:6px;font-size:11px;" onclick="FSWarning.open('+v.id+')">'+esc(vioText('warnDoc'))+'</button>'+replyBox+'</div>';
   }).join('') || '<div class="muted u-empty">'+esc(vioText('empty'))+'</div>';
   const btn=$('wt-violations-viewall');
   if(btn){ btn.style.display = all.length>2 ? '' : 'none'; btn.textContent = workerViolationsExpanded ? wt('viewLess') : wt('viewAll'); }
@@ -11376,21 +11528,17 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     var PL = {};
     function placeOf(sid){
       var sc = sm[sid] || {}, pid = sc.place_id, k = pid ? 'p' + pid : 's' + (sid || 0);
-      if(!PL[k]){ PL[k] = {key:k, pid:pid ? Number(pid) : null, name:(pid && pl[pid]) ? pl[pid].name_ar : (sc.branch_name || secName(sid)), kind:(pid && pl[pid]) ? pl[pid].kind : null, ws:[], cells:{}, vi:0, hv:0, hn:0}; }
+      if(!PL[k]){ PL[k] = {key:k, pid:pid ? Number(pid) : null, name:(pid && pl[pid]) ? pl[pid].name_ar : (sc.branch_name || secName(sid)), kind:(pid && pl[pid]) ? pl[pid].kind : null, ws:[], vi:0, hv:0, hn:0}; }
       return PL[k];
     }
     var HT = {}, vByW = {}; viols.forEach(function(v){ vByW[v.wid] = (vByW[v.wid] || 0) + 1; });
     per.forEach(function(r){
       var w = r.worker, pk = placeOf(w.section_id); pk.ws.push(r); W[w.id].pk = pk.key; pk.vi += vByW[w.id] || 0;
-      var dn = c.done[w.id] || new Set(), dept = c.roleDept[w.job_role_id];
-      c.topics.forEach(function(t){
-        if(!window.FSStats.counts(t, w, dept, cut, now)) return;
-        HT[t.id] = t; var cell = pk.cells[t.id] = pk.cells[t.id] || {n:0, d:0, miss:[]};
-        cell.n++; if(dn.has(t.id)) cell.d++; else cell.miss.push(w.id);
-      });
+      var dept = c.roleDept[w.job_role_id];
+      c.topics.forEach(function(t){ if(window.FSStats.counts(t, w, dept, cut, now)) HT[t.id] = t; });
       var x = W[w.id]; if(ex.hasHealth){ pk.hn++; if(x.exp && x.exp >= dayStr(now)) pk.hv++; }
     });
-    var heatTopics = Object.keys(HT).map(function(k){ return HT[k]; }).sort(function(a, b){ return (+new Date(b.visible_since || b.created_at || 0)) - (+new Date(a.visible_since || a.created_at || 0)); }).slice(0, 8);
+    var topics = Object.keys(HT).map(function(k){ return HT[k]; }).sort(function(a, b){ return (+new Date(b.visible_since || b.created_at || 0)) - (+new Date(a.visible_since || a.created_at || 0)); }).slice(0, 8);
     var places = Object.keys(PL).map(function(k){ return PL[k]; }).filter(function(x){ return x.ws.length; });
     places.forEach(function(x){
       var n = x.ws.length, av = function(f){ return x.ws.reduce(function(a, r){ return a + (Number(r[f]) || 0); }, 0) / n; };
@@ -11404,7 +11552,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     });
     var topViol = Object.keys(VT).map(function(k){ return VT[k]; }).sort(function(a, b){ return b.n - a.n; }).slice(0, 5);
     var trend = await buildTrend(P[5], per, c, now);
-    return {hard:P[7], act:P[8], topViol:topViol, trend:trend, places:places, heatTopics:heatTopics, now:now, weights:d.weights, days:c.days, snaps:P[5], per:per, W:W, c:c, total:per.length, viols:viols, comments:comments, reports:reports, late:late, live:live, H:H, hasHealth:ex.hasHealth, hasSeen:ex.hasSeen, dormant:dormant, seenNote:seenNote, noSchedule:noSchedule, activeN:active.length};
+    return {hard:P[7], act:P[8], topViol:topViol, trend:trend, places:places, topics:topics, now:now, weights:d.weights, days:c.days, snaps:P[5], per:per, W:W, c:c, total:per.length, viols:viols, comments:comments, reports:reports, late:late, live:live, H:H, hasHealth:ex.hasHealth, hasSeen:ex.hasSeen, dormant:dormant, seenNote:seenNote, noSchedule:noSchedule, activeN:active.length};
   }
 
 
@@ -11538,27 +11686,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   }
 
 
-  /* ---------- ⑤ خريطة الالتزام (الأماكن × التدريبات) ---------- */
   function isPM(){ var u = u_(); return !!(u && !u.isSuper && u.role === 'place_manager'); }
-  function heatHtml(){
-    var T = D.heatTopics, Pl = D.places.slice().sort(function(a, b){ return a.name.localeCompare(b.name, 'ar'); });
-    var h = '<div class="fsd-h"><b>🗺️ خريطة الالتزام: الأماكن × التدريبات</b><span class="muted">دوس على خانة تشوف مين ما خلّصش</span></div>';
-    if(!T.length || !Pl.length) return h + '<div class="muted fsd-empty">مفيش تدريبات مطلوبة في الفترة دي.</div>';
-    h += '<div class="fsd-hm"><table><thead><tr><th></th>' + T.map(function(t){ return '<th title="' + E(title(t)) + '"><span>' + E(title(t)) + '</span></th>'; }).join('') + '</tr></thead><tbody>';
-    Pl.forEach(function(pk){
-      h += '<tr><th class="pn">' + E(pk.name) + ' <small>(' + pk.ws.length + ')</small></th>';
-      T.forEach(function(t){
-        var c = pk.cells[t.id]; if(!c){ h += '<td class="na">—</td>'; return; }
-        var pc = Math.round(c.d / c.n * 100); h += '<td><button type="button" class="hc" data-pk="' + E(pk.key) + '" data-t="' + t.id + '" style="background:' + col(pc) + '22;color:' + col(pc) + '" title="' + c.d + '/' + c.n + '">' + pc + '%</button></td>';
-      });
-      h += '</tr>';
-    });
-    return h + '</tbody></table></div>';
-  }
-  function heatReport(){
-    var T = D.heatTopics; if(!T.length) return '';
-    return '<h2>خريطة الالتزام (الأماكن × التدريبات)</h2><table><tr><th>المكان</th>' + T.map(function(t){ return '<th>' + E(title(t)) + '</th>'; }).join('') + '</tr>' + D.places.map(function(pk){ return '<tr><td>' + E(pk.name) + '</td>' + T.map(function(t){ var c = pk.cells[t.id]; return '<td>' + (c ? Math.round(c.d / c.n * 100) + '%' : '—') + '</td>'; }).join('') + '</tr>'; }).join('') + '</table>';
-  }
 
   /* ---------- ⑥ مقارنة الأماكن ---------- */
   var CMP = [['c', 'الالتزام'], ['t', 'الإكمال'], ['q', 'الاختبارات'], ['v', 'المخالفات'], ['h', 'الشهادات']], cmpK = 'c';
@@ -11574,7 +11702,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
 
   /* ---------- مدير المكان: جدول الفريق + مكانه مقارنة بالمتوسط ---------- */
   function teamHtml(){
-    var T = D.heatTopics.slice(0, 6), W = D.per.slice().sort(function(a, b){ return a.compliance - b.compliance; });
+    var T = D.topics.slice(0, 6), W = D.per.slice().sort(function(a, b){ return a.compliance - b.compliance; });
     var h = '<div class="fsd-h"><b>👥 جدول فريقك</b><span class="muted">' + W.length + ' موظف</span></div>';
     if(!W.length) return h + '<div class="muted fsd-empty">مفيش موظفين في نطاقك لسه.</div>';
     var today = dayStr(D.now), lim = dayStr(D.now + 30 * DAY), vb = {}; D.viols.forEach(function(v){ vb[v.wid] = (vb[v.wid] || 0) + 1; });
@@ -11799,12 +11927,6 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
       ids = src.map(function(x){ return x.id; });
       csvRows = [['الرقم', 'الاسم', 'المكان', 'التقدّم %', 'اللغة']].concat(src.map(function(x){ var w = D.W[x.id] || {}; return [x.id, w.name, w.place, x.pct != null ? Math.round(x.pct) : (extra.s === 'done' ? 100 : 0), x.lang ? (LANGF[x.lang] || x.lang) : '']; }));
       acts = extra.s === 'done' ? '' : '<button class="btn-secondary btn-sm" data-act="remind">🔔 فكّرهم</button>';
-    } else if(k === 'cell'){
-      var pk = D.places.filter(function(x){ return x.key === extra.pk; })[0], tp = D.heatTopics.filter(function(x){ return x.id === extra.tid; })[0]; if(!pk || !tp) return null;
-      var cell = pk.cells[tp.id] || {miss:[], n:0, d:0}; head = '🗺️ ' + pk.name + ' — ' + title(tp) + ' (خلّص ' + cell.d + ' من ' + cell.n + ')'; topic = tp.id;
-      rows = cell.miss.map(function(id){ return wRow(D.W[id] || {id:id, name:'#' + id, place:pk.name}, ''); }); ids = cell.miss.slice();
-      csvRows = [['الرقم', 'الاسم', 'المكان']].concat(cell.miss.map(function(id){ var w = D.W[id] || {}; return [id, w.name, w.place]; }));
-      acts = '<button class="btn-secondary btn-sm" data-act="remind">🔔 تذكير</button>';
     } else return null;
     var sids = {}; ids.forEach(function(id){ var w = D.W[id]; if(w && w.sid) sids[w.sid] = 1; });
     var note = (k === 'dorm' && D.seenNote) ? '<div class="muted fsd-note">' + D.seenNote + ' موظف لسه ما اتسجلش لهم دخول (الميزة جديدة، بتبدأ تحسب من أول دخول).</div>' : '';
@@ -11863,7 +11985,6 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     {k:'kpis', html:function(){ return kpiHtml(); }},
     {k:'live', row:'a', html:function(){ return liveHtml(); }},
     {k:'health', row:'a', html:function(){ return healthHtml(); }},
-    {k:'heat', show:function(){ return !isPM(); }, html:function(){ return heatHtml(); }, report:function(){ return heatReport(); }},
     {k:'cmp', row:'b', show:function(){ return !isPM(); }, html:function(){ return cmpHtml(); }, report:function(){ return cmpReport(); }},
     {k:'trend', row:'c', html:function(){ return trendHtml(); }, report:function(){ return trendReport(); }},
     {k:'viol', row:'c', html:function(){ return violHtml(); }},
@@ -11920,7 +12041,6 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
       try{ if(it.k === 'comment') FSNav7.go('inbox', 'comments'); else if(it.k === 'viol' && it.wid && typeof openWorkerModal === 'function') openWorkerModal(Number(it.wid)); else if(it.k === 'admin') FSNav7.go('settings', 'org'); }catch(_){}
       return;
     }
-    var hc = e.target.closest('.hc'); if(hc && D){ openDetail('cell', {pk:hc.dataset.pk, tid:Number(hc.dataset.t)}); return; }
     var cb = e.target.closest('[data-cmp]'); if(cb && D){ cmpK = cb.dataset.cmp; paint(); return; }
     var pb = e.target.closest('.fsd-bar2[data-pk]'); if(pb && D){ var pk2 = D.places.filter(function(x){ return x.key === pb.dataset.pk; })[0]; if(pk2 && pk2.pid && window.FSFilter) FSFilter.set({place:String(pk2.pid)}); return; }
     var a = e.target.closest('.fsd-al, .fsd-hl'); if(a){
@@ -11948,7 +12068,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     '.fsd-hc{display:flex;align-items:center;gap:16px;flex-wrap:wrap}.fsd-hc .dn{width:120px;height:120px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:0 0 auto}.fsd-hc .dn>div{width:84px;height:84px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:20px}.fsd-hc .dn small{font-size:10px;color:#64748b;font-weight:700}' +
     '.fsd-hc .lgd{flex:1 1 160px;display:flex;flex-direction:column;gap:4px}.fsd-hl{font-family:inherit;display:flex;align-items:center;gap:8px;border:1px solid var(--border);background:#fff;border-radius:9px;padding:6px 10px;cursor:pointer;font-size:12.5px}.fsd-hl i{width:10px;height:10px;border-radius:50%}.fsd-hl span{flex:1;text-align:start}' +
     '.fsd-sub{font-size:12px;font-weight:800;color:#475569;margin:12px 0 4px}.fsd-r{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12.5px;padding:6px 0;border-bottom:1px solid #f1f5f9}.fsd-r small{color:#64748b;font-size:11px}.fsd-r .rt{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.fsd-dt{width:130px;padding:4px 6px!important;font-size:12px!important}' +
-    '.fsd-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;font-size:12px;min-height:34px}.fsd-exp{position:relative}.fsd-menu{position:absolute;inset-inline-end:0;top:100%;margin-top:4px;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:30;display:flex;flex-direction:column;min-width:200px;overflow:hidden}.fsd-menu.hidden{display:none}.fsd-menu button{font-family:inherit;text-align:start;border:0;background:#fff;padding:10px 12px;cursor:pointer;font-size:12.5px}.fsd-menu button:hover{background:#f1f5f9}.fsd-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:12px}.fsd-grid>.fsd-s{min-width:0}.fsd-ks{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}.fsd-k{font-family:inherit;text-align:start;border:1px solid var(--border);background:#fff;border-radius:12px;padding:10px 12px;cursor:pointer;display:flex;flex-direction:column;gap:2px;min-height:96px;position:relative}.fsd-k .lb{font-size:11.5px;font-weight:700;color:#475569}.fsd-k .v{font-size:26px;font-weight:900}.fsd-k .dl{font-size:12px;font-weight:800}.fsd-k .dl.up{color:#16a34a}.fsd-k .dl.dn{color:#dc2626}.fsd-k .dl.eq{color:#94a3b8}.fsd-k .sp{width:60px;height:18px;position:absolute;inset-inline-end:10px;bottom:10px}.fsd-k.off{cursor:default;opacity:.6}.fsd-i{cursor:help;color:#6366f1;font-size:11px;position:relative}.fsd-i:hover::after{content:attr(data-tip);position:absolute;inset-inline-start:0;top:100%;margin-top:4px;background:#0f172a;color:#fff;padding:8px 10px;border-radius:8px;font-size:11.5px;font-weight:600;width:230px;z-index:40;line-height:1.5;white-space:normal}.fsd-hm{overflow-x:auto}.fsd-hm table{border-collapse:separate;border-spacing:3px;font-size:11.5px;min-width:100%}.fsd-hm th{font-weight:700;color:#475569;padding:2px 4px;text-align:center;vertical-align:bottom}.fsd-hm thead th span{display:block;max-width:92px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0 auto}.fsd-hm th.pn{text-align:start;white-space:nowrap;position:sticky;inset-inline-start:0;background:#fff}.fsd-hm td{text-align:center;padding:0}.fsd-hm td.na{color:#cbd5e1}.fsd-hm .hc{font-family:inherit;width:100%;border:0;border-radius:7px;padding:8px 4px;font-weight:800;cursor:pointer;font-size:12px}.fsd-hm table.tm td{padding:5px 6px}.fsd-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}.fsd-tabs button{font-family:inherit;border:1px solid var(--border);background:#fff;border-radius:999px;padding:4px 11px;font-size:11.5px;font-weight:800;cursor:pointer}.fsd-tabs button.on{background:#4f46e5;border-color:#4f46e5;color:#fff}.fsd-bar2{font-family:inherit;display:flex;align-items:center;gap:8px;width:100%;border:0;background:none;padding:5px 0;cursor:pointer;text-align:start;font-size:12px}.fsd-bar2:disabled{cursor:default}.fsd-bar2 .nm{flex:0 0 34%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fsd-bar2 .tr{flex:1;background:#e2e8f0;border-radius:20px;height:9px;overflow:visible;position:relative}.fsd-bar2 .tr i{display:block;height:100%;border-radius:20px}.fsd-bar2 .tr u{position:absolute;top:-3px;width:2px;height:15px;background:#0f172a}.fsd-bar2.st{cursor:default}.fsd-chips{display:flex;gap:6px;flex-wrap:wrap;margin-inline-end:auto}.fsd-chip{font-family:inherit;border:1px solid #c7d2fe;background:#eef2ff;color:#3730a3;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:800;cursor:pointer}.fsd-tr{width:100%;height:130px}.fsd-lgd{display:flex;gap:12px;flex-wrap:wrap;font-size:11.5px;color:#475569;margin-top:4px}.fsd-lgd i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-inline-end:4px}.fsd-q{border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:8px;background:#fff}.fsd-q .t{font-weight:800;font-size:12.5px;margin-bottom:4px}.fsd-q .m{font-size:12px;margin-bottom:4px}.fsd-vr{display:flex;align-items:center;gap:6px}.fsd-vr .fsd-bar2{flex:1}.fsd-ar{font-family:inherit;display:flex;gap:10px;width:100%;border:0;border-bottom:1px solid #f1f5f9;background:none;padding:7px 0;cursor:pointer;text-align:start;font-size:12px}.fsd-ar .muted{flex:0 0 auto;white-space:nowrap}.fsd-ks{gap:10px!important}.fsd-k{border:1px solid #e2e8f0!important;border-radius:16px!important;padding:14px 14px 12px!important;box-shadow:0 1px 2px rgba(15,23,42,.05);transition:transform .12s,box-shadow .12s;gap:6px!important;overflow:hidden;min-height:132px!important}.fsd-k:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(15,23,42,.10)}.fsd-k::before{content:"";position:absolute;inset-inline:0;top:0;height:3px;background:var(--tc,#94a3b8)}.fsd-k.t-g{--tc:#16a34a;--tb:#dcfce7}.fsd-k.t-y{--tc:#d97706;--tb:#fef3c7}.fsd-k.t-r{--tc:#dc2626;--tb:#fee2e2}.fsd-k .ib,.fsd-al .ib{width:30px;height:30px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;background:var(--tb,#f1f5f9);color:var(--tc,#475569)}.fsd-k .ib svg,.fsd-al .ib svg{width:17px;height:17px}.fsd-k .lb{font-size:12px!important}.fsd-k .v{font-size:30px!important;font-weight:900;line-height:1;color:var(--tc)!important}.fsd-k .v small{font-size:15px;font-weight:800;margin-inline-start:1px}.fsd-k .mt{display:block;height:5px;border-radius:9px;background:#e2e8f0;overflow:hidden}.fsd-k .mt i{display:block;height:100%;background:var(--tc);border-radius:9px}.fsd-k .ft{display:flex;align-items:center;justify-content:space-between;gap:6px}.fsd-k .dl{font-size:11px!important;font-weight:800;padding:2px 8px;border-radius:999px;background:#f1f5f9}.fsd-k .dl.up{background:#dcfce7}.fsd-k .dl.dn{background:#fee2e2}.fsd-k .sp{position:static!important;width:56px;height:18px}.fsd-al{position:relative;border-radius:14px!important;padding:12px 12px 10px!important;gap:4px!important;box-shadow:0 1px 2px rgba(15,23,42,.04)}.fsd-al .ib{margin-bottom:2px}.fsd-al.r{--tc:#dc2626;--tb:#fee2e2}.fsd-al.o{--tc:#ea580c;--tb:#ffedd5}.fsd-al.y{--tc:#ca8a04;--tb:#fef9c3}.fsd-al.b{--tc:#2563eb;--tb:#dbeafe}.fsd-al.g{--tc:#64748b;--tb:#e2e8f0}.fsd-lc .st{display:grid!important;grid-template-columns:repeat(3,1fr);gap:8px!important;margin-top:8px}.fsd-lc .s{font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:1px;border:1px solid #e2e8f0;border-radius:12px;background:#fff;padding:8px 4px;cursor:pointer;transition:transform .12s,box-shadow .12s}.fsd-lc .s:hover{transform:translateY(-2px);box-shadow:0 6px 14px rgba(15,23,42,.10)}.fsd-lc .s b{font-size:20px;font-weight:900}.fsd-lc .s span{font-size:11px;font-weight:700;color:#475569}.fsd-lc .s.g{border-color:#bbf7d0;background:#f0fdf4}.fsd-lc .s.g b{color:#16a34a}.fsd-lc .s.y{border-color:#fde68a;background:#fffbeb}.fsd-lc .s.y b{color:#d97706}.fsd-lc .s.r{border-color:#fecaca;background:#fef2f2}.fsd-lc .s.r b{color:#dc2626}.fsd-lc .lgp{display:inline-block;background:#f1f5f9;border-radius:999px;padding:1px 8px;margin:2px 3px 0 0;font-size:11px}.fsd-ksum{display:flex;align-items:baseline;gap:10px;padding:12px 14px;border-radius:14px;margin-bottom:6px;background:var(--tb,#f1f5f9)}.fsd-ksum b{font-size:30px;font-weight:900;color:var(--tc,#475569)}.fsd-ksum span{font-size:12px;font-weight:700;color:#475569}.fsd-ksum.t-g{--tc:#16a34a;--tb:#dcfce7}.fsd-ksum.t-y{--tc:#d97706;--tb:#fef3c7}.fsd-ksum.t-r{--tc:#dc2626;--tb:#fee2e2}.fsd-chipsrow{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}.fsd-chipsrow button{font-family:inherit;border:1px solid #e2e8f0;background:#fff;border-radius:999px;padding:5px 12px;font-size:12px;font-weight:800;cursor:pointer}.fsd-chipsrow button.on{background:#0f172a;border-color:#0f172a;color:#fff}.fsd-chipsrow b{margin-inline-start:4px}.fsd-list .fsd-r{border-inline-start:4px solid #e2e8f0;padding-inline-start:8px}.fsd-list .fsd-r.bd-g{border-inline-start-color:#16a34a}.fsd-list .fsd-r.bd-y{border-inline-start-color:#eab308}.fsd-list .fsd-r.bd-r{border-inline-start-color:#dc2626}.fsd-list .fsd-r.bd-n{border-inline-start-color:#94a3b8}.fsd-list .fsd-r.hidden{display:none}.vb{font-weight:800;font-size:12px;padding:2px 10px;border-radius:999px}.vb-g{background:#dcfce7;color:#15803d}.vb-y{background:#fef3c7;color:#a16207}.vb-r{background:#fee2e2;color:#b91c1c}.vb-n{background:#e2e8f0;color:#475569}.fsd-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}.fsd-msg{font-size:12px;min-height:18px;margin-bottom:4px}.fsd-note{font-size:11.5px;margin-bottom:6px}.fsd-empty{padding:12px;text-align:center}';
+    '.fsd-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;font-size:12px;min-height:34px}.fsd-exp{position:relative}.fsd-menu{position:absolute;inset-inline-end:0;top:100%;margin-top:4px;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:30;display:flex;flex-direction:column;min-width:200px;overflow:hidden}.fsd-menu.hidden{display:none}.fsd-menu button{font-family:inherit;text-align:start;border:0;background:#fff;padding:10px 12px;cursor:pointer;font-size:12.5px}.fsd-menu button:hover{background:#f1f5f9}.fsd-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:12px}.fsd-grid>.fsd-s{min-width:0}.fsd-ks{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}.fsd-k{font-family:inherit;text-align:start;border:1px solid var(--border);background:#fff;border-radius:12px;padding:10px 12px;cursor:pointer;display:flex;flex-direction:column;gap:2px;min-height:96px;position:relative}.fsd-k .lb{font-size:11.5px;font-weight:700;color:#475569}.fsd-k .v{font-size:26px;font-weight:900}.fsd-k .dl{font-size:12px;font-weight:800}.fsd-k .dl.up{color:#16a34a}.fsd-k .dl.dn{color:#dc2626}.fsd-k .dl.eq{color:#94a3b8}.fsd-k .sp{width:60px;height:18px;position:absolute;inset-inline-end:10px;bottom:10px}.fsd-k.off{cursor:default;opacity:.6}.fsd-i{cursor:help;color:#6366f1;font-size:11px;position:relative}.fsd-i:hover::after{content:attr(data-tip);position:absolute;inset-inline-start:0;top:100%;margin-top:4px;background:#0f172a;color:#fff;padding:8px 10px;border-radius:8px;font-size:11.5px;font-weight:600;width:230px;z-index:40;line-height:1.5;white-space:normal}.fsd-hm{overflow-x:auto}.fsd-hm table{border-collapse:separate;border-spacing:3px;font-size:11.5px;min-width:100%}.fsd-hm th{font-weight:700;color:#475569;padding:2px 4px;text-align:center;vertical-align:bottom}.fsd-hm thead th span{display:block;max-width:92px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0 auto}.fsd-hm th.pn{text-align:start;white-space:nowrap;position:sticky;inset-inline-start:0;background:#fff}.fsd-hm td{text-align:center;padding:0}.fsd-hm table.tm td{padding:5px 6px}.fsd-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}.fsd-tabs button{font-family:inherit;border:1px solid var(--border);background:#fff;border-radius:999px;padding:4px 11px;font-size:11.5px;font-weight:800;cursor:pointer}.fsd-tabs button.on{background:#4f46e5;border-color:#4f46e5;color:#fff}.fsd-bar2{font-family:inherit;display:flex;align-items:center;gap:8px;width:100%;border:0;background:none;padding:5px 0;cursor:pointer;text-align:start;font-size:12px}.fsd-bar2:disabled{cursor:default}.fsd-bar2 .nm{flex:0 0 34%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fsd-bar2 .tr{flex:1;background:#e2e8f0;border-radius:20px;height:9px;overflow:visible;position:relative}.fsd-bar2 .tr i{display:block;height:100%;border-radius:20px}.fsd-bar2 .tr u{position:absolute;top:-3px;width:2px;height:15px;background:#0f172a}.fsd-bar2.st{cursor:default}.fsd-chips{display:flex;gap:6px;flex-wrap:wrap;margin-inline-end:auto}.fsd-chip{font-family:inherit;border:1px solid #c7d2fe;background:#eef2ff;color:#3730a3;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:800;cursor:pointer}.fsd-tr{width:100%;height:130px}.fsd-lgd{display:flex;gap:12px;flex-wrap:wrap;font-size:11.5px;color:#475569;margin-top:4px}.fsd-lgd i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-inline-end:4px}.fsd-q{border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:8px;background:#fff}.fsd-q .t{font-weight:800;font-size:12.5px;margin-bottom:4px}.fsd-q .m{font-size:12px;margin-bottom:4px}.fsd-vr{display:flex;align-items:center;gap:6px}.fsd-vr .fsd-bar2{flex:1}.fsd-ar{font-family:inherit;display:flex;gap:10px;width:100%;border:0;border-bottom:1px solid #f1f5f9;background:none;padding:7px 0;cursor:pointer;text-align:start;font-size:12px}.fsd-ar .muted{flex:0 0 auto;white-space:nowrap}.fsd-ks{gap:10px!important}.fsd-k{border:1px solid #e2e8f0!important;border-radius:16px!important;padding:14px 14px 12px!important;box-shadow:0 1px 2px rgba(15,23,42,.05);transition:transform .12s,box-shadow .12s;gap:6px!important;overflow:hidden;min-height:132px!important}.fsd-k:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(15,23,42,.10)}.fsd-k::before{content:"";position:absolute;inset-inline:0;top:0;height:3px;background:var(--tc,#94a3b8)}.fsd-k.t-g{--tc:#16a34a;--tb:#dcfce7}.fsd-k.t-y{--tc:#d97706;--tb:#fef3c7}.fsd-k.t-r{--tc:#dc2626;--tb:#fee2e2}.fsd-k .ib,.fsd-al .ib{width:30px;height:30px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;background:var(--tb,#f1f5f9);color:var(--tc,#475569)}.fsd-k .ib svg,.fsd-al .ib svg{width:17px;height:17px}.fsd-k .lb{font-size:12px!important}.fsd-k .v{font-size:30px!important;font-weight:900;line-height:1;color:var(--tc)!important}.fsd-k .v small{font-size:15px;font-weight:800;margin-inline-start:1px}.fsd-k .mt{display:block;height:5px;border-radius:9px;background:#e2e8f0;overflow:hidden}.fsd-k .mt i{display:block;height:100%;background:var(--tc);border-radius:9px}.fsd-k .ft{display:flex;align-items:center;justify-content:space-between;gap:6px}.fsd-k .dl{font-size:11px!important;font-weight:800;padding:2px 8px;border-radius:999px;background:#f1f5f9}.fsd-k .dl.up{background:#dcfce7}.fsd-k .dl.dn{background:#fee2e2}.fsd-k .sp{position:static!important;width:56px;height:18px}.fsd-al{position:relative;border-radius:14px!important;padding:12px 12px 10px!important;gap:4px!important;box-shadow:0 1px 2px rgba(15,23,42,.04)}.fsd-al .ib{margin-bottom:2px}.fsd-al.r{--tc:#dc2626;--tb:#fee2e2}.fsd-al.o{--tc:#ea580c;--tb:#ffedd5}.fsd-al.y{--tc:#ca8a04;--tb:#fef9c3}.fsd-al.b{--tc:#2563eb;--tb:#dbeafe}.fsd-al.g{--tc:#64748b;--tb:#e2e8f0}.fsd-lc .st{display:grid!important;grid-template-columns:repeat(3,1fr);gap:8px!important;margin-top:8px}.fsd-lc .s{font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:1px;border:1px solid #e2e8f0;border-radius:12px;background:#fff;padding:8px 4px;cursor:pointer;transition:transform .12s,box-shadow .12s}.fsd-lc .s:hover{transform:translateY(-2px);box-shadow:0 6px 14px rgba(15,23,42,.10)}.fsd-lc .s b{font-size:20px;font-weight:900}.fsd-lc .s span{font-size:11px;font-weight:700;color:#475569}.fsd-lc .s.g{border-color:#bbf7d0;background:#f0fdf4}.fsd-lc .s.g b{color:#16a34a}.fsd-lc .s.y{border-color:#fde68a;background:#fffbeb}.fsd-lc .s.y b{color:#d97706}.fsd-lc .s.r{border-color:#fecaca;background:#fef2f2}.fsd-lc .s.r b{color:#dc2626}.fsd-lc .lgp{display:inline-block;background:#f1f5f9;border-radius:999px;padding:1px 8px;margin:2px 3px 0 0;font-size:11px}.fsd-ksum{display:flex;align-items:baseline;gap:10px;padding:12px 14px;border-radius:14px;margin-bottom:6px;background:var(--tb,#f1f5f9)}.fsd-ksum b{font-size:30px;font-weight:900;color:var(--tc,#475569)}.fsd-ksum span{font-size:12px;font-weight:700;color:#475569}.fsd-ksum.t-g{--tc:#16a34a;--tb:#dcfce7}.fsd-ksum.t-y{--tc:#d97706;--tb:#fef3c7}.fsd-ksum.t-r{--tc:#dc2626;--tb:#fee2e2}.fsd-chipsrow{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}.fsd-chipsrow button{font-family:inherit;border:1px solid #e2e8f0;background:#fff;border-radius:999px;padding:5px 12px;font-size:12px;font-weight:800;cursor:pointer}.fsd-chipsrow button.on{background:#0f172a;border-color:#0f172a;color:#fff}.fsd-chipsrow b{margin-inline-start:4px}.fsd-list .fsd-r{border-inline-start:4px solid #e2e8f0;padding-inline-start:8px}.fsd-list .fsd-r.bd-g{border-inline-start-color:#16a34a}.fsd-list .fsd-r.bd-y{border-inline-start-color:#eab308}.fsd-list .fsd-r.bd-r{border-inline-start-color:#dc2626}.fsd-list .fsd-r.bd-n{border-inline-start-color:#94a3b8}.fsd-list .fsd-r.hidden{display:none}.vb{font-weight:800;font-size:12px;padding:2px 10px;border-radius:999px}.vb-g{background:#dcfce7;color:#15803d}.vb-y{background:#fef3c7;color:#a16207}.vb-r{background:#fee2e2;color:#b91c1c}.vb-n{background:#e2e8f0;color:#475569}.fsd-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}.fsd-msg{font-size:12px;min-height:18px;margin-bottom:4px}.fsd-note{font-size:11.5px;margin-bottom:6px}.fsd-empty{padding:12px;text-align:center}';
   document.head.appendChild(st);
   afterCallAsync('loadAdminDashboard', async function(){ await render(); });
   /* تحديث أوتوماتيك كل 5 دقايق وانت على الرئيسية */
