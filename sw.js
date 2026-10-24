@@ -1,6 +1,6 @@
 /* Service worker: يخزّن ملفات الواجهة فقط. لا يلمس أي طلب لقاعدة البيانات (Supabase) أو غيره من الدومينات. */
-const CACHE = 'fs-shell-v75';
-const SHELL = ['./', 'manifest.json', 'icon-192.png', 'icon-512.png', 'logo-ufuq.svg'];
+const CACHE = 'fs-shell-v76';
+const SHELL = ['./', 'manifest.json', 'icon-192.png?v=2', 'icon-512.png?v=2', 'logo-ufuq.svg'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).catch(() => {}));
