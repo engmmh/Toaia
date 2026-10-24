@@ -1512,6 +1512,13 @@ body.v9-dark .lt-bar{background:#0f172a}body.v9-dark .lt-tab.on{background:#1e29
     <!-- ===== مكتبة المخالفات ===== -->
     <div class="admin-tab" id="tab-vio-lib">
       <div class="card u-card">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:700;font-size:14px;">
+          <input type="checkbox" id="fsw-worker-visible" onchange="FSWarning.setWorkerVisible(this.checked)" style="width:18px;height:18px;"/>
+          📄 إظهار الإنذار الرسمي للعامل
+        </label>
+        <p class="muted" style="font-size:12px;margin-top:6px;">مقفول: العامل يشوف تفاصيل المخالفة بس زي الأول. مفتوح: يظهر له زرار «الإنذار الرسمي» تحت كل مخالفة. الطباعة عند الأدمن شغالة في الحالتين.</p>
+      </div>
+      <div class="card u-card">
         <div class="section-title u-mb12">➕ إضافة مخالفة جاهزة للمكتبة (متعددة اللغات)</div>
         <p class="muted" style="font-size:12px;margin-bottom:10px;">لما تسجل مخالفة على موظف، تقدر تختار من المكتبة دي أو تكتب جديدة. المخالفة هتظهر للموظف بلغته.</p>
         <div><label class="field-label">نص المخالفة (عربي)</label><input id="vio-new-title" type="text" class="input-field" placeholder="مثال: عدم ارتداء القفازات" onblur="autoTranslateGroup('vio-new-title',{en:'vio-new-en',bn:'vio-new-bn',ne:'vio-new-ne',hi:'vio-new-hi'})"/></div>
@@ -2211,6 +2218,7 @@ async function loadViolationLib(){
   violationLibrary=data||[];
   $('vio-pick').innerHTML='<option value="">— اختر من المكتبة أو اكتب مخالفة جديدة —</option>'+violationLibrary.map(v=>'<option value="'+v.id+'">'+esc(v.title)+'</option>').join('');
   const box=$('vio-lib-list');
+  FSWarning.paintSetting();
   if(box) box.innerHTML=violationLibrary.map(v=>'<span class="badge badge-red" style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;">'+esc(v.title)+' <span style="cursor:pointer;" onclick="deleteViolationLib('+v.id+')">✕</span></span>').join('') || '<div class="muted u-fs12">المكتبة فارغة</div>';
 }
 async function saveViolation(){
@@ -2330,6 +2338,26 @@ const FSWarning = (() => {
     ['Deduct a specific amount', 'خصم مبلغ محدد']
   ];
   const LANG_FIELD = { bn:'title_bn', ne:'title_ne', hi:'title_hi' };
+  const SETTING = 'worker_warning_visible';   // app_settings: 'true' = the worker sees the official warning
+  let visible = null;                         // cached per page load
+
+  async function workerCanSee(){
+    if(visible === null){
+      const { data } = await sb.from('app_settings').select('value').eq('key', SETTING).maybeSingle();
+      visible = !!(data && data.value === 'true');
+    }
+    return visible;
+  }
+  async function setWorkerVisible(on){
+    const { error } = await sb.from('app_settings').upsert({ key:SETTING, value:on ? 'true' : 'false' });
+    if(error){ showToast('تعذر الحفظ: ' + error.message); paintSetting(); return; }
+    visible = !!on;
+    showToast(on ? '✅ الإنذار الرسمي هيظهر للعامل' : '✅ العامل هيشوف تفاصيل المخالفة بس');
+  }
+  async function paintSetting(){
+    const cb = document.getElementById('fsw-worker-visible'); if(!cb) return;
+    visible = null; cb.checked = await workerCanSee();
+  }
 
   // Today's date in Riyadh, date only (YYYY-MM-DD).
   const today = () => new Intl.DateTimeFormat('en-CA', { timeZone:'Asia/Riyadh' }).format(new Date());
@@ -2404,8 +2432,9 @@ const FSWarning = (() => {
   }
 
   const CSS =
-    '#fs-warn-ov{position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.6);overflow:auto;padding:16px 8px}' +
+    '#fs-warn-ov{position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.88);overflow:auto;padding:16px 8px}' +
     '.fsw-actions{position:sticky;top:0;z-index:2;display:flex;gap:8px;justify-content:center;margin:0 auto 12px;max-width:210mm}' +
+    '.fsw-fit{margin:0 auto;direction:ltr}.fsw-fit .fsw-page{transform-origin:top left}' +
     '.fsw-page{position:relative;overflow:hidden;width:210mm;min-height:297mm;margin:0 auto;background:#fff;color:#222;font-family:Cairo,Tahoma,sans-serif;font-size:12.5px;padding:12mm 12mm 0;box-sizing:border-box;display:flex;flex-direction:column;direction:ltr;text-align:left}' +
     '.fsw-wm{position:absolute;top:34%;left:50%;width:62mm;transform:translateX(-50%);opacity:.06;pointer-events:none}' +
     '.fsw-top{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #bbb;padding-bottom:8px}' +
@@ -2430,7 +2459,7 @@ const FSWarning = (() => {
     '.fsw-foot .mid{text-align:center;font-weight:700}.fsw-foot small{display:block;font-size:10px;font-weight:600}' +
     '@page{size:A4;margin:0}' +
     '@media print{body>*:not(#fs-warn-ov){display:none!important}#fs-warn-ov{position:static;background:none;padding:0;overflow:visible}' +
-    '.fsw-actions{display:none!important}.fsw-page{margin:0;width:210mm;height:297mm;min-height:0}' +
+    '.fsw-actions{display:none!important}.fsw-fit{width:auto!important;height:auto!important}.fsw-page{margin:0;width:210mm;height:297mm;min-height:0;transform:none!important}' +
     '*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}';
 
   function close(){ const o = document.getElementById('fs-warn-ov'); if(o) o.remove(); }
@@ -2442,16 +2471,27 @@ const FSWarning = (() => {
     if(!document.getElementById('fs-warn-css')){ const st = document.createElement('style'); st.id = 'fs-warn-css'; st.textContent = CSS; document.head.appendChild(st); }
     close();
     const ov = document.createElement('div'); ov.id = 'fs-warn-ov';
-    ov.innerHTML = '<div class="fsw-actions"><button class="btn-primary" data-w="print">🖨️ طباعة / حفظ PDF</button><button class="btn-secondary" data-w="close">إغلاق</button></div>' + formHtml(v, w);
+    ov.innerHTML = '<div class="fsw-actions"><button class="btn-primary" data-w="print">🖨️ طباعة / حفظ PDF</button><button class="btn-secondary" data-w="close">إغلاق</button></div><div class="fsw-fit">' + formHtml(v, w) + '</div>';
     ov.addEventListener('click', ev => {
       const b = ev.target.closest('[data-w]');
       if(b && b.dataset.w === 'print') window.print();
       else if((b && b.dataset.w === 'close') || ev.target === ov) close();
     });
     document.body.appendChild(ov);
+    fit(); window.addEventListener('resize', fit);
   }
 
-  return { open, close, issuer, today, placeName, formHtml };
+  // Shrinks the 210mm page to the screen width on phones; printing ignores it.
+  function fit(){
+    const ov = document.getElementById('fs-warn-ov'); if(!ov){ window.removeEventListener('resize', fit); return; }
+    const box = ov.querySelector('.fsw-fit'), pg = ov.querySelector('.fsw-page');
+    pg.style.transform = ''; box.style.width = box.style.height = '';
+    const s = Math.min(1, (ov.clientWidth - 16) / pg.offsetWidth);
+    pg.style.transform = 'scale(' + s + ')';
+    box.style.width = pg.offsetWidth * s + 'px'; box.style.height = pg.offsetHeight * s + 'px';
+  }
+
+  return { open, close, issuer, today, placeName, formHtml, workerCanSee, setWorkerVisible, paintSetting };
 })();
 
 // ==================== WORKER VIDEO CHART ====================
@@ -2659,6 +2699,7 @@ async function loadWorkerViolationsView(){
   const { data } = await sb.from('worker_violations').select('*').eq('worker_id',currentUser.id).order('created_at',{ascending:false});
   const box=$('worker-violations-box');
   const all=data||[];
+  const showDoc=await FSWarning.workerCanSee();
   workerViolationsTotal = all.length;
   if(typeof updateWorkerIconBadges==='function') updateWorkerIconBadges();
   const rows = workerViolationsExpanded ? all : all.slice(0,2);
@@ -2681,7 +2722,7 @@ async function loadWorkerViolationsView(){
       }
     }
     return '<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:10px;"><div style="display:flex;justify-content:space-between;align-items:center;"><span class="u-fs13-b">⚠️ '+esc(title)+'</span><span style="font-weight:800;color:#991b1b;font-size:13px;">-'+v.deduction_points+' '+esc(vioText('points'))+'</span></div><div class="muted u-fs10">'+fmtDate(v.created_at)+' '+statusBadge+'</div>'+
-      '<button class="btn-secondary btn-sm" style="margin-top:6px;font-size:11px;" onclick="FSWarning.open('+v.id+')">'+esc(vioText('warnDoc'))+'</button>'+replyBox+'</div>';
+      (showDoc ? '<button class="btn-secondary btn-sm" style="margin-top:6px;font-size:11px;" onclick="FSWarning.open('+v.id+')">'+esc(vioText('warnDoc'))+'</button>' : '')+replyBox+'</div>';
   }).join('') || '<div class="muted u-empty">'+esc(vioText('empty'))+'</div>';
   const btn=$('wt-violations-viewall');
   if(btn){ btn.style.display = all.length>2 ? '' : 'none'; btn.textContent = workerViolationsExpanded ? wt('viewLess') : wt('viewAll'); }
