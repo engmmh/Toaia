@@ -2527,7 +2527,7 @@ async function loadWorkerViolationsAdmin(workerId){
     return '<div style="background:#fff;border:1px solid #fecaca;border-radius:8px;padding:8px 10px;">'+
       '<div style="display:flex;justify-content:space-between;align-items:center;"><span class="u-fs12-b">⚠️ '+esc(v.violation_title)+'</span><span style="font-size:12px;font-weight:800;color:#991b1b;">-'+v.deduction_points+'</span></div>'+
       '<div class="muted u-fs10">'+fmtDate(v.created_at)+' '+statusBadge+'</div>'+
-      '<button class="btn-sm btn-secondary" style="font-size:10px;padding:5px 8px;margin-top:6px;" onclick="FSWarning.open('+v.id+')">🖨️ الإنذار'+(v.doc_no?' · '+esc(v.doc_no):'')+'</button>'+
+      '<button class="btn-sm btn-secondary" style="font-size:10px;padding:5px 8px;margin-top:6px;" onclick="FSWarning.open('+v.id+')">🖨️ الإنذار</button>'+
       replyHtml+actions+'</div>';
   }).join('') || '<div class="muted u-empty">'+(f==='all'?'لا توجد مخالفات':'لا توجد مخالفات مطابقة للفلتر')+'</div>';
   rows.forEach(v=>{ if(v.worker_reply && typeof attachInlineTranslation==='function') attachInlineTranslation(v.worker_reply,'vrep-tr-'+v.id); });
@@ -2615,6 +2615,7 @@ const FSWarning = (() => {
     ['Deduct a specific amount', 'خصم مبلغ محدد']
   ];
   const LANG_FIELD = { bn:'title_bn', ne:'title_ne', hi:'title_hi' };
+  const DOC_NO = 'U-24-1006';                 // رقم النموذج نفسه (ثابت على كل الإنذارات زي الورقي)
   const SETTING = 'worker_warning_visible';   // app_settings: 'true' = the worker sees the official warning
   let visible = null;                         // cached per page load
 
@@ -2684,7 +2685,7 @@ const FSWarning = (() => {
       '<div class="fsw-top"><div class="fsw-co en">UFUQ AL-HOROUF<br>COMMERCIAL<small>C.R: 1131298835</small></div>' +
         '<img class="fsw-logo" src="logo-ufuq.svg" alt="UFUQ">' +
         '<div class="fsw-co ar">شركة أفق<br>الحروف التجارية<small>س.ت 1131298835</small></div></div>' +
-      '<div class="fsw-ref"><div class="fsw-en"><div>Doc No <b>' + e(v.doc_no || '—') + '</b></div><div>Date <b>' + e(date) + '</b></div></div>' +
+      '<div class="fsw-ref"><div class="fsw-en"><div>Doc No <b>' + DOC_NO + '</b></div><div>Date <b>' + e(date) + '</b></div></div>' +
         '<div class="fsw-title">OFFICIALLY WARNING<br>إنـــذار رسمي</div>' +
         '<div class="fsw-ar">Ufuq Al Harouf Commercial<br>شـركة أفـق الحروف التجارية</div></div>' +
       '<div class="fsw-bar"><span>FUNCTIONAL INFORMATION:</span><span>المعلومات الوظيفية:</span></div>' +
