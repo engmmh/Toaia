@@ -1208,6 +1208,82 @@ body.v9-dark .lt-bar{background:#0f172a}body.v9-dark .lt-tab.on{background:#1e29
   body.fs-gold #fs7-sub button{background:var(--card-1);border-color:var(--card-line);color:var(--ink-3)}
   body.fs-gold #fs7-sub button.on{background:linear-gradient(180deg,var(--act-1),var(--act-2));border-color:var(--act-line);color:var(--act-text)}
   body.fs-gold.v9-dark .v12-push .v12-d, body.fs-gold.v9-dark .v12-push .v12-t{color:var(--ink-2)!important}
+
+  /* ===== الليل الكريستالي: زجاج مصنفر + حواف منشورية + لمعة ضوء =====
+     الكروت شبه شفافة فوق خلفية فيها «أورورا» أزرق وفضي، والحافة متدرجة زي قطع الكريستال،
+     وفيه خط ضوء مايل فوق كل كارت. كله ألوان CSS من غير صور، ومن غير ما نلمس أي كود. */
+  body.fs-gold.v9-dark{
+    --glass:rgba(22,38,62,.80); --glass-2:rgba(14,26,44,.86); --glass-in:rgba(30,50,80,.72);
+    --edge:linear-gradient(135deg,rgba(235,245,255,.55),rgba(140,207,255,.18) 35%,rgba(170,150,255,.14) 65%,rgba(235,245,255,.42));
+    --sheen:linear-gradient(115deg,rgba(255,255,255,.13) 0%,rgba(255,255,255,.04) 22%,rgba(255,255,255,0) 40%);
+    --glow:0 24px 60px -28px rgba(0,0,0,.9),0 0 0 1px rgba(160,210,255,.05),0 0 32px -12px rgba(140,207,255,.25);
+    --crystal-text:linear-gradient(180deg,#ffffff,#d6e9ff 55%,#9fd4ff);
+    background:
+      radial-gradient(900px 520px at 85% -10%, rgba(140,207,255,.22), transparent 65%),
+      radial-gradient(700px 480px at 0% 30%, rgba(170,150,255,.12), transparent 70%),
+      radial-gradient(800px 600px at 60% 110%, rgba(110,190,255,.14), transparent 70%),
+      linear-gradient(var(--grid) 1px, transparent 1px) 0 0/44px 44px,
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0/44px 44px,
+      linear-gradient(180deg,#0b1424,#121f35 60%,#0d182a) !important;
+    background-attachment:fixed !important;
+  }
+  /* الكروت والقايمة الجانبية وشريط الفلتر: زجاج + حافة منشورية + لمعة */
+  body.fs-gold.v9-dark .card,
+  body.fs-gold.v9-dark .admin-shell-nav,
+  body.fs-gold.v9-dark #fs7-filter{
+    border:1px solid transparent!important;
+    background:var(--sheen) padding-box, linear-gradient(180deg,var(--glass),var(--glass-2)) padding-box, var(--edge) border-box!important;
+    -webkit-backdrop-filter:blur(16px) saturate(150%); backdrop-filter:blur(16px) saturate(150%);
+    box-shadow:var(--glow), inset 0 1px 0 rgba(255,255,255,.16), inset 0 -1px 0 rgba(140,207,255,.12)!important;
+  }
+  /* الصناديق الداخلية: زجاج أخف */
+  body.fs-gold.v9-dark .card .card,
+  body.fs-gold.v9-dark .fsd-k,
+  body.fs-gold.v9-dark .wicon-btn,
+  body.fs-gold.v9-dark .fsd-hl, body.fs-gold.v9-dark .fsd-q, body.fs-gold.v9-dark .fsd-lc, body.fs-gold.v9-dark .preview-card{
+    border:1px solid rgba(180,215,255,.18)!important;
+    background:var(--sheen), var(--glass-in)!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.12), 0 10px 26px -18px rgba(0,0,0,.9)!important;
+  }
+  body.fs-gold.v9-dark .fsd-k:hover, body.fs-gold.v9-dark .wicon-btn:hover{border-color:rgba(185,226,255,.45)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.18), 0 0 24px -8px rgba(140,207,255,.45)!important}
+  /* الأرقام الكبيرة والعناوين الرئيسية: فضي كريستالي */
+  body.fs-gold.v9-dark .fsd-k .v, body.fs-gold.v9-dark #wt-overall-pct, body.fs-gold.v9-dark [id^="wt-"][id$="-count"],
+  body.fs-gold.v9-dark #admin-name-display, body.fs-gold.v9-dark #login-headline-ar{
+    background:var(--crystal-text); -webkit-background-clip:text; background-clip:text; color:transparent!important;
+    text-shadow:0 0 18px rgba(140,207,255,.25);
+  }
+  body.fs-gold.v9-dark #login-headline-ar span{background:linear-gradient(180deg,#d7f0ff,#8ccfff);-webkit-background-clip:text;background-clip:text;color:transparent!important}
+  /* الأزرار الأساسية والعنصر النشط: كريستال فضي بلمعة */
+  body.fs-gold.v9-dark .btn-primary, body.fs-gold.v9-dark #fs7-create,
+  body.fs-gold.v9-dark .admin-shell-nav .tab-btn.active, body.fs-gold.v9-dark .tab-btn.fs7.on7,
+  body.fs-gold.v9-dark .wicon-btn.active, body.fs-gold.v9-dark #fs7-sub button.on,
+  body.fs-gold.v9-dark .tab-btn.active, body.fs-gold.v9-dark .wm-tab-btn.active, body.fs-gold.v9-dark .fsd-tabs button.on,
+  body.fs-gold.v9-dark #fs7-bottom button.on, body.fs-gold.v9-dark .lang-flag-btn.active{
+    background:linear-gradient(115deg,rgba(255,255,255,.65) 0%,rgba(255,255,255,0) 38%), linear-gradient(180deg,#f3f8fd,#c4d3e2 70%,#aebfd1)!important;
+    color:#0b1424!important; border:1px solid rgba(235,245,255,.85)!important;
+    box-shadow:inset 0 1px 0 #fff, inset 0 -2px 6px rgba(80,120,170,.25), 0 0 0 1px rgba(140,207,255,.25), 0 10px 26px -10px rgba(140,207,255,.55)!important;
+  }
+  body.fs-gold.v9-dark .wicon-btn.active .wicon-label{color:#0b1424!important}
+  body.fs-gold.v9-dark .admin-shell-nav .tab-btn.active .nav-icon, body.fs-gold.v9-dark .tab-btn.fs7.on7 .nav-icon{background:linear-gradient(180deg,#0f1c30,#1b3050)!important;color:#b9e2ff!important;border-color:rgba(185,226,255,.4)!important}
+  body.fs-gold.v9-dark .btn-primary:hover{filter:brightness(1.06) drop-shadow(0 0 10px rgba(140,207,255,.35))}
+  /* الأزرار الثانوية والحقول: زجاج */
+  body.fs-gold.v9-dark .btn-secondary, body.fs-gold.v9-dark .icon-btn, body.fs-gold.v9-dark .v9-dark-float{background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.03)), rgba(26,44,70,.75)!important;border:1px solid rgba(180,215,255,.25)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.12)!important}
+  body.fs-gold.v9-dark .input-field, body.fs-gold.v9-dark select, body.fs-gold.v9-dark textarea{background:rgba(8,16,30,.6)!important;border:1px solid rgba(180,215,255,.2)!important;box-shadow:inset 0 2px 6px rgba(0,0,0,.35)}
+  body.fs-gold.v9-dark .input-field:focus{border-color:rgba(185,226,255,.7)!important;box-shadow:inset 0 2px 6px rgba(0,0,0,.35), 0 0 0 3px rgba(140,207,255,.25), 0 0 18px -4px rgba(140,207,255,.5)!important}
+  /* مربعات الأيقونات في القايمة */
+  body.fs-gold.v9-dark .admin-shell-nav .tab-btn .nav-icon{background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(255,255,255,.04)), rgba(30,50,80,.8)!important;border:1px solid rgba(180,215,255,.25)!important}
+  /* شريط الموبايل السفلي: زجاج */
+  body.fs-gold.v9-dark #fs7-bottom{background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,0)), rgba(12,22,38,.78)!important;-webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);border-top:1px solid rgba(185,226,255,.25)!important}
+  /* الجداول */
+  body.fs-gold.v9-dark table thead th, body.fs-gold.v9-dark table thead td{background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.02)), rgba(28,46,72,.9)!important}
+  /* لمعة بتعدّي على الزرار الأساسي كل شوية (بتقف لو الجهاز مضبوط على تقليل الحركة) */
+  @keyframes fsCrystalSweep{0%,72%{background-position:-160% 0,0 0}100%{background-position:260% 0,0 0}}
+  body.fs-gold.v9-dark .btn-primary{background-size:60% 100%,100% 100%!important;background-repeat:no-repeat!important;animation:fsCrystalSweep 6s ease-in-out infinite}
+  @media (prefers-reduced-motion: reduce){body.fs-gold.v9-dark .btn-primary{animation:none}}
+  /* المتصفحات اللي مش بتدعم الزجاج المصنفر: نفس الشكل بس الكروت أتقل شوية */
+  @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+    body.fs-gold.v9-dark{--glass:rgba(22,38,62,.96); --glass-2:rgba(14,26,44,.97)}
+  }
 </style>
 </head>
 <body class="on-login fs-gold">
