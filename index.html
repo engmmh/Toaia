@@ -2699,8 +2699,8 @@ const FSWarning = (() => {
       '<div class="fsw-details"><div class="ar">' + e(v.violation_title) + '</div>' +
         (v.title_en ? '<div class="en">' + e(v.title_en) + '</div>' : '') +
         (langTitle ? '<div class="en">' + e(langTitle) + '</div>' : '') + '</div>' +
-      '<div class="fsw-sign"><div><div>توقيع الموظف بالعلم</div><div class="fsw-en">The employee\'s knowing signature</div><div class="fsw-issuer"></div><div class="fsw-line"></div></div>' +
-        '<div><div>توقيع مراقب الجودة</div><div class="fsw-en">Quality Controller\'s Signature</div><div class="fsw-issuer">' + e(v.issued_by_name) + '</div><div class="fsw-line"></div></div></div>' +
+      '<div class="fsw-sign"><div><div>توقيع الموظف بالعلم</div><div class="fsw-en">The employee\'s knowing signature</div><div class="fsw-issuer"></div></div>' +
+        '<div><div>توقيع مراقب الجودة</div><div class="fsw-en">Quality Controller\'s Signature</div><div class="fsw-issuer">' + e(v.issued_by_name) + '</div></div></div>' +
       '<div class="fsw-official">يعتبر هذا الإنذار رسميا عند تسجيله بمنصة جسر</div>' +
       '<div class="fsw-bar"><span>For HR Department use only</span><span>لاستخدام ادارة الموارد البشرية فقط</span></div>' +
       '<div class="fsw-hr"><div class="fsw-hrnote"><div>التفاصيل: ...............................................</div><div>...........................................................</div><div class="fsw-approve">يعتمد ,,,</div></div>' +
@@ -2713,27 +2713,27 @@ const FSWarning = (() => {
     '#fs-warn-ov{position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.88);overflow:auto;padding:16px 8px}' +
     '.fsw-actions{position:sticky;top:0;z-index:2;display:flex;gap:8px;justify-content:center;margin:0 auto 12px;max-width:210mm}' +
     '.fsw-fit{margin:0 auto;direction:ltr}.fsw-fit .fsw-page{transform-origin:top left}' +
-    '.fsw-page{position:relative;overflow:hidden;width:210mm;height:297mm;margin:0 auto;background:#fff;color:#222;font-family:Cairo,Tahoma,sans-serif;font-size:12px;line-height:1.5;padding:10mm 12mm 0;box-sizing:border-box;display:flex;flex-direction:column;direction:ltr;text-align:left}' +
+    '.fsw-page{position:relative;overflow:hidden;width:210mm;height:297mm;margin:0 auto;background:#fff;color:#222;font-family:Cairo,Tahoma,sans-serif;font-size:12.5px;line-height:1.5;padding:10mm 12mm 0;box-sizing:border-box;display:flex;flex-direction:column;direction:ltr;text-align:left}' +
     '.fsw-wm{position:absolute;top:34%;left:50%;width:62mm;transform:translateX(-50%);opacity:.06;pointer-events:none}' +
     '.fsw-top{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #bbb;padding-bottom:8px}' +
     '.fsw-co{font-weight:800;font-size:15px;line-height:1.35;width:38%}.fsw-co.ar{direction:rtl;text-align:right;font-size:17px}' +
     '.fsw-co small{display:block;font-size:12px;font-weight:700;margin-top:10px}.fsw-logo{height:22mm}' +
-    '.fsw-ref{display:flex;justify-content:space-between;align-items:center;margin:12px 0 10px;line-height:1.8}' +
+    '.fsw-ref{display:flex;justify-content:space-between;align-items:center;margin:12px 0 14mm;line-height:1.8}' +
     '.fsw-ref b{margin-inline-start:24px}.fsw-title{color:#c0262d;text-align:center;font-weight:700;letter-spacing:.3px}' +
     '.fsw-en{text-align:left}.fsw-ar{direction:rtl;text-align:right}' +
     '.fsw-bar{display:flex;justify-content:space-between;background:#dcdcdc;padding:3px 8px;font-weight:700;margin-top:6px}.fsw-bar span:last-child{direction:rtl}' +
-        '.fsw-row{display:grid;grid-template-columns:1fr 2fr 1fr;align-items:center;padding:3px 8px}.fsw-row:nth-of-type(even){background:#f4f4f4}' +
+        '.fsw-row{display:grid;grid-template-columns:1fr 2fr 1fr;align-items:center;padding:4px 8px}.fsw-row:nth-of-type(even){background:#f4f4f4}' +
     '.fsw-val{text-align:center;font-size:13.5px}' +
-    '.fsw-chks{padding:3px 0}.fsw-chk{display:grid;grid-template-columns:1fr 28px 1fr;align-items:center;padding:2px 60px;line-height:1.5}' +
-    '.fsw-chk.sm{padding:1px 0;font-size:11.5px}' +
+    '.fsw-chks{padding:3px 0 5mm}.fsw-hr .fsw-chks{padding:4px 0 0}.fsw-chk{display:grid;grid-template-columns:1fr 28px 1fr;align-items:center;padding:2px 60px;line-height:1.5}' +
+    '.fsw-chk.sm{padding:2px 0;font-size:12px}' +
     '.fsw-box{display:inline-flex;width:13px;height:13px;border:1.4px solid #333;align-items:center;justify-content:center;font-size:12px;font-weight:900;line-height:1;margin:auto}' +
-    '.fsw-details{flex:1 1 auto;min-height:18mm;padding:8px 12px;line-height:1.7}.fsw-details .ar{direction:rtl;text-align:right;font-weight:700;font-size:14px}.fsw-details .en{color:#444}' +
+    '.fsw-details{flex:none;height:34mm;box-sizing:border-box;overflow:hidden;padding:8px 12px;line-height:1.7}.fsw-details .ar{direction:rtl;text-align:right;font-weight:700;font-size:14px}.fsw-details .en{color:#444}' +
     '.fsw-sign{display:flex;justify-content:space-between;border-top:1px dashed #555;padding-top:6px;margin-top:4px;text-align:center;line-height:1.4}' +
-    '.fsw-sign>div{width:45%}.fsw-sign>div>div:first-child{direction:rtl}.fsw-sign .fsw-en{text-align:center}.fsw-issuer{font-weight:700;margin-top:3px;min-height:16px}.fsw-line{border-bottom:1px solid #999;height:18px;margin:0 20px}' +
-    '.fsw-official{color:#c0262d;text-align:center;font-weight:700;margin:8px 0 2px}' +
+    '.fsw-sign>div{width:45%}.fsw-sign>div>div:first-child{direction:rtl}.fsw-sign .fsw-en{text-align:center}.fsw-issuer{font-weight:700;margin-top:3px;min-height:16px}' +
+    '.fsw-official{color:#c0262d;text-align:center;font-weight:700;margin:11mm 0 2px}' +
     '.fsw-hr{display:grid;grid-template-columns:1fr 1.4fr;gap:12px;align-items:start}' +
     '.fsw-hrnote{direction:rtl;text-align:right;line-height:2;color:#444;font-size:11.5px}.fsw-approve{margin-top:6px;text-align:center}' +
-    '.fsw-foot{flex:none;margin:6px -12mm 0;background:#3c3c3c;color:#fff;display:flex;justify-content:space-between;align-items:center;padding:10px 16mm;font-size:12px}' +
+    '.fsw-foot{flex:none;margin:auto -12mm 5mm;background:#3c3c3c;color:#fff;display:flex;justify-content:space-between;align-items:center;padding:10px 16mm;font-size:12px}' +
     '.fsw-foot .mid{text-align:center;font-weight:700}.fsw-foot small{display:block;font-size:10px;font-weight:600}' +
     '@page{size:A4 portrait;margin:0}' +
     '@media print{html,body{width:210mm!important;height:297mm!important;min-height:0!important;margin:0!important;padding:0!important;background:#fff!important;overflow:hidden!important}' +
