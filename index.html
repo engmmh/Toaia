@@ -829,7 +829,7 @@ body:has(#admin-section.fs-boot) footer{visibility:hidden}
 html[dir=rtl] #fs7-drawer{transform:translateX(105%)}
 #fs7-drawer.open{transform:none!important}
 #fs7-drawer .dh{display:flex;align-items:center;gap:8px;padding:14px 16px;border-bottom:1px solid var(--border);font-weight:900;font-size:15px}
-#fs7-drawer .dh button{margin-inline-start:auto;border:0;background:#f1f5f9;border-radius:10px;padding:8px 12px;cursor:pointer;font-weight:800}
+#fs7-db .fsd-r[data-w]{cursor:pointer;border-radius:8px;transition:background .15s}#fs7-db .fsd-r[data-w]:hover{background:rgba(201,154,62,.12)}#fs7-db .fsd-r[data-w]>span:first-child::after{content:' ‹';opacity:.45}#fs7-drawer .dh #fs7-dback{margin:0;font-size:12px}#fs7-drawer .dh #fs7-dback[hidden]{display:none}#fs7-drawer .dh button{margin-inline-start:auto;border:0;background:#f1f5f9;border-radius:10px;padding:8px 12px;cursor:pointer;font-weight:800}
 #fs7-drawer .db{padding:14px 16px;overflow:auto;flex:1;font-size:13px;line-height:1.7}
 #fs7-drawer .dk{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px dashed var(--border)}
 #fs7-drawer .dk b{color:var(--muted);font-size:12px}
@@ -2735,9 +2735,11 @@ const FSWarning = (() => {
     '.fsw-hrnote{direction:rtl;text-align:right;line-height:2.2;color:#444;font-size:12px}.fsw-approve{margin-top:10px;text-align:center}' +
     '.fsw-foot{margin:auto -12mm 0;background:#3c3c3c;color:#fff;display:flex;justify-content:space-between;align-items:center;padding:10px 16mm;font-size:12px}' +
     '.fsw-foot .mid{text-align:center;font-weight:700}.fsw-foot small{display:block;font-size:10px;font-weight:600}' +
-    '@page{size:A4;margin:0}' +
-    '@media print{body>*:not(#fs-warn-ov){display:none!important}#fs-warn-ov{position:static;background:none;padding:0;overflow:visible}' +
-    '.fsw-actions{display:none!important}.fsw-fit{width:auto!important;height:auto!important}.fsw-page{margin:0;width:210mm;height:297mm;min-height:0;transform:none!important}' +
+    '@page{size:A4 portrait;margin:0}' +
+    '@media print{html,body{width:210mm!important;height:297mm!important;min-height:0!important;margin:0!important;padding:0!important;background:#fff!important;overflow:hidden!important}' +
+    'body>*:not(#fs-warn-ov){display:none!important}#fs-warn-ov{position:fixed;inset:0;width:210mm;height:297mm;background:#fff;padding:0;overflow:hidden}' +
+    '.fsw-actions{display:none!important}.fsw-fit{width:210mm!important;height:297mm!important;overflow:hidden}' +
+    '.fsw-page{margin:0;width:210mm;height:296mm;min-height:0;transform:none!important;box-shadow:none;break-inside:avoid;page-break-inside:avoid;page-break-after:avoid}' +
     '*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}';
 
   function close(){ const o = document.getElementById('fs-warn-ov'); if(o) o.remove(); }
@@ -11486,9 +11488,27 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     }
     return d;
   }
-  function open(title, html){ const d = el(); $d('fs7-dt').textContent = title; $d('fs7-db').innerHTML = html; d.classList.add('open'); return $d('fs7-db'); }
-  function close(){ const d = $d('fs7-drawer'); if(d) d.classList.remove('open'); }
-  window.FSDrawer = { open, close };
+  // open(title, html, {push:true}) بيحفظ اللي مفتوح ويظهر زرار «رجوع» يرجّعه زي ما هو (بأزراره)
+  const stack = [];
+  function open(title, html, opts){
+    const d = el(), db = $d('fs7-db');
+    if(opts && opts.push && d.classList.contains('open')){
+      const frag = document.createDocumentFragment(); while(db.firstChild) frag.appendChild(db.firstChild);
+      stack.push({title: $d('fs7-dt').textContent, frag, onclick: db.onclick, scroll: db.scrollTop});
+    } else stack.length = 0;
+    db.onclick = null; $d('fs7-dt').textContent = title; db.innerHTML = html; db.scrollTop = 0; backBtn(); d.classList.add('open'); return db;
+  }
+  function back(){
+    const s = stack.pop(); if(!s) return; const db = $d('fs7-db');
+    db.innerHTML = ''; db.appendChild(s.frag); db.onclick = s.onclick; $d('fs7-dt').textContent = s.title; backBtn(); db.scrollTop = s.scroll;
+  }
+  function backBtn(){
+    let b = $d('fs7-dback');
+    if(!b){ b = document.createElement('button'); b.type = 'button'; b.id = 'fs7-dback'; b.textContent = '→ رجوع'; b.onclick = back; $d('fs7-dt').parentNode.insertBefore(b, $d('fs7-dt')); }
+    b.hidden = !stack.length;
+  }
+  function close(){ stack.length = 0; const d = $d('fs7-drawer'); if(d) d.classList.remove('open'); }
+  window.FSDrawer = { open, close, back };
 })();
 
 /* ===== FSLibrary — مكتبة المحتوى الموحّدة: جدول واحد للفيديو/الكارت/الاختبار بحالات واضحة (مسودة / مجدول / منشور / منتهي) ===== */
@@ -11625,8 +11645,8 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     try{ FSLog('نقل موظفين', ids.join(','), {to:sid, count:ids.length}); }catch(e){}
     showToast('تم نقل ' + ids.length + ' موظف إلى ' + secName(sid) + ' ✅'); return true;
   }
-  async function view(id){
-    const b = FSDrawer.open('👤 موظف #' + id, '<div class="muted">⏳ جاري التحميل…</div>');
+  async function view(id, opts){
+    const b = FSDrawer.open('👤 موظف #' + id, '<div class="muted">⏳ جاري التحميل…</div>', opts);
     const [w, tp, qa, vi] = await Promise.all([
       Promise.resolve(sb.from('workers_evaluations').select('*').eq('id', id).maybeSingle()).catch(() => ({})),
       Promise.resolve(sb.from('training_progress').select('topic_id,completed').eq('worker_id', id)).catch(() => ({})),
@@ -12125,10 +12145,16 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     var mx = D.topViol[0].n;
     return h + D.topViol.map(function(v, i){ return '<div class="fsd-vr"><button type="button" class="fsd-bar2" data-vk="' + i + '"><span class="nm">' + E(v.title) + '</span><span class="tr"><i style="width:' + Math.round(v.n / mx * 100) + '%;background:#f97316"></i></span><b>' + v.n + '</b></button><button type="button" class="btn-secondary btn-sm" data-newtr-v="' + i + '" title="اعمل تدريب عن الموضوع ده">🎬</button></div>'; }).join('');
   }
+  /* أي صف موظف في لوحات الداشبورد الجانبية: الضغط عليه بيفتح بياناته، و«رجوع» بيرجّع للقايمة */
+  document.addEventListener('click', function(e){
+    var r = e.target.closest && e.target.closest('#fs7-db .fsd-r[data-w]');
+    if(!r || e.target.closest('button, a, input, select, label') || !window.FSPeople) return;
+    FSPeople.view(Number(r.dataset.w), {push:true});
+  });
   function violDetail(i){
     var v = D.topViol[i]; if(!v) return;
     var ps = Object.keys(v.places).sort(function(a, b){ return v.places[b] - v.places[a]; });
-    var body = FSDrawer.open('⚠️ ' + v.title + ' (' + v.n + ')', '<div class="fsd-sub">في أنهي أماكن</div>' + ps.map(function(p){ return '<div class="fsd-r"><span>' + E(p) + '</span><b>' + v.places[p] + '</b></div>'; }).join('') + '<div class="fsd-sub">عند مين</div>' + Object.keys(v.ws).sort(function(a, b){ return v.ws[b] - v.ws[a]; }).map(function(id){ var w = D.W[id] || {name:'#' + id, place:'—'}; return '<div class="fsd-r"><span>#' + id + ' ' + E(w.name) + ' <small>' + E(w.place) + '</small></span><b>' + v.ws[id] + '</b></div>'; }).join('') + '<div class="fsd-bar" style="margin-top:10px"><button type="button" class="btn-secondary btn-sm" data-newtr-v="' + i + '">🎬 اعمل تدريب عن الموضوع ده</button></div>');
+    var body = FSDrawer.open('⚠️ ' + v.title + ' (' + v.n + ')', '<div class="fsd-sub">في أنهي أماكن</div>' + ps.map(function(p){ return '<div class="fsd-r"><span>' + E(p) + '</span><b>' + v.places[p] + '</b></div>'; }).join('') + '<div class="fsd-sub">عند مين</div>' + Object.keys(v.ws).sort(function(a, b){ return v.ws[b] - v.ws[a]; }).map(function(id){ var w = D.W[id] || {name:'#' + id, place:'—'}; return '<div class="fsd-r" data-w="' + id + '"><span>#' + id + ' ' + E(w.name) + ' <small>' + E(w.place) + '</small></span><b>' + v.ws[id] + '</b></div>'; }).join('') + '<div class="fsd-bar" style="margin-top:10px"><button type="button" class="btn-secondary btn-sm" data-newtr-v="' + i + '">🎬 اعمل تدريب عن الموضوع ده</button></div>');
     body.onclick = function(e){ var b = e.target.closest('[data-newtr-v]'); if(b){ FSDrawer.close(); newTrainingAbout(v.title); } };
   }
 
@@ -12224,7 +12250,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
       acts = '<button class="btn-secondary btn-sm" data-act="mgr">📲 بلّغ المشرف</button><button class="btn-secondary btn-sm" data-act="remind">🔔 تذكير للكل</button>';
     } else if(k === 'viol'){
       head = '⚠️ مخالفات مفتوحة';
-      rows = D.viols.map(function(v){ return '<div class="fsd-r" data-v="' + v.id + '"><span>#' + v.wid + ' ' + E(v.name) + ' <small>' + E(v.place) + ' — ' + E(v.title) + '</small></span><span class="rt">' + (can('violations') ? '<button class="btn-secondary btn-sm" data-act="closev" data-id="' + v.id + '">✅ إغلاق</button>' : '') + '</span></div>'; });
+      rows = D.viols.map(function(v){ return '<div class="fsd-r" data-v="' + v.id + '" data-w="' + v.wid + '"><span>#' + v.wid + ' ' + E(v.name) + ' <small>' + E(v.place) + ' — ' + E(v.title) + '</small></span><span class="rt">' + (can('violations') ? '<button class="btn-secondary btn-sm" data-act="closev" data-id="' + v.id + '">✅ إغلاق</button>' : '') + '</span></div>'; });
       ids = D.viols.map(function(v){ return v.wid; });
       csvRows = [['الرقم', 'الاسم', 'المكان', 'المخالفة', 'التاريخ']].concat(D.viols.map(function(v){ return [v.wid, v.name, v.place, v.title, String(v.at || '').slice(0, 10)]; }));
       acts = '<button class="btn-secondary btn-sm" data-act="mgr">📲 بلّغ المشرف</button>';
