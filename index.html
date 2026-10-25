@@ -1008,174 +1008,206 @@ body.v9-dark .lt-bar{background:#0f172a}body.v9-dark .lt-tab.on{background:#1e29
 
 .v4-stats{grid-template-columns:repeat(auto-fit,minmax(110px,1fr))!important}
 
-  /* ===== الثيم الذهبي (Gold Card) — طبقة شكل واحدة فوق ملف التصميم =====
-     خلفية أبيض فضي + كروت كريمي بإطار ذهبي + أرقام ذهبي على شريط داكن.
-     بيشتغل على <body class="fs-gold">، والوضع الليلي (☾) بيرجع للشكل الداكن القديم. */
-  body.fs-gold:not(.v9-dark){
-    --primary:#1f1a12; --primary-light:#3a3024; --primary-dark:#120f0a;
-    --gold:#c99a3e; --gold-2:#e7c477; --gold-soft:#f3e6c4; --gold-line:#dcc28b;
-    --accent:#c99a3e; --bg:#eef0f3; --card:#fbf6ea; --card-2:#f4ecd9;
-    --text:#1f1a12; --muted:#7a6a50; --border:#e6d6b0;
+  /* ===== الثيم (Gold Card) — طبقة شكل واحدة فوق ملف التصميم =====
+     النهار: خلفية أبيض فضي + كروت كريمي بإطار ذهبي + أزرار داكنة بكلام ذهبي.
+     الليل (☾): خلفية كحلي بإضاءة أزرق فاتح + كروت فضي غامق بإطار فضي + أزرار فضي.
+     كل الألوان متغيرات في أول بلوكين بس؛ القواعد تحت بتستخدم المتغيرات ومفيهاش ألوان. */
+  body.fs-gold{
+    --bg-grad:linear-gradient(180deg,#f7f8fa,#e6e9ee); --bg-glow:rgba(231,196,119,.22); --grid:rgba(120,126,138,.07); --page:#eef0f3;
+    --card-1:#fdf9ef; --card-2:#f8f0dd; --card-line:#dcc28b; --card-lip:rgba(201,154,62,.18);
+    --surface:#fffcf4; --surface-line:#ecdcb8;
+    --chip:#efe6d2; --chip-text:#6b5d45; --soft:#f1e7cf; --soft-hover:#ebdfc2;
+    --ink:#1f1a12; --ink-2:#3b3122; --ink-3:#5b4d36; --ink-4:#7a6a50;
+    --acc:#c99a3e; --acc-2:#e7c477; --acc-ring:rgba(201,154,62,.35);
+    --act-1:#2b241a; --act-2:#18140e; --act-text:#e7c477; --act-line:#3d3223;
+    --th:#f2e8d1; --row-line:#eee2c8; --row-hover:#f7efdc;
+    --input:#fffdf7; --input-line:#e3d3ae;
+    --hero:linear-gradient(160deg,#fbfbfc,#e9ecf0); --hero-line:#dfe3e8;
+    --bar-bg:rgba(250,250,251,.96); --bar-line:#dfe3e8; --bar-text:#6b6252;
+    --foot:#7d7566; --foot-strong:#a77a25;
+    --shade:0 16px 34px -22px rgba(31,26,18,.45),0 2px 0 rgba(201,154,62,.22);
+    --shade-sm:0 8px 20px -14px rgba(31,26,18,.45);
+
+    /* الألوان الأساسية في ملف التصميم بتاخد قيمها من فوق */
+    --primary:var(--act-1); --primary-light:#3a3024; --primary-dark:var(--act-2);
+    --accent:var(--acc); --bg:var(--page); --card:var(--card-1);
+    --text:var(--ink); --muted:var(--ink-4); --border:var(--surface-line);
     --ok:#1f7a45; --ok-bg:#e3f1e4; --warn:#8a5a0b; --warn-bg:#f8ebcd;
     --bad:#a8322b; --bad-bg:#f6e0da; --info:#2c4f87; --info-bg:#e3eaf5;
-    --mute:#6b5d45; --mute-bg:#efe6d2;
-    --ring:0 0 0 3px rgba(201,154,62,.35);
-    --shadow:0 16px 34px -22px rgba(31,26,18,.45),0 2px 0 rgba(201,154,62,.22);
+    --mute:#6b5d45; --mute-bg:var(--chip);
+    --ring:0 0 0 3px var(--acc-ring); --shadow:var(--shade);
+
     background:
-      radial-gradient(1200px 480px at 50% -160px, rgba(231,196,119,.22), transparent 70%),
-      linear-gradient(rgba(120,126,138,.07) 1px, transparent 1px) 0 0/44px 44px,
-      linear-gradient(90deg, rgba(120,126,138,.07) 1px, transparent 1px) 0 0/44px 44px,
-      linear-gradient(180deg,#f7f8fa,#e6e9ee);
-    background-attachment:fixed;
-    min-height:100vh;
-    color:var(--text);
+      radial-gradient(1200px 480px at 50% -160px, var(--bg-glow), transparent 70%),
+      linear-gradient(var(--grid) 1px, transparent 1px) 0 0/44px 44px,
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0/44px 44px,
+      var(--bg-grad);
+    background-attachment:fixed; min-height:100vh; color:var(--ink);
   }
+  /* الليل: كحلي + أزرق فاتح + فضي */
+  body.fs-gold.v9-dark{
+    --bg-grad:linear-gradient(180deg,#0e1828,#17263c); --bg-glow:rgba(125,196,255,.20); --grid:rgba(140,200,255,.06); --page:#0e1828;
+    --card-1:#1b2a40; --card-2:#142135; --card-line:rgba(176,194,214,.45); --card-lip:rgba(140,200,255,.14);
+    --surface:#1f3049; --surface-line:#2f4766;
+    --chip:#24385a; --chip-text:#c9d6e5; --soft:#22344f; --soft-hover:#2a3e5c;
+    --ink:#e8eef6; --ink-2:#d3dde9; --ink-3:#aebdd0; --ink-4:#94a6bb;
+    --acc:#8ccfff; --acc-2:#b9e2ff; --acc-ring:rgba(140,207,255,.35);
+    --act-1:#eef3f8; --act-2:#b8c6d4; --act-text:#0e1828; --act-line:#d5dee8;
+    --th:#1c2d46; --row-line:#263a57; --row-hover:#1e3049;
+    --input:#0f1c2e; --input-line:#2e4560;
+    --hero:linear-gradient(160deg,#13213a,#0e1828); --hero-line:#22354f;
+    --bar-bg:rgba(15,26,43,.96); --bar-line:#22354f; --bar-text:#a9bacd;
+    --foot:#8ea0b6; --foot-strong:#b9e2ff;
+    --shade:0 18px 38px -22px rgba(0,0,0,.8),0 2px 0 rgba(140,200,255,.14);
+    --shade-sm:0 8px 20px -14px rgba(0,0,0,.8);
+    --primary-light:#dfe7ef;
+    --ok:#4ade80; --ok-bg:rgba(74,222,128,.14); --warn:#fbbf24; --warn-bg:rgba(251,191,36,.14);
+    --bad:#f87171; --bad-bg:rgba(248,113,113,.14); --info:#93c5fd; --info-bg:rgba(147,197,253,.14);
+    --mute:#c9d6e5;
+    background:
+      radial-gradient(1200px 480px at 50% -160px, var(--bg-glow), transparent 70%),
+      linear-gradient(var(--grid) 1px, transparent 1px) 0 0/44px 44px,
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0/44px 44px,
+      var(--bg-grad) !important;
+    color-scheme:dark;
+  }
+  /* الوضع الليلي القديم كان بيقلب ألوان الصفحة كلها (invert)؛ هنا الألوان نفسها ليلية، فالقلب يتلغي */
+  body.fs-gold.v9-dark>*:not(script):not(style),
+  body.fs-gold.v9-dark .topic-player-wrap,
+  body.fs-gold.v9-dark [id^="topic-player-"],
+  body.fs-gold.v9-dark .card-img{filter:none!important}
+  html:has(body.fs-gold){background:var(--page)}
   html:has(body.fs-gold:not(.v9-dark)){background:#eef0f3}
-  body.fs-gold:not(.v9-dark) ::selection{background:rgba(201,154,62,.35)}
+  html:has(body.fs-gold.v9-dark){background:#0e1828}
+  body.fs-gold ::selection{background:var(--acc-ring)}
 
   /* العناوين بخط نسخ، والأرقام الكبيرة بخط Playfair زي كارت التكلفة */
-  body.fs-gold:not(.v9-dark) .section-title,
-  body.fs-gold:not(.v9-dark) .card h2,
-  body.fs-gold:not(.v9-dark) .card h3,
-  body.fs-gold:not(.v9-dark) .fsd-h b,
-  body.fs-gold:not(.v9-dark) #admin-name-display,
-  body.fs-gold:not(.v9-dark) #login-app-name{font-family:'Noto Naskh Arabic','Cairo',serif;font-weight:700;letter-spacing:0}
-  body.fs-gold:not(.v9-dark) .fsd-k .v,
-  body.fs-gold:not(.v9-dark) .fsd-ksum b,
-  body.fs-gold:not(.v9-dark) [id^="wt-"][id$="-count"],
-  body.fs-gold:not(.v9-dark) #wt-overall-pct{font-family:'Playfair Display','Cairo',serif;font-variant-numeric:lining-nums tabular-nums}
+  body.fs-gold .section-title, body.fs-gold .card h2, body.fs-gold .card h3, body.fs-gold .fsd-h b,
+  body.fs-gold #admin-name-display, body.fs-gold #login-app-name{font-family:'Noto Naskh Arabic','Cairo',serif;font-weight:700;letter-spacing:0}
+  body.fs-gold .fsd-k .v, body.fs-gold .fsd-ksum b, body.fs-gold [id^="wt-"][id$="-count"], body.fs-gold #wt-overall-pct{font-family:'Playfair Display','Cairo',serif;font-variant-numeric:lining-nums tabular-nums}
 
   /* الكروت */
-  body.fs-gold:not(.v9-dark) .card{
-    background:linear-gradient(180deg,#fdf9ef,#f8f0dd);
-    border:1.5px solid var(--gold-line);
-    border-radius:22px;
-    box-shadow:var(--shadow), inset 0 -5px 0 rgba(201,154,62,.18);
-  }
-  body.fs-gold:not(.v9-dark) .card .card{background:#fffcf4;border-color:#ecdcb8;box-shadow:none;border-radius:16px}
-  body.fs-gold:not(.v9-dark) .card [style*="background:#fff;"],
-  body.fs-gold:not(.v9-dark) .card [style*="background:#fff "],
-  body.fs-gold:not(.v9-dark) .card [style*="background: #fff"],
-  body.fs-gold:not(.v9-dark) .card [style*="background:#f8fafc"],
-  body.fs-gold:not(.v9-dark) .card [style*="background:#f1f5f9"]{background:#fffcf4!important;border-color:#ecdcb8!important}
-  /* هيدر الأدمن: إطار ذهبي جانبي بدل الأخضر */
-  body.fs-gold:not(.v9-dark) .card[style*="border-right:4px solid var(--primary)"]{border-right:5px solid var(--gold)!important}
-  body.fs-gold:not(.v9-dark) #admin-crumb{color:var(--gold)!important}
+  body.fs-gold .card{background:linear-gradient(180deg,var(--card-1),var(--card-2));border:1.5px solid var(--card-line);border-radius:22px;box-shadow:var(--shade), inset 0 -5px 0 var(--card-lip);color:var(--ink)}
+  body.fs-gold .card .card{background:var(--surface);border-color:var(--surface-line);box-shadow:none;border-radius:16px}
+  body.fs-gold .card [style*="background:#fff;"], body.fs-gold .card [style*="background:#fff "], body.fs-gold .card [style*="background: #fff"],
+  body.fs-gold .card [style*="background:#ffffff"], body.fs-gold .card [style*="background:#f8fafc"], body.fs-gold .card [style*="background:#f1f5f9"]{background:var(--surface)!important;border-color:var(--surface-line)!important}
+  body.fs-gold .card[style*="border-right:4px solid var(--primary)"]{border-right:5px solid var(--acc)!important}
+  body.fs-gold #admin-crumb{color:var(--acc)!important}
+  body.fs-gold .muted{color:var(--ink-4)}
 
   /* الأزرار */
-  body.fs-gold:not(.v9-dark) .btn-primary{
-    background:linear-gradient(180deg,#2b241a,#18140e);color:var(--gold-2);
-    border:1px solid #3d3223;border-radius:12px;box-shadow:0 6px 16px -8px rgba(0,0,0,.7), inset 0 1px 0 rgba(231,196,119,.18);
-  }
-  body.fs-gold:not(.v9-dark) .btn-primary:hover{filter:none;color:#f6d892;background:linear-gradient(180deg,#352c20,#1d1810)}
-  body.fs-gold:not(.v9-dark) .btn-secondary{background:#f1e7cf;color:#3b3122;border:1px solid var(--gold-line);border-radius:12px}
-  body.fs-gold:not(.v9-dark) .btn-secondary:hover{background:#ebdfc2}
-  body.fs-gold:not(.v9-dark) .btn-danger{background:#f6e0da;color:#a8322b;border-radius:10px}
-  body.fs-gold:not(.v9-dark) .icon-btn{background:#fbf6ea;border:1px solid var(--gold-line);color:#3b3122;border-radius:12px}
+  body.fs-gold .btn-primary{background:linear-gradient(180deg,var(--act-1),var(--act-2));color:var(--act-text);border:1px solid var(--act-line);border-radius:12px;box-shadow:var(--shade-sm)}
+  body.fs-gold .btn-primary:hover{filter:brightness(1.08)}
+  body.fs-gold .btn-secondary{background:var(--soft);color:var(--ink-2);border:1px solid var(--card-line);border-radius:12px}
+  body.fs-gold .btn-secondary:hover{background:var(--soft-hover)}
+  body.fs-gold .btn-danger{background:var(--bad-bg);color:var(--bad);border-radius:10px}
+  body.fs-gold .icon-btn{background:var(--card-1);border:1px solid var(--card-line);color:var(--ink-2);border-radius:12px}
 
   /* الحقول */
-  body.fs-gold:not(.v9-dark) .input-field{background:#fffdf7;border:1px solid #e3d3ae;border-radius:12px;color:var(--text)}
-  body.fs-gold:not(.v9-dark) .input-field:focus{outline:none;border-color:var(--gold);box-shadow:var(--ring)}
-  body.fs-gold:not(.v9-dark) label.field-label{color:#7a6a50}
+  body.fs-gold .input-field, body.fs-gold select, body.fs-gold textarea{background:var(--input);border:1px solid var(--input-line);border-radius:12px;color:var(--ink)}
+  body.fs-gold .input-field:focus{outline:none;border-color:var(--acc);box-shadow:var(--ring)}
+  body.fs-gold label.field-label{color:var(--ink-4)}
 
   /* الشارات = «شيبس» زي «1 رغيف» */
-  body.fs-gold:not(.v9-dark) .badge{border-radius:999px;font-weight:700}
-  body.fs-gold:not(.v9-dark) .badge:not(.badge-red):not(.badge-green):not(.badge-yellow):not(.badge-blue){background:#efe6d2;color:#6b5d45}
+  body.fs-gold .badge{border-radius:999px;font-weight:700}
+  body.fs-gold .badge:not(.badge-red):not(.badge-green):not(.badge-yellow):not(.badge-blue){background:var(--chip);color:var(--chip-text)}
 
   /* الجداول */
-  body.fs-gold:not(.v9-dark) table thead th,
-  body.fs-gold:not(.v9-dark) table thead td{background:#f2e8d1!important;color:#5b4d36!important;border-color:#e6d6b0!important}
-  body.fs-gold:not(.v9-dark) table tbody tr{border-color:#eee2c8}
-  body.fs-gold:not(.v9-dark) table tbody td{border-color:#eee2c8!important}
-  body.fs-gold:not(.v9-dark) table tbody tr:hover{background:#f7efdc}
+  body.fs-gold table thead th, body.fs-gold table thead td{background:var(--th)!important;color:var(--ink-3)!important;border-color:var(--surface-line)!important}
+  body.fs-gold table tbody tr{border-color:var(--row-line)}
+  body.fs-gold table tbody td{border-color:var(--row-line)!important;color:var(--ink)}
+  body.fs-gold table tbody tr:hover{background:var(--row-hover)}
 
-  /* القايمة الجانبية: الأيقونة في مربع زي كارت التكلفة، والنشط شريط داكن ذهبي */
-  body.fs-gold:not(.v9-dark) .admin-shell-nav{background:linear-gradient(180deg,#fdf9ef,#f6eedb);border:1.5px solid var(--gold-line);border-radius:22px;box-shadow:var(--shadow)}
-  body.fs-gold:not(.v9-dark) .admin-shell-nav .tab-btn{background:transparent;border:1px solid transparent;color:#3b3122;border-radius:14px}
-  body.fs-gold:not(.v9-dark) .admin-shell-nav .tab-btn:hover{background:#f1e7cf}
-  body.fs-gold:not(.v9-dark) .admin-shell-nav .tab-btn .nav-icon{background:#fff;border:1px solid #ecdcb8;box-shadow:0 2px 6px -3px rgba(0,0,0,.25);border-radius:11px;color:#a77a25}
-  body.fs-gold:not(.v9-dark) .admin-shell-nav .tab-btn.active{background:linear-gradient(180deg,#2b241a,#18140e);color:var(--gold-2);border-color:#3d3223;box-shadow:0 10px 22px -12px rgba(0,0,0,.8)}
-  body.fs-gold:not(.v9-dark) .admin-shell-nav .tab-btn.active .nav-icon{background:var(--gold-2);border-color:var(--gold-2);color:#1f1a12}
-  body.fs-gold:not(.v9-dark) .nav-group-h{color:#9a8762}
-  /* التبويبات العامة (برا القايمة) */
-  body.fs-gold:not(.v9-dark) .tab-btn{background:#fbf6ea;border-color:var(--gold-line);color:#5b4d36}
-  body.fs-gold:not(.v9-dark) .tab-btn.active{background:#1f1a12;color:var(--gold-2);border-color:#1f1a12}
-  body.fs-gold:not(.v9-dark) .wm-tab-btn{background:#fbf6ea;border-color:#ecdcb8;color:#5b4d36}
-  body.fs-gold:not(.v9-dark) .wm-tab-btn.active{background:#1f1a12;color:var(--gold-2);border-color:#1f1a12}
+  /* القايمة الجانبية: الأيقونة في مربع، والنشط شريط مميز */
+  body.fs-gold .admin-shell-nav{background:linear-gradient(180deg,var(--card-1),var(--card-2));border:1.5px solid var(--card-line);border-radius:22px;box-shadow:var(--shade)}
+  body.fs-gold .admin-shell-nav .tab-btn{background:transparent;border:1px solid transparent;color:var(--ink-2);border-radius:14px}
+  body.fs-gold .admin-shell-nav .tab-btn:hover{background:var(--soft)}
+  body.fs-gold .admin-shell-nav .tab-btn .nav-icon{background:var(--surface);border:1px solid var(--surface-line);box-shadow:var(--shade-sm);border-radius:11px;color:var(--acc)}
+  body.fs-gold .admin-shell-nav .tab-btn.active, body.fs-gold .tab-btn.fs7.on7{background:linear-gradient(180deg,var(--act-1),var(--act-2));color:var(--act-text);border-color:var(--act-line);box-shadow:var(--shade-sm)}
+  body.fs-gold .admin-shell-nav .tab-btn.active .nav-icon, body.fs-gold .tab-btn.fs7.on7 .nav-icon{background:var(--acc-2);border-color:var(--acc-2);color:#1f1a12}
+  body.fs-gold .nav-group-h{color:var(--ink-4)}
+  /* التبويبات والشيبس */
+  body.fs-gold .tab-btn, body.fs-gold .wm-tab-btn, body.fs-gold .fsd-tabs button{background:var(--card-1);border-color:var(--card-line);color:var(--ink-3)}
+  body.fs-gold .tab-btn.active, body.fs-gold .wm-tab-btn.active, body.fs-gold .fsd-tabs button.on,
+  body.fs-gold .v11-chip.on, body.fs-gold .v11-tabs button.on{background:var(--act-1);color:var(--act-text);border-color:var(--act-1)}
+  /* شريط الفلتر الموحّد */
+  body.fs-gold #fs7-filter{background:linear-gradient(180deg,var(--card-1),var(--card-2));border:1.5px solid var(--card-line);border-radius:18px;box-shadow:var(--shade)}
+  body.fs-gold #fs7-filter select{background:var(--input);border-color:var(--input-line);color:var(--ink)}
 
-  /* الداشبورد: كروت المؤشرات بمربع أيقونة + الرقم بخط Playfair */
-  body.fs-gold:not(.v9-dark) .fsd-k{background:#fffcf4!important;border:1.5px solid #ecdcb8!important;border-radius:18px!important;box-shadow:0 8px 20px -14px rgba(0,0,0,.45)!important}
-  body.fs-gold:not(.v9-dark) .fsd-k .ib{background:#fff!important;border:1px solid #ecdcb8;border-radius:11px!important;box-shadow:0 2px 6px -3px rgba(0,0,0,.25)}
-  body.fs-gold:not(.v9-dark) .fsd-k .v{font-size:30px!important;color:#1f1a12}
-  body.fs-gold:not(.v9-dark) .fsd-k .mt{background:#efe4c9!important}
-  body.fs-gold:not(.v9-dark) .fsd-k .mt i{background:linear-gradient(90deg,var(--gold),var(--gold-2))!important}
-  body.fs-gold:not(.v9-dark) .fsd-al{border-radius:16px!important}
+  /* الداشبورد: كروت المؤشرات */
+  body.fs-gold .fsd-k{background:var(--surface)!important;border:1.5px solid var(--surface-line)!important;border-radius:18px!important;box-shadow:var(--shade-sm)!important;color:var(--ink)}
+  body.fs-gold .fsd-k .ib{background:var(--card-1)!important;border:1px solid var(--surface-line);border-radius:11px!important}
+  body.fs-gold .fsd-k .v{font-size:30px!important;color:var(--ink)}
+  body.fs-gold .fsd-k .mt{background:var(--chip)!important}
+  body.fs-gold .fsd-k .mt i, body.fs-gold #wt-progress-bar{background:linear-gradient(90deg,var(--acc),var(--acc-2))!important}
+  body.fs-gold :has(> #wt-progress-bar){background:var(--chip)!important}
+  body.fs-gold .fsd-al{border-radius:16px!important}
+  body.fs-gold .dx-hero, body.fs-gold .v6-hero, body.fs-gold .v4d-panel header{background:radial-gradient(520px 200px at 85% 0%, var(--bg-glow), transparent 70%), linear-gradient(160deg,var(--act-1),var(--act-2))!important;color:var(--act-text)!important}
 
-  /* شريط الإجمالي الداكن (زي «تكلفة الخامات 1.66») للتقدم عند الموظف */
-  body.fs-gold:not(.v9-dark) #wt-progress-bar{background:linear-gradient(90deg,var(--gold),var(--gold-2))!important}
-  body.fs-gold:not(.v9-dark) :has(> #wt-progress-bar){background:#efe4c9!important}
+  /* الموظف */
+  body.fs-gold #worker-section .card[style*="#ecfdf5"]{background:radial-gradient(500px 200px at 90% 0%, var(--bg-glow), transparent 70%), linear-gradient(180deg,var(--card-1),var(--card-2))!important}
+  body.fs-gold .wicon-btn{background:var(--surface);border:1.5px solid var(--surface-line);border-radius:18px;box-shadow:var(--shade-sm)}
+  body.fs-gold .wicon-btn:hover{border-color:var(--acc)}
+  body.fs-gold .wicon-btn .wicon-label{color:var(--ink-2)}
+  body.fs-gold .wicon-btn.active, body.fs-gold [style*="linear-gradient(135deg,var(--primary)"]{background:linear-gradient(180deg,var(--act-1),var(--act-2))!important;border-color:var(--act-line)}
+  body.fs-gold .wicon-btn.active .wicon-label{color:var(--act-text)}
 
-  /* القايمة الجانبية الجديدة (FSNav7) */
-  body.fs-gold:not(.v9-dark) .tab-btn.fs7.on7{background:linear-gradient(180deg,#2b241a,#18140e);color:var(--gold-2);border-color:#3d3223;box-shadow:0 10px 22px -12px rgba(0,0,0,.8)}
-  body.fs-gold:not(.v9-dark) .tab-btn.fs7.on7 .nav-icon{background:var(--gold-2);border-color:var(--gold-2);color:#1f1a12}
-  /* شريط الفلتر الموحّد + شيبس المقارنة */
-  body.fs-gold:not(.v9-dark) #fs7-filter{background:linear-gradient(180deg,#fdf9ef,#f8f0dd);border:1.5px solid var(--gold-line);border-radius:18px;box-shadow:var(--shadow)}
-  body.fs-gold:not(.v9-dark) #fs7-filter select{background:#fffdf7;border-color:#e3d3ae}
-  body.fs-gold:not(.v9-dark) .fsd-tabs button{background:#fbf6ea;border-color:#ecdcb8;color:#5b4d36}
-  body.fs-gold:not(.v9-dark) .fsd-tabs button.on{background:#1f1a12;border-color:#1f1a12;color:var(--gold-2)}
-  /* كارت الترحيب عند الموظف */
-  body.fs-gold:not(.v9-dark) #worker-section .card[style*="#ecfdf5"]{background:radial-gradient(500px 200px at 90% 0%, rgba(231,196,119,.28), transparent 70%), linear-gradient(180deg,#fdf9ef,#f8f0dd)!important}
+  /* صفحة الدخول */
+  body.fs-gold .login-hero{background:radial-gradient(700px 360px at 75% 0%, var(--bg-glow), transparent 70%), var(--hero)!important;border-inline-start:1px solid var(--hero-line)}
+  body.fs-gold .login-hero::before{background:none}
+  @media(max-width:820px){body.fs-gold .login-hero{background:transparent!important;border:0}}
+  body.fs-gold .login-hero #login-app-name, body.fs-gold .login-hero #login-headline-ar,
+  body.fs-gold .login-hero .login-feature-card div[id$="-ar"], body.fs-gold .login-hero [id^="login-trust-ar"]{color:var(--ink)!important}
+  body.fs-gold .login-hero #login-headline-ar span{color:var(--acc)!important}
+  body.fs-gold .login-hero #login-headline-en, body.fs-gold .login-hero [id^="login-subtitle"],
+  body.fs-gold .login-hero [id$="-en"], body.fs-gold .login-hero .login-feature-card div:not([id]){color:var(--ink-4)!important}
+  body.fs-gold .login-feature-card, body.fs-gold .login-trust-box, body.fs-gold #login-logo-box{background:var(--surface)!important;border:1.5px solid var(--card-line)!important;box-shadow:var(--shade-sm)!important}
+  body.fs-gold .login-form-side{background:transparent}
+  body.fs-gold .v9-dark-float{background:var(--surface)!important;border:1.5px solid var(--card-line)!important;color:var(--ink-2)!important;box-shadow:var(--shade-sm)!important}
 
-  /* الموظف: مربعات الأقسام */
-  body.fs-gold:not(.v9-dark) .wicon-btn{background:#fffcf4;border:1.5px solid #ecdcb8;border-radius:18px;box-shadow:0 8px 18px -14px rgba(0,0,0,.6)}
-  body.fs-gold:not(.v9-dark) .wicon-btn:hover{border-color:var(--gold)}
-  body.fs-gold:not(.v9-dark) .wicon-btn.active{background:linear-gradient(180deg,#2b241a,#18140e);border-color:#3d3223}
-  body.fs-gold:not(.v9-dark) .wicon-btn.active .wicon-label{color:var(--gold-2)}
-  body.fs-gold:not(.v9-dark) #worker-section .card{background:linear-gradient(180deg,#fdf9ef,#f8f0dd)}
-  body.fs-gold:not(.v9-dark) #worker-section [class*="sec-btn"],
-  body.fs-gold:not(.v9-dark) #worker-section .worker-section-btn{background:#fffcf4;border:1.5px solid #ecdcb8;border-radius:18px}
-
-  /* صفحة الدخول: لوحة فضي فاتح، والعنوان ذهبي */
-  body.fs-gold:not(.v9-dark) .login-hero{background:radial-gradient(700px 360px at 75% 0%, rgba(231,196,119,.30), transparent 70%), linear-gradient(160deg,#fbfbfc,#e9ecf0)!important;border-inline-start:1px solid #dfe3e8}
-  body.fs-gold:not(.v9-dark) .login-hero::before{background:none}
-  @media(max-width:820px){body.fs-gold:not(.v9-dark) .login-hero{background:transparent!important;border:0}}
-  body.fs-gold:not(.v9-dark) .login-hero #login-app-name,
-  body.fs-gold:not(.v9-dark) .login-hero #login-headline-ar,
-  body.fs-gold:not(.v9-dark) .login-hero [id^="login-feature"],
-  body.fs-gold:not(.v9-dark) .login-hero [id^="login-trust-ar"]{color:#1f1a12!important}
-  body.fs-gold:not(.v9-dark) .login-hero #login-headline-ar span{color:var(--gold)!important}
-  body.fs-gold:not(.v9-dark) .login-hero #login-headline-en,
-  body.fs-gold:not(.v9-dark) .login-hero [id^="login-subtitle"],
-  body.fs-gold:not(.v9-dark) .login-hero [id$="-en"],
-  body.fs-gold:not(.v9-dark) .login-hero .login-feature-card div:not([id]){color:#6b6252!important}
-  body.fs-gold:not(.v9-dark) .login-hero .login-feature-card div[id$="-ar"]{color:#1f1a12!important}
-  body.fs-gold:not(.v9-dark) .login-feature-card,
-  body.fs-gold:not(.v9-dark) .login-trust-box{background:#fffdf8!important;border:1.5px solid var(--gold-line)!important;box-shadow:0 10px 22px -16px rgba(31,26,18,.5)!important}
-  body.fs-gold:not(.v9-dark) #login-logo-box{background:#fff!important;border:1.5px solid var(--gold-line)!important;box-shadow:0 10px 22px -14px rgba(31,26,18,.5)!important}
-  body.fs-gold:not(.v9-dark) .login-form-side{background:transparent}
-  body.fs-gold:not(.v9-dark) .v9-dark-float{background:#fffdf8!important;border:1.5px solid var(--gold-line)!important;color:#3b3122!important;box-shadow:0 6px 14px -10px rgba(31,26,18,.6)!important}
-
-  /* الفوتر والنصوص اللي على الخلفية برا الكروت */
-  body.fs-gold:not(.v9-dark) .footer,
-  body.fs-gold:not(.v9-dark) .login-footer-note{background:transparent!important;color:#7d7566!important;border:0!important}
-  body.fs-gold:not(.v9-dark) .footer strong,
-  body.fs-gold:not(.v9-dark) .login-footer-note strong{color:#a77a25!important}
-  body.fs-gold:not(.v9-dark) .admin-tab > .muted,
-  body.fs-gold:not(.v9-dark) .admin-tab > p.muted{color:#6b6252}
+  /* الفوتر والنصوص برا الكروت */
+  body.fs-gold .footer, body.fs-gold .login-footer-note{background:transparent!important;color:var(--foot)!important;border:0!important}
+  body.fs-gold .footer strong, body.fs-gold .login-footer-note strong{color:var(--foot-strong)!important}
+  body.fs-gold .admin-tab > .muted, body.fs-gold .admin-tab > p.muted{color:var(--ink-4)}
 
   /* شريط الموبايل السفلي */
-  body.fs-gold:not(.v9-dark) #fs7-bottom{background:rgba(250,250,251,.96)!important;backdrop-filter:blur(8px);border-top:1px solid #dfe3e8!important;box-shadow:0 -8px 22px -14px rgba(31,26,18,.35)!important}
-  body.fs-gold:not(.v9-dark) #fs7-bottom button{color:#6b6252!important}
-  body.fs-gold:not(.v9-dark) #fs7-bottom button.on{color:var(--gold-2)!important;background:linear-gradient(180deg,#2b241a,#18140e)!important}
+  body.fs-gold #fs7-bottom{background:var(--bar-bg)!important;backdrop-filter:blur(8px);border-top:1px solid var(--bar-line)!important;box-shadow:var(--shade-sm)!important}
+  body.fs-gold #fs7-bottom button{color:var(--bar-text)!important}
+  body.fs-gold #fs7-bottom button.on{color:var(--act-text)!important;background:linear-gradient(180deg,var(--act-1),var(--act-2))!important}
 
-  /* المودال */
-  body.fs-gold:not(.v9-dark) .modal-overlay,
-  body.fs-gold:not(.v9-dark) .v4-ov{background:rgba(31,34,40,.45)!important;backdrop-filter:blur(3px)}
+  /* المودال وشريط التمرير */
+  body.fs-gold .modal-overlay, body.fs-gold .v4-ov{background:rgba(14,20,30,.5)!important;backdrop-filter:blur(3px)}
+  body.fs-gold ::-webkit-scrollbar{width:10px;height:10px}
+  body.fs-gold ::-webkit-scrollbar-thumb{background:var(--card-line);border-radius:10px;border:2px solid var(--page)}
+  body.fs-gold ::-webkit-scrollbar-track{background:var(--page)}
 
-  /* شريط التمرير */
-  body.fs-gold:not(.v9-dark) ::-webkit-scrollbar{width:10px;height:10px}
-  body.fs-gold:not(.v9-dark) ::-webkit-scrollbar-thumb{background:#c9b07a;border-radius:10px;border:2px solid #eef0f3}
-  body.fs-gold:not(.v9-dark) ::-webkit-scrollbar-track{background:#eef0f3}
+  /* الليل: الصناديق الملونة الفاتحة المكتوبة جوه الكود بتاخد درجة ليلية */
+  body.fs-gold.v9-dark [style*="background:#fef2f2"], body.fs-gold.v9-dark [style*="background:#fee2e2"]{background:var(--bad-bg)!important;border-color:rgba(248,113,113,.35)!important}
+  body.fs-gold.v9-dark [style*="background:#ecfdf5"]:not(.card), body.fs-gold.v9-dark [style*="background:#dcfce7"], body.fs-gold.v9-dark [style*="background:#f0fdf4"]{background:var(--ok-bg)!important;border-color:rgba(74,222,128,.3)!important}
+  body.fs-gold.v9-dark [style*="background:#fef3c7"], body.fs-gold.v9-dark [style*="background:#fffbeb"], body.fs-gold.v9-dark [style*="background:#fefce8"]{background:var(--warn-bg)!important;border-color:rgba(251,191,36,.3)!important}
+  body.fs-gold.v9-dark [style*="background:#eff6ff"], body.fs-gold.v9-dark [style*="background:#dbeafe"]{background:var(--info-bg)!important}
+  body.fs-gold.v9-dark [style*="background:#fff"]:not(.fsw-page):not(.fsw-page *), body.fs-gold.v9-dark [style*="background:#f8fafc"], body.fs-gold.v9-dark [style*="background:#f1f5f9"]{background:var(--surface)!important;border-color:var(--surface-line)!important}
+  body.fs-gold.v9-dark [style*="color:#0f172a"], body.fs-gold.v9-dark [style*="color:#16202b"], body.fs-gold.v9-dark [style*="color:#1e293b"]{color:var(--ink)!important}
+  body.fs-gold.v9-dark [style*="color:#475569"], body.fs-gold.v9-dark [style*="color:#64748b"], body.fs-gold.v9-dark [style*="color:#334155"]{color:var(--ink-3)!important}
+  body.fs-gold.v9-dark [style*="color:#991b1b"], body.fs-gold.v9-dark [style*="color:#b91c1c"]{color:var(--bad)!important}
+  body.fs-gold.v9-dark [style*="color:#166534"], body.fs-gold.v9-dark [style*="color:#15803d"]{color:var(--ok)!important}
+  body.fs-gold.v9-dark .badge-red{background:var(--bad-bg);color:var(--bad)} body.fs-gold.v9-dark .badge-green{background:var(--ok-bg);color:var(--ok)}
+  body.fs-gold.v9-dark .badge-yellow{background:var(--warn-bg);color:var(--warn)} body.fs-gold.v9-dark .badge-blue{background:var(--info-bg);color:var(--info)}
+  body.fs-gold.v9-dark .fsd-al{background:var(--surface)!important;color:var(--ink)!important;border-color:var(--surface-line)!important}
+  body.fs-gold.v9-dark #fs7-sbtn, body.fs-gold.v9-dark .fs7-eye, body.fs-gold.v9-dark .fsd-hl, body.fs-gold.v9-dark .fsd-q, body.fs-gold.v9-dark .fsd-lc,
+  body.fs-gold.v9-dark .v22-t, body.fs-gold.v9-dark .v22-bar, body.fs-gold.v9-dark .preview-card, body.fs-gold.v9-dark .lang-flags-row,
+  body.fs-gold.v9-dark .ib, body.fs-gold.v9-dark .nav-icon{background:var(--surface)!important;border-color:var(--surface-line)!important;color:var(--ink)!important}
+  body.fs-gold.v9-dark .fsd-lc .bar, body.fs-gold.v9-dark .dl.eq{background:var(--chip)!important;color:var(--chip-text)!important}
+  body.fs-gold.v9-dark .fsd-lc .s.g{background:var(--ok-bg)!important;border-color:rgba(74,222,128,.3)!important}
+  body.fs-gold.v9-dark .fsd-lc .s.y{background:var(--warn-bg)!important;border-color:rgba(251,191,36,.3)!important}
+  body.fs-gold.v9-dark .fsd-lc .s.r{background:var(--bad-bg)!important;border-color:rgba(248,113,113,.3)!important}
+  body.fs-gold.v9-dark .v12-push.note{background:var(--warn-bg)!important;border-color:rgba(251,191,36,.3)!important;color:var(--ink)!important}
+  body.fs-gold.v9-dark .lang-flag-btn.active{background:linear-gradient(180deg,var(--act-1),var(--act-2))!important}
+  body.fs-gold #fs7-create{background:linear-gradient(180deg,var(--act-1),var(--act-2))!important;color:var(--act-text)!important;border-color:var(--act-line)!important}
+  body.fs-gold .tab-btn.active *, body.fs-gold .wm-tab-btn.active *{color:inherit}
+  body.fs-gold #fs7-sub button{background:var(--card-1);border-color:var(--card-line);color:var(--ink-3)}
+  body.fs-gold #fs7-sub button.on{background:linear-gradient(180deg,var(--act-1),var(--act-2));border-color:var(--act-line);color:var(--act-text)}
+  body.fs-gold.v9-dark .v12-push .v12-d, body.fs-gold.v9-dark .v12-push .v12-t{color:var(--ink-2)!important}
 </style>
 </head>
 <body class="on-login fs-gold">
@@ -3012,8 +3044,8 @@ async function submitViolationReply(id){
 
 // ==================== QUIZZES (WORKER) ====================
 async function submitQuiz(quizId,questions){
-  let correct=0;
-  for(const qst of questions){ const sel=document.querySelector('input[name="qz-'+qst.id+'"]:checked'); if(sel){ const { data: opt }=await sb.from('quiz_options').select('is_correct').eq('id',parseInt(sel.value)).single(); if(opt&&opt.is_correct) correct++; } }
+  let correct=0; const answers=[];
+  for(const qst of questions){ const sel=document.querySelector('input[name="qz-'+qst.id+'"]:checked'); if(sel){ answers.push({q:qst.id, o:parseInt(sel.value)}); const { data: opt }=await sb.from('quiz_options').select('is_correct').eq('id',parseInt(sel.value)).single(); if(opt&&opt.is_correct) correct++; } }
   const score=Math.round((correct/(questions.length||1))*100);
   // نلغي أي محاولة سابقة كانت معلّمة "حالية" لنفس الموظف/الاختبار (بدون حذفها، تفضل في السجل)، عشان محاولة الإعادة الجديدة تكون هي الوحيدة الحالية
   try{ await sb.from('quiz_attempts').update({is_current:false}).eq('worker_id',currentUser.id).eq('quiz_id',quizId); }catch(e){}
@@ -3031,6 +3063,8 @@ async function submitQuiz(quizId,questions){
   // نقفل إذن "السماح بإعادة الاختبار" فور استخدامه، عشان الاختبار يختفي فورًا من عند الموظف زي أول مرة بالظبط
   // (ده مش بيمسح نتائجه القديمة أبدًا، بس بيقفل الإذن اللي كان مفتوح له)
   try{ await sb.from('quiz_unlocks').delete().eq('worker_id',currentUser.id).eq('quiz_id',quizId); }catch(e){ console.error('تعذر إغلاق إذن إعادة الاختبار بعد الحل:',e); }
+  // كل إجابة بتتسجل لوحدها (للوحة «أصعب الأسئلة»). الصح والغلط بيتحسبوا في قاعدة البيانات، مش هنا.
+  if(answers.length){ try{ await sb.rpc('fs_save_quiz_answers', {p_quiz_id:quizId, p_answers:answers}); }catch(e){} }
   showToast('نتيجتك: '+score+'% ✅'); loadWorkerQuizzes();
 }
 
@@ -8292,7 +8326,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   function darkUI(){
     const on = document.body.classList.contains('v9-dark');
     document.querySelectorAll('.v9-darkbtn').forEach(b => { b.textContent = on ? '☀\uFE0E' : '☾'; b.title = n(on ? 'lightMode' : 'darkMode'); });
-    const m = document.querySelector('meta[name="theme-color"]'); if(m) m.setAttribute('content', on ? '#0b0f14' : '#f4f5f7');
+    const m = document.querySelector('meta[name="theme-color"]'); if(m) m.setAttribute('content', on ? '#0e1828' : '#f4f5f7');
   }
   V9.toggleDark = function(force){
     const on = typeof force === 'boolean' ? force : !document.body.classList.contains('v9-dark');
@@ -11987,13 +12021,13 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
   /* ---------- ⑧ أصعب الأسئلة ---------- */
   async function hardQuestions(idset){
     try{
-      var ans = await pages(function(){ return sb.from('content_answers').select('question_id,option_id,worker_id').order('id'); });
-      ans = ans.filter(function(a){ return idset.has(Number(a.worker_id)); }); if(!ans.length) return [];
-      var qids = Array.from(new Set(ans.map(function(a){ return a.question_id; })));
-      var R = await Promise.all([sb.from('content_questions').select('id,question_ar,question_en,item_type,item_id').in('id', qids), sb.from('content_options').select('id,question_id,option_ar,option_en,is_correct').in('question_id', qids)]);
+      var r = await sb.rpc('fs_quiz_answer_stats', {p_worker_ids:Array.from(idset)});
+      var st = (r && r.data) || []; if(!st.length) return [];
+      var qids = Array.from(new Set(st.map(function(a){ return a.question_id; })));
+      var R = await Promise.all([sb.from('quiz_questions').select('id,question_ar,question_en').in('id', qids), sb.from('quiz_options').select('id,option_ar,option_en').in('question_id', qids)]);
       var Q = {}; (R[0].data || []).forEach(function(q){ Q[q.id] = q; }); var O = {}; (R[1].data || []).forEach(function(o){ O[o.id] = o; });
       var by = {};
-      ans.forEach(function(a){ var q = Q[a.question_id], o = O[a.option_id]; if(!q || !o) return; var x = by[a.question_id] = by[a.question_id] || {q:q, n:0, wrong:0, opts:{}}; x.n++; if(!o.is_correct){ x.wrong++; var t = o.option_ar || o.option_en || '—'; x.opts[t] = (x.opts[t] || 0) + 1; } });
+      st.forEach(function(a){ var q = Q[a.question_id]; if(!q) return; var n = Number(a.n) || 0, x = by[a.question_id] = by[a.question_id] || {q:q, n:0, wrong:0, opts:{}}; x.n += n; if(!a.is_correct){ x.wrong += n; var o = O[a.option_id], t = o ? (o.option_ar || o.option_en) : '—'; x.opts[t] = (x.opts[t] || 0) + n; } });
       return Object.keys(by).map(function(k){ var x = by[k], top = Object.keys(x.opts).sort(function(a, b){ return x.opts[b] - x.opts[a]; })[0]; return {id:x.q.id, text:x.q.question_ar || x.q.question_en || '#' + x.q.id, n:x.n, wrongPct:Math.round(x.wrong / x.n * 100), top:top || null}; }).filter(function(x){ return x.n >= 3 && x.wrongPct > 0; }).sort(function(a, b){ return b.wrongPct - a.wrongPct || b.n - a.n; }).slice(0, 3);
     }catch(e){ return []; }
   }
@@ -12002,7 +12036,7 @@ hi:{darkMode:'नाइट मोड',lightMode:'डे मोड',tabMe:'मे
     try{ if(!FSNav7.go('content', 'videos')) return; var n = 0, iv = setInterval(function(){ var a = $('v6-add'); if(a || ++n > 30){ clearInterval(iv); if(a) a.click(); } }, 150); }catch(e){}
   }
   function hardHtml(){
-    var h = '<div class="fsd-h"><b>❓ أصعب الأسئلة</b><span class="muted">من أسئلة الفيديوهات</span></div>';
+    var h = '<div class="fsd-h"><b>❓ أصعب الأسئلة</b><span class="muted">من أسئلة الاختبارات</span></div>';
     if(!D.hard.length) return h + '<div class="muted fsd-empty">لسه مفيش إجابات كفاية (3 إجابات على السؤال على الأقل) أو كلها صح 👏</div>';
     return h + D.hard.map(function(q, i){ return '<div class="fsd-q"><div class="t">❓ ' + E(q.text) + '</div><div class="m"><b style="color:' + col(100 - q.wrongPct) + '">' + q.wrongPct + '% جاوبوا غلط</b> <span class="muted">(' + q.n + ' إجابة)</span></div>' + (q.top ? '<div class="m muted">أكتر إجابة غلط اختاروها: «' + E(q.top) + '»</div>' : '') + '<button type="button" class="btn-secondary btn-sm" data-newtr="' + i + '">🎬 اعمل تدريب عن الموضوع ده</button></div>'; }).join('');
   }
